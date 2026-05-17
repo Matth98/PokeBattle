@@ -234,6 +234,7 @@ function App() {
           }}
           onAddTeam={handleAddTeam}
           onUpdateTeam={handleUpdateTeam}
+          onUpdatePlayer={handleUpdatePlayer}
           onDeleteTeam={handleDeleteTeam}
           onDeleteMultiple={handleDeleteMultipleTeams}
           selectionMode={selectionMode}

@@ -13,6 +13,7 @@ export const Teams = ({
   onSelectTeam,
   onAddTeam,
   onUpdateTeam,
+  onUpdatePlayer,
   onDeleteTeam,
   onDeleteMultiple,
   selectionMode,
@@ -54,23 +55,30 @@ export const Teams = ({
     if (clearEditingTeam) clearEditingTeam();
   };
 
-  // Nombre requis de Pokémon selon le format
+  // Nombre exact de Pokémon requis selon le format
   // 1v1 = 3 Pokémon (1 actif, 2 en réserve)
   // 2v2 = 4 Pokémon (2 actifs, 2 en réserve)
-  const minPokemonForFormat = (format) => (format === '1v1' ? 3 : 4);
+  const requiredPokemonForFormat = (format) => (format === '1v1' ? 3 : 4);
+  const required = requiredPokemonForFormat(newTeamData.format);
+  const currentCount = newTeamData.pokemon.length;
+  const isAtMax = currentCount >= required;
 
   const handleSelectPokemon = (pokemon) => {
-    setNewTeamData((prev) => ({
-      ...prev,
-      pokemon: [
-        ...prev.pokemon,
-        {
-          id: `${Date.now()}-${pokemon.pokeId}`,
-          pokeId: pokemon.pokeId,
-          name: pokemon.name,
-        },
-      ],
-    }));
+    setNewTeamData((prev) => {
+      // Sécurité : ne dépasse jamais la limite du format
+      if (prev.pokemon.length >= requiredPokemonForFormat(prev.format)) return prev;
+      return {
+        ...prev,
+        pokemon: [
+          ...prev.pokemon,
+          {
+            id: `${Date.now()}-${pokemon.pokeId}`,
+            pokeId: pokemon.pokeId,
+            name: pokemon.name,
+          },
+        ],
+      };
+    });
     setPickingPokemon(false);
   };
 
@@ -82,11 +90,10 @@ export const Teams = ({
   };
 
   const handleSaveTeam = async () => {
-    const minPokemon = minPokemonForFormat(newTeamData.format);
     const errors = {
       name: !newTeamData.name.trim(),
       owner: !newTeamData.owner,
-      pokemon: !newTeamData.pokemon || newTeamData.pokemon.length < minPokemon
+      pokemon: !newTeamData.pokemon || newTeamData.pokemon.length !== required,
     };
     setTeamFormErrors(errors);
     if (errors.name || errors.owner || errors.pokemon) return;
@@ -102,6 +109,27 @@ export const Teams = ({
     } else {
       await onAddTeam(payload);
     }
+
+    // Synchronise les Pokémon de l'équipe avec le roster du propriétaire :
+    // tout pokeId absent du roster est ajouté.
+    if (owner && onUpdatePlayer) {
+      const existingIds = new Set((owner.pokemon || []).map((p) => p.pokeId));
+      const toAdd = newTeamData.pokemon
+        .filter((p) => !existingIds.has(p.pokeId))
+        .map((p) => ({
+          id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
+          pokeId: p.pokeId,
+          name: p.name,
+          level: 50,
+        }));
+      if (toAdd.length > 0) {
+        await onUpdatePlayer(owner._id, {
+          ...owner,
+          pokemon: [...(owner.pokemon || []), ...toAdd],
+        });
+      }
+    }
+
     resetForm();
     setShowForm(false);
   };
@@ -291,11 +319,16 @@ export const Teams = ({
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className={`block font-bold ${t.text}`}>
-                      Pokémon ({newTeamData.pokemon.length}/{minPokemonForFormat(newTeamData.format)} min)
+                      Pokémon (
+                      <span className={currentCount === required ? 'text-green-500' : 'text-orange-500'}>
+                        {currentCount}/{required}
+                      </span>
+                      )
                     </label>
                     <button
                       onClick={() => setPickingPokemon(true)}
-                      className="bg-orange-500 text-white px-3 py-1 rounded-full font-bold text-sm"
+                      disabled={isAtMax}
+                      className={`bg-orange-500 text-white px-3 py-1 rounded-full font-bold text-sm ${isAtMax ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       + Ajouter
                     </button>
@@ -332,7 +365,9 @@ export const Teams = ({
                   )}
                   {teamFormErrors.pokemon && (
                     <p className="text-red-500 text-sm mt-2">
-                      Sélectionne au moins {minPokemonForFormat(newTeamData.format)} Pokémon pour le format {newTeamData.format}
+                      {currentCount < required
+                        ? `Il manque ${required - currentCount} Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`
+                        : `Trop de Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}. Retire-en ${currentCount - required}.`}
                     </p>
                   )}
                 </div>
