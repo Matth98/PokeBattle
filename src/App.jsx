@@ -210,6 +210,7 @@ function App() {
       {currentTab === 'playerDetail' && (
         <PlayerDetail
           player={selectedPlayer}
+          teams={teams}
           t={t}
           isDark={isDark}
           onBack={() => {
@@ -217,6 +218,7 @@ function App() {
             setCurrentTab('players');
           }}
           onUpdate={handleUpdatePlayer}
+          onUpdateTeam={handleUpdateTeam}
         />
       )}
 
