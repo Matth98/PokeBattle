@@ -1,0 +1,190 @@
+import { useState, useCallback } from 'react';
+
+const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
+
+export const useAPI = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchPlayers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/players`);
+      if (!res.ok) throw new Error('Erreur chargement joueurs');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchBattles = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/battles`);
+      if (!res.ok) throw new Error('Erreur chargement combats');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchTeams = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/teams`);
+      if (!res.ok) throw new Error('Erreur chargement équipes');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const createPlayer = useCallback(async (name) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/players`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, stats: { wins: 0, losses: 0 }, pokemon: [] })
+      });
+      if (!res.ok) throw new Error('Erreur création joueur');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return null;
+    }
+  }, []);
+
+  const updatePlayer = useCallback(async (id, data) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/players/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error('Erreur modification joueur');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return null;
+    }
+  }, []);
+
+  const deletePlayer = useCallback(async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/players/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Erreur suppression joueur');
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    }
+  }, []);
+
+  const createBattle = useCallback(async (battleData) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/battles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...battleData, timestamp: new Date().toISOString() })
+      });
+      if (!res.ok) throw new Error('Erreur création combat');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return null;
+    }
+  }, []);
+
+  const updateBattle = useCallback(async (id, battleData) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/battles/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(battleData)
+      });
+      if (!res.ok) throw new Error('Erreur modification combat');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return null;
+    }
+  }, []);
+
+  const deleteBattle = useCallback(async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/battles/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Erreur suppression combat');
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    }
+  }, []);
+
+  const createTeam = useCallback(async (teamData) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/teams`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(teamData)
+      });
+      if (!res.ok) throw new Error('Erreur création équipe');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return null;
+    }
+  }, []);
+
+  const updateTeam = useCallback(async (id, teamData) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/teams/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(teamData)
+      });
+      if (!res.ok) throw new Error('Erreur modification équipe');
+      return await res.json();
+    } catch (err) {
+      setError(err.message);
+      return null;
+    }
+  }, []);
+
+  const deleteTeam = useCallback(async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/teams/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Erreur suppression équipe');
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    }
+  }, []);
+
+  return {
+    loading,
+    error,
+    fetchPlayers,
+    fetchBattles,
+    fetchTeams,
+    createPlayer,
+    updatePlayer,
+    deletePlayer,
+    createBattle,
+    updateBattle,
+    deleteBattle,
+    createTeam,
+    updateTeam,
+    deleteTeam
+  };
+};
