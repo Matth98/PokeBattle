@@ -11,7 +11,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
     <div className={`min-h-screen bg-gradient-to-br ${t.bg}`}>
       <div className={`${t.headerBg} pt-12 pb-8 px-6 border-b ${t.headerBorder}`}>
         <div className="flex justify-between items-center mb-4">
-          <h1 className={`text-4xl font-black ${t.text}`}>PokéBattle</h1>
+          <h1 className={`text-4xl font-black ${t.text}`}>PokéScores</h1>
           <button
             onClick={() => setIsDark(!isDark)}
             className={`p-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}
@@ -19,7 +19,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </div>
-        <p className={`${t.textSecondary}`}>Enregistre tes combats Pokémon</p>
+        <p className={`${t.textSecondary}`}>Enregistrez vos combats Pokémon & analysez vos équipes.</p>
       </div>
 
       <div className="px-6 mt-8 pb-32 space-y-8">
