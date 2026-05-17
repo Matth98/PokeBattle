@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
+import { SwipeableRow } from './SwipeableRow';
 
 const emptyTeamData = () => ({ name: '', owner: null, format: '2v2', pokemon: [] });
 
@@ -213,34 +214,40 @@ export const Teams = ({
           </div>
         ) : (
           teams.map(team => (
-            <div
+            <SwipeableRow
               key={team._id}
-              className={`${t.bgPrimary} rounded-2xl p-4 border ${selectedItems.includes(team._id) ? 'border-orange-500' : t.border} flex items-center gap-4`}
+              onDelete={() => onDeleteTeam(team._id)}
+              disabled={selectionMode === 'teams'}
+              className="rounded-2xl"
             >
-              {selectionMode === 'teams' && (
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(team._id)}
-                  onChange={() =>
-                    setSelectedItems(
-                      selectedItems.includes(team._id)
-                        ? selectedItems.filter(id => id !== team._id)
-                        : [...selectedItems, team._id]
-                    )
-                  }
-                  className="w-5 h-5"
-                />
-              )}
-              <button
-                onClick={() => !selectionMode && onSelectTeam(team)}
-                disabled={selectionMode === 'teams'}
-                className="flex-1 text-left disabled:opacity-50"
+              <div
+                className={`${t.bgPrimary} rounded-2xl p-4 border ${selectedItems.includes(team._id) ? 'border-orange-500' : t.border} flex items-center gap-4`}
               >
-                <h3 className={`font-black ${t.text}`}>{team.name}</h3>
-                <p className={`${t.textSecondary} text-sm`}>{team.owner} · {team.format}</p>
-              </button>
-              {selectionMode !== 'teams' && <ChevronRight size={20} className={`flex-shrink-0 ${t.textSecondary}`} />}
-            </div>
+                {selectionMode === 'teams' && (
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(team._id)}
+                    onChange={() =>
+                      setSelectedItems(
+                        selectedItems.includes(team._id)
+                          ? selectedItems.filter(id => id !== team._id)
+                          : [...selectedItems, team._id]
+                      )
+                    }
+                    className="w-5 h-5"
+                  />
+                )}
+                <button
+                  onClick={() => !selectionMode && onSelectTeam(team)}
+                  disabled={selectionMode === 'teams'}
+                  className="flex-1 text-left disabled:opacity-50"
+                >
+                  <h3 className={`font-black ${t.text}`}>{team.name}</h3>
+                  <p className={`${t.textSecondary} text-sm`}>{team.owner} · {team.format}</p>
+                </button>
+                {selectionMode !== 'teams' && <ChevronRight size={20} className={`flex-shrink-0 ${t.textSecondary}`} />}
+              </div>
+            </SwipeableRow>
           ))
         )}
       </div>
@@ -363,11 +370,11 @@ export const Teams = ({
                       ))}
                     </div>
                   )}
-                  {teamFormErrors.pokemon && (
+                  {teamFormErrors.pokemon && currentCount !== required && (
                     <p className="text-red-500 text-sm mt-2">
                       {currentCount < required
                         ? `Il manque ${required - currentCount} Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`
-                        : `Trop de Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}. Retire-en ${currentCount - required}.`}
+                        : `Trop de Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`}
                     </p>
                   )}
                 </div>

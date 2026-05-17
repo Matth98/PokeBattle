@@ -3,6 +3,7 @@ import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
 import { TeamSelectorModal } from './TeamSelectorModal';
+import { SwipeableRow } from './SwipeableRow';
 
 const emptyBattle = () => ({
   format: '1v1',
@@ -482,57 +483,62 @@ export const Battles = ({
                           ) : (
                             <div className="space-y-2">
                               {slotPokemon.map((p, pIdx) => (
-                                <div
+                                <SwipeableRow
                                   key={p.id}
-                                  className={`flex items-center gap-2 p-2 rounded-lg border ${
-                                    p.eliminated ? 'border-red-400 bg-red-500 bg-opacity-5' : t.border
-                                  }`}
+                                  onDelete={() => handleRemovePokemonFromSlot(slot, p.id)}
+                                  className="rounded-lg"
                                 >
-                                  {/* Flèches de réorganisation */}
-                                  <div className="flex flex-col">
+                                  <div
+                                    className={`flex items-center gap-2 p-2 rounded-lg border ${
+                                      p.eliminated ? 'border-red-400 bg-red-500 bg-opacity-5' : t.border
+                                    } ${t.bgPrimary}`}
+                                  >
+                                    {/* Flèches de réorganisation */}
+                                    <div className="flex flex-col">
+                                      <button
+                                        onClick={() => handleMovePokemon(slot, pIdx, 'up')}
+                                        disabled={pIdx === 0}
+                                        className={`leading-none text-xs ${t.textSecondary} ${pIdx === 0 ? 'opacity-30' : 'hover:text-orange-500'}`}
+                                        aria-label="Monter"
+                                      >
+                                        ▲
+                                      </button>
+                                      <button
+                                        onClick={() => handleMovePokemon(slot, pIdx, 'down')}
+                                        disabled={pIdx === slotPokemon.length - 1}
+                                        className={`leading-none text-xs ${t.textSecondary} ${pIdx === slotPokemon.length - 1 ? 'opacity-30' : 'hover:text-orange-500'}`}
+                                        aria-label="Descendre"
+                                      >
+                                        ▼
+                                      </button>
+                                    </div>
+                                    {/* Checkbox d'élimination */}
+                                    <input
+                                      type="checkbox"
+                                      checked={Boolean(p.eliminated)}
+                                      onChange={() => handleToggleEliminated(slot, p.id)}
+                                      className="w-4 h-4 accent-red-500 flex-shrink-0"
+                                      aria-label="Éliminé"
+                                      title="Cocher = éliminé (donne 1 point à l'adversaire)"
+                                    />
+                                    <img
+                                      src={getPokemonImageUrl(p.pokeId)}
+                                      alt={p.name}
+                                      className={`w-8 h-8 object-contain flex-shrink-0 ${p.eliminated ? 'grayscale opacity-60' : ''}`}
+                                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                    />
+                                    <span className={`flex-1 font-bold text-sm ${p.eliminated ? `${t.textSecondary} line-through` : t.text}`}>
+                                      {p.name}
+                                    </span>
                                     <button
-                                      onClick={() => handleMovePokemon(slot, pIdx, 'up')}
-                                      disabled={pIdx === 0}
-                                      className={`leading-none text-xs ${t.textSecondary} ${pIdx === 0 ? 'opacity-30' : 'hover:text-orange-500'}`}
-                                      aria-label="Monter"
+                                      onClick={() => handleRemovePokemonFromSlot(slot, p.id)}
+                                      className="text-red-500 font-bold px-2"
+                                      aria-label="Retirer"
                                     >
-                                      ▲
-                                    </button>
-                                    <button
-                                      onClick={() => handleMovePokemon(slot, pIdx, 'down')}
-                                      disabled={pIdx === slotPokemon.length - 1}
-                                      className={`leading-none text-xs ${t.textSecondary} ${pIdx === slotPokemon.length - 1 ? 'opacity-30' : 'hover:text-orange-500'}`}
-                                      aria-label="Descendre"
-                                    >
-                                      ▼
+                                      ×
                                     </button>
                                   </div>
-                                  {/* Checkbox d'élimination */}
-                                  <input
-                                    type="checkbox"
-                                    checked={Boolean(p.eliminated)}
-                                    onChange={() => handleToggleEliminated(slot, p.id)}
-                                    className="w-4 h-4 accent-red-500 flex-shrink-0"
-                                    aria-label="Éliminé"
-                                    title="Cocher = éliminé (donne 1 point à l'adversaire)"
-                                  />
-                                  <img
-                                    src={getPokemonImageUrl(p.pokeId)}
-                                    alt={p.name}
-                                    className={`w-8 h-8 object-contain flex-shrink-0 ${p.eliminated ? 'grayscale opacity-60' : ''}`}
-                                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                  />
-                                  <span className={`flex-1 font-bold text-sm ${p.eliminated ? `${t.textSecondary} line-through` : t.text}`}>
-                                    {p.name}
-                                  </span>
-                                  <button
-                                    onClick={() => handleRemovePokemonFromSlot(slot, p.id)}
-                                    className="text-red-500 font-bold px-2"
-                                    aria-label="Retirer"
-                                  >
-                                    ×
-                                  </button>
-                                </div>
+                                </SwipeableRow>
                               ))}
                             </div>
                           )}

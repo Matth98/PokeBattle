@@ -38,8 +38,33 @@ function App() {
   const [showNewBattleForm, setShowNewBattleForm] = useState(false);
   const [showNewTeamForm, setShowNewTeamForm] = useState(false);
 
+  // Mémorise d'où on a ouvert le formulaire d'édition ('detail' = depuis la fiche détail,
+  // null = depuis la liste). Permet de revenir à la fiche détail à la fermeture.
+  const [battleEditOrigin, setBattleEditOrigin] = useState(null);
+  const [teamEditOrigin, setTeamEditOrigin] = useState(null);
+
   const [selectionMode, setSelectionMode] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
+
+  // Wrappers de fermeture : si on était venus depuis la fiche détail, on y retourne
+  const setShowBattleForm = (val) => {
+    setShowNewBattleForm(val);
+    if (!val) {
+      if (battleEditOrigin === 'detail') {
+        setCurrentTab('battleDetail');
+      }
+      setBattleEditOrigin(null);
+    }
+  };
+  const setShowTeamForm = (val) => {
+    setShowNewTeamForm(val);
+    if (!val) {
+      if (teamEditOrigin === 'detail') {
+        setCurrentTab('teamDetail');
+      }
+      setTeamEditOrigin(null);
+    }
+  };
 
   const {
     loading,
@@ -242,9 +267,14 @@ function App() {
           selectedItems={selectedItems}
           setSelectedItems={setSelectedItems}
           showForm={showNewTeamForm}
-          setShowForm={setShowNewTeamForm}
+          setShowForm={setShowTeamForm}
           editingTeam={selectedTeam}
-          clearEditingTeam={() => setSelectedTeam(null)}
+          clearEditingTeam={() => {
+            // Si on revient sur la fiche détail, on garde selectedTeam pour que la page se rende
+            if (teamEditOrigin !== 'detail') {
+              setSelectedTeam(null);
+            }
+          }}
         />
       )}
 
@@ -259,6 +289,7 @@ function App() {
           }}
           onEdit={(team) => {
             setSelectedTeam(team);
+            setTeamEditOrigin('detail');
             setCurrentTab('teams');
             setShowNewTeamForm(true);
           }}
@@ -287,9 +318,14 @@ function App() {
           selectedItems={selectedItems}
           setSelectedItems={setSelectedItems}
           showForm={showNewBattleForm}
-          setShowForm={setShowNewBattleForm}
+          setShowForm={setShowBattleForm}
           editingBattle={selectedBattle}
-          clearEditingBattle={() => setSelectedBattle(null)}
+          clearEditingBattle={() => {
+            // Si on revient sur la fiche détail, on garde selectedBattle pour que la page se rende
+            if (battleEditOrigin !== 'detail') {
+              setSelectedBattle(null);
+            }
+          }}
         />
       )}
 
@@ -305,6 +341,7 @@ function App() {
           }}
           onEdit={(b) => {
             setSelectedBattle(b);
+            setBattleEditOrigin('detail');
             setCurrentTab('battles');
             setShowNewBattleForm(true);
           }}
