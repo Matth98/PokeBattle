@@ -102,20 +102,12 @@ export const PlayerDetail = ({
                 onDelete={() => setDeletingPokemon(p.id)}
                 className="rounded-2xl"
               >
-                <div className={`${t.bgPrimary} rounded-2xl p-4 border ${t.border} flex justify-between items-center`}>
-                  <div className="flex items-center gap-3">
-                    <img src={getPokemonImageUrl(p.pokeId)} alt={p.name} className="w-12 h-12 object-contain" />
-                    <div>
-                      <p className={`font-black ${t.text}`}>{p.name}</p>
-                      <p className={`${t.textSecondary} text-sm`}>Niveau {p.level}</p>
-                    </div>
+                <div className={`${t.bgPrimary} rounded-2xl p-4 border ${t.border} flex items-center gap-3`}>
+                  <img src={getPokemonImageUrl(p.pokeId)} alt={p.name} className="w-12 h-12 object-contain" />
+                  <div>
+                    <p className={`font-black ${t.text}`}>{p.name}</p>
+                    <p className={`${t.textSecondary} text-sm`}>Niveau {p.level}</p>
                   </div>
-                  <button
-                    onClick={() => setDeletingPokemon(p.id)}
-                    className="text-red-500 hover:text-red-600 font-bold"
-                  >
-                    ×
-                  </button>
                 </div>
               </SwipeableRow>
             ))}

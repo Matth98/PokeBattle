@@ -1,6 +1,5 @@
 import React from 'react';
 import { usePokemon } from '../hooks/usePokemon';
-import { SwipeableRow } from './SwipeableRow';
 
 export const TeamDetail = ({
   team,
@@ -8,19 +7,10 @@ export const TeamDetail = ({
   isDark,
   onBack,
   onEdit,
-  onUpdate,
 }) => {
   const { getPokemonImageUrl } = usePokemon();
 
   if (!team) return null;
-
-  const handleDeletePokemon = (pokemonId) => {
-    const updated = {
-      ...team,
-      pokemon: (team.pokemon || []).filter((p) => p.id !== pokemonId),
-    };
-    onUpdate(team._id, updated);
-  };
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${t.bg}`}>
@@ -51,29 +41,20 @@ export const TeamDetail = ({
         ) : (
           <div className="space-y-3">
             {team.pokemon.map((p) => (
-              <SwipeableRow
-                key={p.id}
-                onDelete={() => handleDeletePokemon(p.id)}
-                className="rounded-2xl"
-              >
-                <div className={`${t.bgPrimary} rounded-2xl p-4 border ${t.border} flex items-center gap-3`}>
-                  <img
-                    src={getPokemonImageUrl(p.pokeId)}
-                    alt={p.name}
-                    className="w-12 h-12 object-contain"
-                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                  />
-                  <div>
-                    <p className={`font-black ${t.text}`}>{p.name}</p>
-                  </div>
+              <div key={p.id} className={`${t.bgPrimary} rounded-2xl p-4 border ${t.border} flex items-center gap-3`}>
+                <img
+                  src={getPokemonImageUrl(p.pokeId)}
+                  alt={p.name}
+                  className="w-12 h-12 object-contain"
+                  onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                />
+                <div>
+                  <p className={`font-black ${t.text}`}>{p.name}</p>
                 </div>
-              </SwipeableRow>
+              </div>
             ))}
           </div>
         )}
-        <p className={`${t.textSecondary} text-xs text-center mt-4`}>
-          Glissez un Pokémon vers la gauche pour le supprimer
-        </p>
       </div>
     </div>
   );

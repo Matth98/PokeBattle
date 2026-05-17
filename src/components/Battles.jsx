@@ -489,9 +489,9 @@ export const Battles = ({
                                   className="rounded-lg"
                                 >
                                   <div
-                                    className={`flex items-center gap-2 p-2 rounded-lg border ${
-                                      p.eliminated ? 'border-red-400 bg-red-500 bg-opacity-5' : t.border
-                                    } ${t.bgPrimary}`}
+                                    className={`${t.bgPrimary} flex items-center gap-2 p-2 rounded-lg border ${
+                                      p.eliminated ? 'border-red-400' : t.border
+                                    }`}
                                   >
                                     {/* Flèches de réorganisation */}
                                     <div className="flex flex-col">

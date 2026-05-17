@@ -377,25 +377,23 @@ export const Teams = ({
                   ) : (
                     <div className="space-y-2">
                       {newTeamData.pokemon.map((p) => (
-                        <div
+                        <SwipeableRow
                           key={p.id}
-                          className={`flex items-center gap-3 p-2 rounded-xl border ${t.border} ${t.bgPrimary}`}
+                          onDelete={() => handleRemovePokemonFromForm(p.id)}
+                          className="rounded-xl"
                         >
-                          <img
-                            src={getPokemonImageUrl(p.pokeId)}
-                            alt={p.name}
-                            className="w-10 h-10 object-contain flex-shrink-0"
-                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                          />
-                          <span className={`flex-1 font-bold ${t.text}`}>{p.name}</span>
-                          <button
-                            onClick={() => handleRemovePokemonFromForm(p.id)}
-                            className="text-red-500 font-bold px-2"
-                            aria-label="Retirer"
+                          <div
+                            className={`flex items-center gap-3 p-2 rounded-xl border ${t.border} ${t.bgPrimary}`}
                           >
-                            ×
-                          </button>
-                        </div>
+                            <img
+                              src={getPokemonImageUrl(p.pokeId)}
+                              alt={p.name}
+                              className="w-10 h-10 object-contain flex-shrink-0"
+                              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                            />
+                            <span className={`flex-1 font-bold ${t.text}`}>{p.name}</span>
+                          </div>
+                        </SwipeableRow>
                       ))}
                     </div>
                   )}
