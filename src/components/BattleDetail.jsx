@@ -60,7 +60,7 @@ export const BattleDetail = ({
       <div className="px-6 mt-6 pb-32 space-y-4">
         {/* Pokémon Joueur 1 */}
         <div className={`${t.bgPrimary} rounded-2xl p-6 border border-orange-500`}>
-          <h3 className={`font-black ${t.text} mb-4`}>Pokémon {p1?.name}</h3>
+          <h3 className={`font-black ${t.text} mb-4`}>Pokémon de {p1?.name}</h3>
           {battle.team1 && battle.team1.length > 0 ? (
             <div className="space-y-2">
               {battle.team1.map(pk => (
@@ -83,7 +83,7 @@ export const BattleDetail = ({
 
         {/* Pokémon Joueur 2 */}
         <div className={`${t.bgPrimary} rounded-2xl p-6 border border-red-500`}>
-          <h3 className={`font-black ${t.text} mb-4`}>Pokémon {p2?.name}</h3>
+          <h3 className={`font-black ${t.text} mb-4`}>Pokémon de {p2?.name}</h3>
           {battle.team2 && battle.team2.length > 0 ? (
             <div className="space-y-2">
               {battle.team2.map(pk => (
