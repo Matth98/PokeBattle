@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
+
+const emptyTeamData = () => ({ name: '', owner: null, format: '2v2', pokemon: [] });
 
 export const Teams = ({
   teams,
@@ -10,6 +12,7 @@ export const Teams = ({
   isDark,
   onSelectTeam,
   onAddTeam,
+  onUpdateTeam,
   onDeleteTeam,
   onDeleteMultiple,
   selectionMode,
@@ -17,13 +20,39 @@ export const Teams = ({
   selectedItems,
   setSelectedItems,
   showForm,
-  setShowForm
+  setShowForm,
+  editingTeam,
+  clearEditingTeam,
 }) => {
-  const [newTeamData, setNewTeamData] = useState({ name: '', owner: null, format: '2v2', pokemon: [] });
+  const [newTeamData, setNewTeamData] = useState(emptyTeamData());
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, owner: false, pokemon: false });
   const [deletingSelected, setDeletingSelected] = useState(false);
   const [pickingPokemon, setPickingPokemon] = useState(false);
   const { getPokemonImageUrl } = usePokemon();
+
+  const isEditing = Boolean(editingTeam && showForm);
+
+  // Pré-remplit le formulaire en mode édition
+  useEffect(() => {
+    if (isEditing) {
+      setNewTeamData({
+        name: editingTeam.name || '',
+        owner: editingTeam.ownerId || null,
+        format: editingTeam.format || '2v2',
+        pokemon: (editingTeam.pokemon || []).map((p) => ({
+          ...p,
+          id: p.id || `${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
+        })),
+      });
+    }
+  }, [isEditing, editingTeam]);
+
+  const resetForm = () => {
+    setNewTeamData(emptyTeamData());
+    setTeamFormErrors({ name: false, owner: false, pokemon: false });
+    setPickingPokemon(false);
+    if (clearEditingTeam) clearEditingTeam();
+  };
 
   // Nombre requis de Pokémon selon le format
   // 1v1 = 3 Pokémon (1 actif, 2 en réserve)
@@ -52,7 +81,7 @@ export const Teams = ({
     }));
   };
 
-  const handleCreateTeam = async () => {
+  const handleSaveTeam = async () => {
     const minPokemon = minPokemonForFormat(newTeamData.format);
     const errors = {
       name: !newTeamData.name.trim(),
@@ -63,12 +92,17 @@ export const Teams = ({
     if (errors.name || errors.owner || errors.pokemon) return;
 
     const owner = players.find(p => p._id === newTeamData.owner);
-    await onAddTeam({
+    const payload = {
       ...newTeamData,
       ownerId: newTeamData.owner,
-      owner: owner?.name
-    });
-    setNewTeamData({ name: '', owner: null, format: '2v2', pokemon: [] });
+      owner: owner?.name,
+    };
+    if (isEditing) {
+      await onUpdateTeam(editingTeam._id, payload);
+    } else {
+      await onAddTeam(payload);
+    }
+    resetForm();
     setShowForm(false);
   };
 
@@ -113,7 +147,11 @@ export const Teams = ({
             ) : (
               <>
                 <button
-                  onClick={() => setShowForm(true)}
+                  onClick={() => {
+                    if (clearEditingTeam) clearEditingTeam();
+                    setNewTeamData(emptyTeamData());
+                    setShowForm(true);
+                  }}
                   className="bg-orange-500 text-white px-4 py-2 rounded-full font-bold text-sm"
                 >
                   + Nouveau
@@ -209,7 +247,9 @@ export const Teams = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex flex-col">
           <div className={`${t.bgPrimary} flex-1 overflow-y-auto flex flex-col`}>
             <div className="p-6 flex-1 overflow-y-auto">
-              <h2 className={`text-2xl font-black ${t.text} mb-6`}>Créer une équipe</h2>
+              <h2 className={`text-2xl font-black ${t.text} mb-6`}>
+                {isEditing ? 'Modifier l\'équipe' : 'Créer une équipe'}
+              </h2>
               <div className="space-y-4">
                 <input
                   type="text"
@@ -303,18 +343,17 @@ export const Teams = ({
                 <button
                   onClick={() => {
                     setShowForm(false);
-                    setNewTeamData({ name: '', owner: null, format: '2v2', pokemon: [] });
-                    setTeamFormErrors({ name: false, owner: false, pokemon: false });
+                    resetForm();
                   }}
                   className={`flex-1 ${isDark ? 'bg-gray-700' : 'bg-gray-200'} ${t.text} py-3 rounded-xl font-bold`}
                 >
                   Annuler
                 </button>
                 <button
-                  onClick={handleCreateTeam}
+                  onClick={handleSaveTeam}
                   className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-black"
                 >
-                  Créer
+                  {isEditing ? 'Mettre à jour' : 'Créer'}
                 </button>
               </div>
             </div>

@@ -231,6 +231,7 @@ function App() {
             setCurrentTab('teamDetail');
           }}
           onAddTeam={handleAddTeam}
+          onUpdateTeam={handleUpdateTeam}
           onDeleteTeam={handleDeleteTeam}
           onDeleteMultiple={handleDeleteMultipleTeams}
           selectionMode={selectionMode}
@@ -239,6 +240,8 @@ function App() {
           setSelectedItems={setSelectedItems}
           showForm={showNewTeamForm}
           setShowForm={setShowNewTeamForm}
+          editingTeam={selectedTeam}
+          clearEditingTeam={() => setSelectedTeam(null)}
         />
       )}
 
@@ -250,6 +253,11 @@ function App() {
           onBack={() => {
             setSelectedTeam(null);
             setCurrentTab('teams');
+          }}
+          onEdit={(team) => {
+            setSelectedTeam(team);
+            setCurrentTab('teams');
+            setShowNewTeamForm(true);
           }}
           onUpdate={handleUpdateTeam}
         />
@@ -287,6 +295,7 @@ function App() {
           battle={selectedBattle}
           players={players}
           t={t}
+          isDark={isDark}
           onBack={() => {
             setSelectedBattle(null);
             setCurrentTab('battles');

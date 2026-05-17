@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
+import { SwipeableRow } from './SwipeableRow';
 
 export const Players = ({
   players,
@@ -101,36 +102,42 @@ export const Players = ({
           </div>
         ) : (
           players.map(p => (
-            <div
+            <SwipeableRow
               key={p._id}
-              className={`${t.bgPrimary} rounded-2xl p-4 border ${selectedItems.includes(p._id) ? 'border-orange-500' : t.border} flex items-center gap-4`}
+              onDelete={() => onDeletePlayer(p._id)}
+              disabled={selectionMode === 'players'}
+              className="rounded-2xl"
             >
-              {selectionMode === 'players' && (
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(p._id)}
-                  onChange={() =>
-                    setSelectedItems(
-                      selectedItems.includes(p._id)
-                        ? selectedItems.filter(id => id !== p._id)
-                        : [...selectedItems, p._id]
-                    )
-                  }
-                  className="w-5 h-5"
-                />
-              )}
-              <button
-                onClick={() => !selectionMode && onSelectPlayer(p)}
-                disabled={selectionMode === 'players'}
-                className="flex-1 text-left disabled:opacity-50"
+              <div
+                className={`${t.bgPrimary} rounded-2xl p-4 border ${selectedItems.includes(p._id) ? 'border-orange-500' : t.border} flex items-center gap-4`}
               >
-                <h3 className={`font-black ${t.text}`}>{p.name}</h3>
-                <p className={`${t.textSecondary} text-sm`}>
-                  ⚔️ {(p.stats?.wins || 0) + (p.stats?.losses || 0)} combats · 🏆 {p.stats?.wins || 0}V
-                </p>
-              </button>
-              {selectionMode !== 'players' && <ChevronRight size={20} className={`flex-shrink-0 ${t.textSecondary}`} />}
-            </div>
+                {selectionMode === 'players' && (
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(p._id)}
+                    onChange={() =>
+                      setSelectedItems(
+                        selectedItems.includes(p._id)
+                          ? selectedItems.filter(id => id !== p._id)
+                          : [...selectedItems, p._id]
+                      )
+                    }
+                    className="w-5 h-5"
+                  />
+                )}
+                <button
+                  onClick={() => !selectionMode && onSelectPlayer(p)}
+                  disabled={selectionMode === 'players'}
+                  className="flex-1 text-left disabled:opacity-50"
+                >
+                  <h3 className={`font-black ${t.text}`}>{p.name}</h3>
+                  <p className={`${t.textSecondary} text-sm`}>
+                    ⚔️ {(p.stats?.wins || 0) + (p.stats?.losses || 0)} combats · 🏆 {p.stats?.wins || 0}V
+                  </p>
+                </button>
+                {selectionMode !== 'players' && <ChevronRight size={20} className={`flex-shrink-0 ${t.textSecondary}`} />}
+              </div>
+            </SwipeableRow>
           ))
         )}
       </div>

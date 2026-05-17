@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 
@@ -6,13 +6,21 @@ export const BattleDetail = ({
   battle,
   players,
   t,
+  isDark,
   onBack,
   onEdit,
   onDelete
 }) => {
   const { getPokemonImageUrl } = usePokemon();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   if (!battle) return null;
+
+  const handleConfirmDelete = async () => {
+    await onDelete(battle._id);
+    setConfirmingDelete(false);
+    onBack(); // retour à la page précédente
+  };
 
   const p1 = players.find(p => p._id === battle.player1);
   const p2 = players.find(p => p._id === battle.player2);
@@ -39,7 +47,7 @@ export const BattleDetail = ({
             {battle.format}
           </span>
           <div className="flex items-center gap-3">
-            <p className={`flex-1 min-w-0 truncate font-black text-lg ${battle.winner === 'player1' ? 'text-orange-500' : t.text}`}>
+            <p className={`flex-1 min-w-0 truncate text-left font-black text-lg ${battle.winner === 'player1' ? 'text-orange-500' : t.text}`}>
               {p1?.name}
             </p>
             <p className="font-black text-3xl text-orange-500 whitespace-nowrap">{p2Elim} - {p1Elim}</p>
@@ -114,12 +122,38 @@ export const BattleDetail = ({
 
         {/* Supprimer */}
         <button
-          onClick={() => onDelete(battle._id)}
+          onClick={() => setConfirmingDelete(true)}
           className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-black mt-6"
         >
           🗑️ Supprimer ce combat
         </button>
       </div>
+
+      {/* Modale de confirmation suppression */}
+      {confirmingDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center px-4">
+          <div className={`${t.bgPrimary} rounded-2xl p-6 max-w-sm w-full border ${t.border}`}>
+            <p className={`font-black text-lg ${t.text} mb-2`}>Supprimer ce combat ?</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>
+              Cette action est définitive.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmingDelete(false)}
+                className={`flex-1 ${isDark ? 'bg-gray-700' : 'bg-gray-200'} ${t.text} py-3 rounded-lg font-bold`}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 bg-red-500 text-white py-3 rounded-lg font-bold"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

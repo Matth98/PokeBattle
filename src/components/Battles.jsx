@@ -356,7 +356,7 @@ export const Battles = ({
                     </span>
                   </div>
                   <div className="flex items-center gap-3 mb-4">
-                    <p className={`flex-1 min-w-0 truncate font-black text-lg ${b.winner === 'player1' ? 'text-orange-500' : t.text}`}>
+                    <p className={`flex-1 min-w-0 truncate text-left font-black text-lg ${b.winner === 'player1' ? 'text-orange-500' : t.text}`}>
                       {p1?.name}
                     </p>
                     <p className="font-black text-3xl text-orange-500 whitespace-nowrap">{p2Elim} - {p1Elim}</p>
@@ -547,7 +547,7 @@ export const Battles = ({
                   <div className={`rounded-xl border ${t.border} p-4 space-y-3`}>
                     <p className={`text-xs font-bold uppercase ${t.textSecondary}`}>Score</p>
                     <div className="flex items-center gap-3">
-                      <p className={`flex-1 min-w-0 truncate font-black text-base ${newBattleData.winner === 'player1' ? 'text-orange-500' : t.text}`}>
+                      <p className={`flex-1 min-w-0 truncate text-left font-black text-base ${newBattleData.winner === 'player1' ? 'text-orange-500' : t.text}`}>
                         {players.find((p) => p._id === newBattleData.player1)?.name || 'Joueur 1'}
                       </p>
                       <p className="font-black text-3xl text-orange-500 whitespace-nowrap">

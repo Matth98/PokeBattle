@@ -65,12 +65,12 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                       {b.format}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center gap-4 mb-4">
-                    <p className={`font-black text-lg ${b.winner === 'player1' ? 'text-orange-500' : t.text}`}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <p className={`flex-1 min-w-0 truncate text-left font-black text-lg ${b.winner === 'player1' ? 'text-orange-500' : t.text}`}>
                       {p1?.name}
                     </p>
-                    <p className="font-black text-3xl text-orange-500">{p2Elim} - {p1Elim}</p>
-                    <p className={`font-black text-lg ${b.winner === 'player2' ? 'text-orange-500' : t.text}`}>
+                    <p className="font-black text-3xl text-orange-500 whitespace-nowrap">{p2Elim} - {p1Elim}</p>
+                    <p className={`flex-1 min-w-0 truncate text-right font-black text-lg ${b.winner === 'player2' ? 'text-orange-500' : t.text}`}>
                       {p2?.name}
                     </p>
                   </div>
