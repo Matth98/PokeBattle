@@ -213,42 +213,71 @@ export const Teams = ({
             </div>
           </div>
         ) : (
-          teams.map(team => (
-            <SwipeableRow
-              key={team._id}
-              onDelete={() => onDeleteTeam(team._id)}
-              disabled={selectionMode === 'teams'}
-              className="rounded-2xl"
-            >
-              <div
-                className={`${t.bgPrimary} rounded-2xl p-4 border ${selectedItems.includes(team._id) ? 'border-orange-500' : t.border} flex items-center gap-4`}
+          teams.map(team => {
+            // Miniature : grille 2x2 des Pokémon de l'équipe (max 4)
+            const thumbSlots = (team.pokemon || []).slice(0, 4);
+            return (
+              <SwipeableRow
+                key={team._id}
+                onDelete={() => onDeleteTeam(team._id)}
+                disabled={selectionMode === 'teams'}
+                className="rounded-2xl"
               >
-                {selectionMode === 'teams' && (
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.includes(team._id)}
-                    onChange={() =>
-                      setSelectedItems(
-                        selectedItems.includes(team._id)
-                          ? selectedItems.filter(id => id !== team._id)
-                          : [...selectedItems, team._id]
-                      )
-                    }
-                    className="w-5 h-5"
-                  />
-                )}
-                <button
-                  onClick={() => !selectionMode && onSelectTeam(team)}
-                  disabled={selectionMode === 'teams'}
-                  className="flex-1 text-left disabled:opacity-50"
+                <div
+                  className={`${t.bgPrimary} rounded-2xl p-3 border ${selectedItems.includes(team._id) ? 'border-orange-500' : t.border} flex items-center gap-3`}
                 >
-                  <h3 className={`font-black ${t.text}`}>{team.name}</h3>
-                  <p className={`${t.textSecondary} text-sm`}>{team.owner} · {team.format}</p>
-                </button>
-                {selectionMode !== 'teams' && <ChevronRight size={20} className={`flex-shrink-0 ${t.textSecondary}`} />}
-              </div>
-            </SwipeableRow>
-          ))
+                  {selectionMode === 'teams' && (
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(team._id)}
+                      onChange={() =>
+                        setSelectedItems(
+                          selectedItems.includes(team._id)
+                            ? selectedItems.filter(id => id !== team._id)
+                            : [...selectedItems, team._id]
+                        )
+                      }
+                      className="w-5 h-5"
+                    />
+                  )}
+
+                  {/* Miniature 2x2 */}
+                  <div className={`flex-shrink-0 w-16 h-16 rounded-xl ${isDark ? 'bg-gray-700' : 'bg-gray-100'} p-1 grid grid-cols-2 grid-rows-2 gap-0.5`}>
+                    {[0, 1, 2, 3].map((i) => {
+                      const p = thumbSlots[i];
+                      return (
+                        <div key={i} className="flex items-center justify-center overflow-hidden">
+                          {p ? (
+                            <img
+                              src={getPokemonImageUrl(p.pokeId)}
+                              alt={p.name}
+                              className="w-full h-full object-contain"
+                              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                            />
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => !selectionMode && onSelectTeam(team)}
+                    disabled={selectionMode === 'teams'}
+                    className="flex-1 min-w-0 text-left disabled:opacity-50"
+                  >
+                    <h3 className={`font-black ${t.text} truncate`}>{team.name}</h3>
+                    <p className={`${t.textSecondary} text-sm flex items-center gap-2 mt-0.5`}>
+                      <span className="truncate">{team.owner} · {(team.pokemon || []).length} Pokémon</span>
+                      <span className="inline-block bg-orange-500 bg-opacity-20 text-orange-500 px-2 py-0.5 rounded-full font-bold text-xs flex-shrink-0">
+                        {team.format}
+                      </span>
+                    </p>
+                  </button>
+                  {selectionMode !== 'teams' && <ChevronRight size={20} className={`flex-shrink-0 ${t.textSecondary}`} />}
+                </div>
+              </SwipeableRow>
+            );
+          })
         )}
       </div>
 
