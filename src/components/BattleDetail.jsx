@@ -38,12 +38,12 @@ export const BattleDetail = ({
           <span className="inline-block bg-orange-500 bg-opacity-20 text-orange-500 px-3 py-1 rounded-full font-bold text-sm">
             {battle.format}
           </span>
-          <div className="flex justify-between items-center gap-4">
-            <p className={`font-black text-lg ${battle.winner === 'player1' ? 'text-orange-500' : t.text}`}>
+          <div className="flex items-center gap-3">
+            <p className={`flex-1 min-w-0 truncate font-black text-lg ${battle.winner === 'player1' ? 'text-orange-500' : t.text}`}>
               {p1?.name}
             </p>
-            <p className="font-black text-3xl text-orange-500">{p2Elim} - {p1Elim}</p>
-            <p className={`font-black text-lg ${battle.winner === 'player2' ? 'text-orange-500' : t.text}`}>
+            <p className="font-black text-3xl text-orange-500 whitespace-nowrap">{p2Elim} - {p1Elim}</p>
+            <p className={`flex-1 min-w-0 truncate text-right font-black text-lg ${battle.winner === 'player2' ? 'text-orange-500' : t.text}`}>
               {p2?.name}
             </p>
           </div>

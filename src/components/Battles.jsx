@@ -355,12 +355,12 @@ export const Battles = ({
                       {b.format}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center gap-4 mb-4">
-                    <p className={`font-black text-lg ${b.winner === 'player1' ? 'text-orange-500' : t.text}`}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <p className={`flex-1 min-w-0 truncate font-black text-lg ${b.winner === 'player1' ? 'text-orange-500' : t.text}`}>
                       {p1?.name}
                     </p>
-                    <p className="font-black text-3xl text-orange-500">{p2Elim} - {p1Elim}</p>
-                    <p className={`font-black text-lg ${b.winner === 'player2' ? 'text-orange-500' : t.text}`}>
+                    <p className="font-black text-3xl text-orange-500 whitespace-nowrap">{p2Elim} - {p1Elim}</p>
+                    <p className={`flex-1 min-w-0 truncate text-right font-black text-lg ${b.winner === 'player2' ? 'text-orange-500' : t.text}`}>
                       {p2?.name}
                     </p>
                   </div>
@@ -546,14 +546,14 @@ export const Battles = ({
                 {(newBattleData.player1 || newBattleData.player2) && (
                   <div className={`rounded-xl border ${t.border} p-4 space-y-3`}>
                     <p className={`text-xs font-bold uppercase ${t.textSecondary}`}>Score</p>
-                    <div className="flex justify-between items-center gap-4">
-                      <p className={`font-black text-base ${newBattleData.winner === 'player1' ? 'text-orange-500' : t.text} truncate`}>
+                    <div className="flex items-center gap-3">
+                      <p className={`flex-1 min-w-0 truncate font-black text-base ${newBattleData.winner === 'player1' ? 'text-orange-500' : t.text}`}>
                         {players.find((p) => p._id === newBattleData.player1)?.name || 'Joueur 1'}
                       </p>
                       <p className="font-black text-3xl text-orange-500 whitespace-nowrap">
                         {p1Score} - {p2Score}
                       </p>
-                      <p className={`font-black text-base ${newBattleData.winner === 'player2' ? 'text-orange-500' : t.text} truncate text-right`}>
+                      <p className={`flex-1 min-w-0 truncate text-right font-black text-base ${newBattleData.winner === 'player2' ? 'text-orange-500' : t.text}`}>
                         {players.find((p) => p._id === newBattleData.player2)?.name || 'Joueur 2'}
                       </p>
                     </div>
