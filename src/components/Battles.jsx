@@ -510,7 +510,9 @@ export const Battles = ({
                       onClick={() => setNewBattleData({ ...newBattleData, format: fmt })}
                       className={`flex-1 py-2 rounded-lg font-semibold text-sm transition ${
                         newBattleData.format === fmt
-                          ? `${t.surface} ${t.text} shadow-sm`
+                          ? isDark
+                            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                            : `${t.surface} ${t.text} shadow-sm`
                           : t.textSecondary
                       }`}
                     >

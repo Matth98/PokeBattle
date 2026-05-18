@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   AlertTriangle,
+  Boxes,
   Camera,
   ChevronLeft,
   ChevronRight,
@@ -8,6 +9,7 @@ import {
   Pencil,
   Plus,
   Shield,
+  SlidersHorizontal,
   Sparkles,
   Swords,
   Target,
@@ -213,7 +215,7 @@ export const PlayerDetail = ({
   const countPokemon = (items) =>
     items.reduce((acc, pokemon) => {
       if (!pokemon?.pokeId) return acc;
-      const current = acc.get(pokemon.pokeId) || { name: pokemon.name, count: 0 };
+      const current = acc.get(pokemon.pokeId) || { pokeId: pokemon.pokeId, name: pokemon.name, count: 0 };
       acc.set(pokemon.pokeId, { ...current, name: pokemon.name || current.name, count: current.count + 1 });
       return acc;
     }, new Map());
@@ -234,6 +236,27 @@ export const PlayerDetail = ({
   const biggestTeam = [...playerTeams].sort((a, b) => (b.pokemon?.length || 0) - (a.pokemon?.length || 0))[0];
   const rosterSize = player.pokemon?.length || 0;
   const teamPokemonCount = playerTeams.reduce((sum, team) => sum + (team.pokemon?.length || 0), 0);
+  const uniqueBattlePokemonCount = countPokemon(playerBattlePokemon).size;
+  const opponentEliminatedCount = playerBattles.reduce((sum, battle) => {
+    const opponentTeam = battle.player1 === player._id ? battle.team2 || [] : battle.team1 || [];
+    return sum + opponentTeam.filter((p) => p.eliminated).length;
+  }, 0);
+  const playerEliminatedCount = playerBattles.reduce((sum, battle) => {
+    const playerTeam = battle.player1 === player._id ? battle.team1 || [] : battle.team2 || [];
+    return sum + playerTeam.filter((p) => p.eliminated).length;
+  }, 0);
+  const perfectWins = playerBattles.filter((battle) => {
+    const isWinner = (battle.player1 === player._id && battle.winner === 'player1') || (battle.player2 === player._id && battle.winner === 'player2');
+    if (!isWinner) return false;
+    const playerTeam = battle.player1 === player._id ? battle.team1 || [] : battle.team2 || [];
+    return playerTeam.length > 0 && playerTeam.every((p) => !p.eliminated);
+  }).length;
+  const formatCounts = playerBattles.reduce((acc, battle) => {
+    const format = battle.format || 'Format ?';
+    acc.set(format, (acc.get(format) || 0) + 1);
+    return acc;
+  }, new Map());
+  const favoriteFormat = [...formatCounts.entries()].sort((a, b) => b[1] - a[1])[0];
   const funFacts = [
     {
       Icon: Flame,
@@ -241,6 +264,7 @@ export const PlayerDetail = ({
       value: mostUsedPokemon ? mostUsedPokemon.name : 'Pas encore',
       detail: mostUsedPokemon ? `${mostUsedPokemon.count} combat${mostUsedPokemon.count > 1 ? 's' : ''}` : 'Ajoute un combat pour le révéler',
       tile: t.iconTileAmber,
+      visual: mostUsedPokemon ? { type: 'pokemon', pokemon: mostUsedPokemon } : null,
     },
     {
       Icon: Target,
@@ -248,6 +272,7 @@ export const PlayerDetail = ({
       value: mostFacedPokemon ? mostFacedPokemon.name : 'Pas encore',
       detail: mostFacedPokemon ? `${mostFacedPokemon.count} face-à-face` : 'Aucun adversaire enregistré',
       tile: t.iconTileRed,
+      visual: mostFacedPokemon ? { type: 'pokemon', pokemon: mostFacedPokemon } : null,
     },
     {
       Icon: Sparkles,
@@ -255,6 +280,7 @@ export const PlayerDetail = ({
       value: biggestTeam ? biggestTeam.name : 'Pas encore',
       detail: biggestTeam ? `${biggestTeam.format} · ${biggestTeam.pokemon?.length || 0} Pokémon` : 'Crée une équipe pour compléter la fiche',
       tile: t.iconTilePurple,
+      visual: biggestTeam ? { type: 'team', team: biggestTeam } : null,
     },
     {
       Icon: Swords,
@@ -271,17 +297,45 @@ export const PlayerDetail = ({
       tile: t.iconTileIndigo,
     },
     {
-      Icon: Trophy,
+      Icon: Boxes,
       label: 'Collection',
       value: `${rosterSize}`,
       detail: `Pokémon dans le roster`,
       tile: t.iconTileEmerald,
     },
+    {
+      Icon: Zap,
+      label: 'KO infligés',
+      value: `${opponentEliminatedCount}`,
+      detail: `${playerEliminatedCount} Pokémon perdus`,
+      tile: t.iconTileRed,
+    },
+    {
+      Icon: Trophy,
+      label: 'Victoires parfaites',
+      value: `${perfectWins}`,
+      detail: 'Sans Pokémon éliminé',
+      tile: t.iconTileEmerald,
+    },
+    {
+      Icon: Target,
+      label: 'Pokémon joués',
+      value: `${uniqueBattlePokemonCount}`,
+      detail: 'Espèces vues en combat',
+      tile: t.iconTileAmber,
+    },
+    {
+      Icon: SlidersHorizontal,
+      label: 'Format favori',
+      value: favoriteFormat ? favoriteFormat[0] : 'Pas encore',
+      detail: favoriteFormat ? `${favoriteFormat[1]} combat${favoriteFormat[1] > 1 ? 's' : ''}` : 'Aucun combat enregistré',
+      tile: t.iconTileIndigo,
+    },
   ];
   const tabs = [
-    { id: 'pokemon', label: 'Pokémon', count: rosterSize },
-    { id: 'teams', label: 'Équipes', count: playerTeams.length },
-    { id: 'facts', label: 'Fun facts', count: funFacts.length },
+    { id: 'pokemon', label: 'Pokémon' },
+    { id: 'teams', label: 'Équipes' },
+    { id: 'facts', label: 'Fun facts' },
   ];
 
   return (
@@ -370,11 +424,14 @@ export const PlayerDetail = ({
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`py-2.5 rounded-xl text-sm font-bold transition ${
-                activeTab === tab.id ? `${t.surface} ${t.text} shadow-sm` : t.textSecondary
+                activeTab === tab.id
+                  ? isDark
+                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                    : `${t.surface} ${t.text} shadow-sm`
+                  : t.textSecondary
               }`}
             >
               <span className="block truncate">{tab.label}</span>
-              <span className="block text-[11px] leading-tight opacity-70">{tab.count}</span>
             </button>
           ))}
         </div>
@@ -510,15 +567,53 @@ export const PlayerDetail = ({
 
         {activeTab === 'facts' && (
           <section>
-            <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-3 px-1`}>
-              Fun facts
-            </h2>
+            <div className="flex justify-between items-baseline mb-3 px-1">
+              <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
+                Fun facts
+              </h2>
+              <span
+                className={`${t.accent} text-sm font-semibold flex items-center gap-1 invisible pointer-events-none select-none`}
+                aria-hidden="true"
+              >
+                <Plus size={16} />
+                Créer
+              </span>
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              {funFacts.map(({ Icon, label, value, detail, tile }) => (
-                <div key={label} className={`${t.surface} rounded-2xl p-4 min-h-[132px] flex flex-col`}>
-                  <div className={`w-9 h-9 rounded-xl ${tile} flex items-center justify-center mb-3`}>
-                    <Icon size={17} />
-                  </div>
+              {funFacts.map(({ Icon, label, value, detail, tile, visual }) => (
+                <div key={label} className={`${t.surface} rounded-2xl p-4 min-h-[146px] flex flex-col overflow-hidden`}>
+                  {visual?.type === 'pokemon' ? (
+                    <div className={`w-12 h-12 rounded-2xl ${tile} flex items-center justify-center mb-3`}>
+                      <img
+                        src={getPokemonImageUrl(visual.pokemon.pokeId)}
+                        alt={visual.pokemon.name}
+                        className="w-11 h-11 object-contain"
+                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                      />
+                    </div>
+                  ) : visual?.type === 'team' ? (
+                    <div className={`w-14 h-14 rounded-2xl ${t.surfaceMuted} p-1 grid grid-cols-2 grid-rows-2 gap-0.5 mb-3`}>
+                      {[0, 1, 2, 3].map((slot) => {
+                        const pokemon = (visual.team.pokemon || [])[slot];
+                        return (
+                          <div key={slot} className="flex items-center justify-center overflow-hidden">
+                            {pokemon && (
+                              <img
+                                src={getPokemonImageUrl(pokemon.pokeId)}
+                                alt={pokemon.name}
+                                className="w-full h-full object-contain"
+                                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className={`w-9 h-9 rounded-xl ${tile} flex items-center justify-center mb-3`}>
+                      <Icon size={17} />
+                    </div>
+                  )}
                   <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>{label}</p>
                   <p className={`font-black ${t.text} truncate mt-1`}>{value}</p>
                   <p className={`${t.textSecondary} text-xs font-semibold mt-auto pt-2 leading-snug`}>
@@ -686,7 +781,9 @@ export const PlayerDetail = ({
                         }}
                         className={`flex-1 py-2 rounded-lg font-semibold text-sm transition ${
                           newTeamData.format === fmt
-                            ? `${t.surface} ${t.text} shadow-sm`
+                            ? isDark
+                              ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                              : `${t.surface} ${t.text} shadow-sm`
                             : t.textSecondary
                         }`}
                       >

@@ -362,6 +362,12 @@ function App() {
         setCurrentTab={setCurrentTab}
         isDark={isDark}
         t={t}
+        onCreateBattle={() => {
+          setSelectedBattle(null);
+          setBattleEditOrigin(null);
+          setCurrentTab('battles');
+          setShowNewBattleForm(true);
+        }}
       />
     </div>
   );

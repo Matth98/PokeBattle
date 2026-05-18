@@ -1,14 +1,14 @@
 import React from 'react';
-import { Home, Users, Zap, Shield } from 'lucide-react';
+import { Home, Plus, Shield, Swords, Users } from 'lucide-react';
 
 const TABS = [
   { id: 'home', label: 'Accueil', Icon: Home },
   { id: 'players', label: 'Joueurs', Icon: Users },
+  { id: 'battles', label: 'Combats', Icon: Swords },
   { id: 'teams', label: 'Équipes', Icon: Shield },
-  { id: 'battles', label: 'Combats', Icon: Zap },
 ];
 
-export const Navigation = ({ currentTab, setCurrentTab, isDark, t }) => {
+export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle }) => {
   // On considère qu'on est dans une "section" même quand on est dans la fiche détail
   const activeFor = (tab) => {
     if (currentTab === tab) return true;
@@ -20,11 +20,48 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t }) => {
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 ${t.surfaceBlur} border-t ${t.divider}`}
+      className={`fixed bottom-0 left-0 right-0 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)]`}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="flex justify-around px-2 pt-2 pb-2">
-        {TABS.map(({ id, label, Icon }) => {
+      <div className="grid grid-cols-5 items-end px-3 pt-2 pb-2">
+        {TABS.slice(0, 2).map(({ id, label, Icon }) => {
+          const isActive = activeFor(id);
+          return (
+            <button
+              key={id}
+              onClick={() => setCurrentTab(id)}
+              className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
+                isActive ? t.accent : t.textTertiary
+              }`}
+              aria-pressed={isActive}
+              aria-label={label}
+            >
+              <Icon
+                size={24}
+                strokeWidth={isActive ? 2.4 : 1.8}
+                aria-hidden="true"
+              />
+              <span
+                className={`text-[10px] tracking-wide ${isActive ? 'font-semibold' : 'font-medium'}`}
+              >
+              {label}
+              </span>
+            </button>
+          );
+        })}
+        <button
+          onClick={onCreateBattle}
+          className="relative -mt-9 mx-auto flex flex-col items-center justify-end gap-1 text-amber-500"
+          aria-label="Créer un combat"
+        >
+          <span className="w-20 h-20 rounded-[1.7rem] bg-amber-500 text-white flex items-center justify-center shadow-xl shadow-amber-500/30 active:scale-95 transition">
+            <Plus size={38} strokeWidth={2.4} aria-hidden="true" />
+          </span>
+          <span className="text-xs tracking-wide font-bold">
+            Combat
+          </span>
+        </button>
+        {TABS.slice(2).map(({ id, label, Icon }) => {
           const isActive = activeFor(id);
           return (
             <button
