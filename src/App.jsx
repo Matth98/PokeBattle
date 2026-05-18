@@ -238,6 +238,7 @@ function App() {
         <PlayerDetail
           player={selectedPlayer}
           teams={teams}
+          battles={battles}
           t={t}
           isDark={isDark}
           onBack={() => {
@@ -245,7 +246,12 @@ function App() {
             setCurrentTab('players');
           }}
           onUpdate={handleUpdatePlayer}
+          onAddTeam={handleAddTeam}
           onUpdateTeam={handleUpdateTeam}
+          onSelectTeam={(team) => {
+            setSelectedTeam(team);
+            setCurrentTab('teamDetail');
+          }}
         />
       )}
 

@@ -1,5 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { ChevronLeft, Plus, Trophy, Zap, AlertTriangle, Camera } from 'lucide-react';
+import {
+  AlertTriangle,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  Flame,
+  Pencil,
+  Plus,
+  Shield,
+  Sparkles,
+  Swords,
+  Target,
+  Trophy,
+  Zap,
+} from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
@@ -9,16 +23,28 @@ import { resizeImageToDataUrl } from '../utils/imageResize';
 export const PlayerDetail = ({
   player,
   teams = [],
+  battles = [],
   t,
   onBack,
   onUpdate,
+  onAddTeam,
   onUpdateTeam,
+  onSelectTeam,
   isDark,
 }) => {
   const [addingPokemon, setAddingPokemon] = useState(false);
+  const [activeTab, setActiveTab] = useState('pokemon');
+  const [editingPlayer, setEditingPlayer] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editAvatar, setEditAvatar] = useState(null);
+  const [creatingTeam, setCreatingTeam] = useState(false);
+  const [pickingTeamPokemon, setPickingTeamPokemon] = useState(false);
+  const [teamFormErrors, setTeamFormErrors] = useState({ name: false, pokemon: false });
+  const [newTeamData, setNewTeamData] = useState({ name: '', format: '1v1', pokemon: [] });
   const { getPokemonImageUrl } = usePokemon();
   const [deletingPokemon, setDeletingPokemon] = useState(null);
   const fileInputRef = useRef(null);
+  const editFileInputRef = useRef(null);
 
   const handleAvatarPick = async (e) => {
     const file = e.target.files?.[0];
@@ -31,6 +57,106 @@ export const PlayerDetail = ({
     } finally {
       e.target.value = '';
     }
+  };
+
+  const openEditPlayer = () => {
+    setEditName(player.name || '');
+    setEditAvatar(player.avatar || null);
+    setEditingPlayer(true);
+  };
+
+  const handleEditAvatarPick = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await resizeImageToDataUrl(file);
+      setEditAvatar(dataUrl);
+    } catch (err) {
+      alert('Image invalide : ' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  const handleSavePlayer = async () => {
+    const name = editName.trim();
+    if (!name) return;
+    await onUpdate(player._id, { ...player, name, avatar: editAvatar });
+    setEditingPlayer(false);
+  };
+
+  const requiredPokemonForFormat = (format) => (format === '1v1' ? 3 : 4);
+
+  const resetTeamForm = () => {
+    setNewTeamData({ name: '', format: '1v1', pokemon: [] });
+    setTeamFormErrors({ name: false, pokemon: false });
+  };
+
+  const openCreateTeam = () => {
+    resetTeamForm();
+    setCreatingTeam(true);
+  };
+
+  const handleSelectTeamPokemon = (pokemon) => {
+    setNewTeamData((prev) => {
+      if (prev.pokemon.length >= requiredPokemonForFormat(prev.format)) return prev;
+      return {
+        ...prev,
+        pokemon: [
+          ...prev.pokemon,
+          {
+            id: `${Date.now()}-${pokemon.pokeId}`,
+            pokeId: pokemon.pokeId,
+            name: pokemon.name,
+          },
+        ],
+      };
+    });
+    setPickingTeamPokemon(false);
+  };
+
+  const handleRemoveTeamPokemon = (id) => {
+    setNewTeamData((prev) => ({
+      ...prev,
+      pokemon: prev.pokemon.filter((p) => p.id !== id),
+    }));
+  };
+
+  const handleSaveTeam = async () => {
+    const required = requiredPokemonForFormat(newTeamData.format);
+    const errors = {
+      name: !newTeamData.name.trim(),
+      pokemon: newTeamData.pokemon.length !== required,
+    };
+    setTeamFormErrors(errors);
+    if (errors.name || errors.pokemon || !onAddTeam) return;
+
+    const payload = {
+      ...newTeamData,
+      name: newTeamData.name.trim(),
+      ownerId: player._id,
+      owner: player.name,
+    };
+    const existingIds = new Set((player.pokemon || []).map((p) => p.pokeId));
+    const pokemonToAdd = newTeamData.pokemon
+      .filter((p) => !existingIds.has(p.pokeId))
+      .map((p) => ({
+        id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
+        pokeId: p.pokeId,
+        name: p.name,
+        level: 50,
+      }));
+
+    await onAddTeam(payload);
+    if (pokemonToAdd.length > 0) {
+      await onUpdate(player._id, {
+        ...player,
+        pokemon: [...(player.pokemon || []), ...pokemonToAdd],
+      });
+    }
+    resetTeamForm();
+    setCreatingTeam(false);
+    setActiveTab('teams');
   };
 
   const handleAddPokemon = async (pokemon) => {
@@ -81,6 +207,82 @@ export const PlayerDetail = ({
   const losses = player.stats?.losses || 0;
   const total = wins + losses;
   const winRate = total > 0 ? Math.round((wins / total) * 100) : null;
+  const playerTeams = teams.filter((team) => team.ownerId === player._id);
+  const playerBattles = battles.filter((battle) => battle.player1 === player._id || battle.player2 === player._id);
+
+  const countPokemon = (items) =>
+    items.reduce((acc, pokemon) => {
+      if (!pokemon?.pokeId) return acc;
+      const current = acc.get(pokemon.pokeId) || { name: pokemon.name, count: 0 };
+      acc.set(pokemon.pokeId, { ...current, name: pokemon.name || current.name, count: current.count + 1 });
+      return acc;
+    }, new Map());
+
+  const topPokemon = (items) => {
+    const ranked = [...countPokemon(items).values()].sort((a, b) => b.count - a.count);
+    return ranked[0] || null;
+  };
+
+  const playerBattlePokemon = playerBattles.flatMap((battle) =>
+    battle.player1 === player._id ? battle.team1 || [] : battle.team2 || []
+  );
+  const opponentBattlePokemon = playerBattles.flatMap((battle) =>
+    battle.player1 === player._id ? battle.team2 || [] : battle.team1 || []
+  );
+  const mostUsedPokemon = topPokemon(playerBattlePokemon);
+  const mostFacedPokemon = topPokemon(opponentBattlePokemon);
+  const biggestTeam = [...playerTeams].sort((a, b) => (b.pokemon?.length || 0) - (a.pokemon?.length || 0))[0];
+  const rosterSize = player.pokemon?.length || 0;
+  const teamPokemonCount = playerTeams.reduce((sum, team) => sum + (team.pokemon?.length || 0), 0);
+  const funFacts = [
+    {
+      Icon: Flame,
+      label: 'Plus utilisé',
+      value: mostUsedPokemon ? mostUsedPokemon.name : 'Pas encore',
+      detail: mostUsedPokemon ? `${mostUsedPokemon.count} combat${mostUsedPokemon.count > 1 ? 's' : ''}` : 'Ajoute un combat pour le révéler',
+      tile: t.iconTileAmber,
+    },
+    {
+      Icon: Target,
+      label: 'Plus combattu',
+      value: mostFacedPokemon ? mostFacedPokemon.name : 'Pas encore',
+      detail: mostFacedPokemon ? `${mostFacedPokemon.count} face-à-face` : 'Aucun adversaire enregistré',
+      tile: t.iconTileRed,
+    },
+    {
+      Icon: Sparkles,
+      label: 'Équipe signature',
+      value: biggestTeam ? biggestTeam.name : 'Pas encore',
+      detail: biggestTeam ? `${biggestTeam.format} · ${biggestTeam.pokemon?.length || 0} Pokémon` : 'Crée une équipe pour compléter la fiche',
+      tile: t.iconTilePurple,
+    },
+    {
+      Icon: Swords,
+      label: 'Combats joués',
+      value: `${playerBattles.length}`,
+      detail: `${wins}V · ${losses}D`,
+      tile: t.iconTileBlue,
+    },
+    {
+      Icon: Shield,
+      label: 'Équipes créées',
+      value: `${playerTeams.length}`,
+      detail: `${teamPokemonCount} Pokémon alignés`,
+      tile: t.iconTileIndigo,
+    },
+    {
+      Icon: Trophy,
+      label: 'Collection',
+      value: `${rosterSize}`,
+      detail: `Pokémon dans le roster`,
+      tile: t.iconTileEmerald,
+    },
+  ];
+  const tabs = [
+    { id: 'pokemon', label: 'Pokémon', count: rosterSize },
+    { id: 'teams', label: 'Équipes', count: playerTeams.length },
+    { id: 'facts', label: 'Fun facts', count: funFacts.length },
+  ];
 
   return (
     <div className={`min-h-screen ${t.pageBg}`}>
@@ -97,6 +299,13 @@ export const PlayerDetail = ({
           >
             <ChevronLeft size={22} />
             <span className="text-base">Joueurs</span>
+          </button>
+          <button
+            onClick={openEditPlayer}
+            className={`flex items-center gap-1 ${t.accent} font-semibold`}
+          >
+            <Pencil size={16} />
+            <span className="text-base">Modifier</span>
           </button>
         </div>
       </div>
@@ -126,14 +335,6 @@ export const PlayerDetail = ({
             {total} combat{total > 1 ? 's' : ''}
             {winRate !== null && ` · ${winRate}% de victoires`}
           </p>
-          {player.avatar && (
-            <button
-              onClick={() => onUpdate(player._id, { ...player, avatar: null })}
-              className={`mt-2 ${t.danger} text-xs font-semibold`}
-            >
-              Retirer la photo
-            </button>
-          )}
         </div>
 
         {/* ── Tuiles stats ── */}
@@ -163,55 +364,171 @@ export const PlayerDetail = ({
           </div>
         </div>
 
-        {/* ── Pokémon ── */}
-        <section>
-          <div className="flex justify-between items-baseline mb-3 px-1">
-            <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
-              Pokémon ({player.pokemon?.length || 0})
-            </h2>
+        <div className={`grid grid-cols-3 gap-1 p-1 rounded-2xl ${t.surfaceMuted}`}>
+          {tabs.map((tab) => (
             <button
-              onClick={() => setAddingPokemon(true)}
-              className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-2.5 rounded-xl text-sm font-bold transition ${
+                activeTab === tab.id ? `${t.surface} ${t.text} shadow-sm` : t.textSecondary
+              }`}
             >
-              <Plus size={16} />
-              Ajouter
+              <span className="block truncate">{tab.label}</span>
+              <span className="block text-[11px] leading-tight opacity-70">{tab.count}</span>
             </button>
-          </div>
+          ))}
+        </div>
 
-          {!player.pokemon || player.pokemon.length === 0 ? (
-            <div className={`${t.surface} rounded-2xl p-8 text-center`}>
-              <p className={`${t.textSecondary} text-sm`}>Aucun Pokémon</p>
+        {activeTab === 'pokemon' && (
+          <section>
+            <div className="flex justify-between items-baseline mb-3 px-1">
+              <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
+                Pokémon ({rosterSize})
+              </h2>
+              <button
+                onClick={() => setAddingPokemon(true)}
+                className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
+              >
+                <Plus size={16} />
+                Ajouter
+              </button>
             </div>
-          ) : (
-            <div className={`${t.surface} rounded-2xl overflow-hidden`}>
-              {player.pokemon.map((p, idx) => {
-                const isLast = idx === player.pokemon.length - 1;
-                return (
-                  <SwipeableRow
-                    key={p.id}
-                    onDelete={() => setDeletingPokemon(p.id)}
-                    surfaceClass={t.surface}
-                    className={!isLast ? `border-b ${t.divider}` : ''}
-                  >
-                    <div className={`flex items-center gap-3 px-4 py-3 ${t.surface}`}>
-                      <img
-                        src={getPokemonImageUrl(p.pokeId)}
-                        alt={p.name}
-                        className="w-11 h-11 object-contain flex-shrink-0"
-                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-semibold ${t.text} truncate`}>{p.name}</p>
-                        <p className={`${t.textSecondary} text-xs mt-0.5`}>Niveau {p.level}</p>
+
+            {!player.pokemon || player.pokemon.length === 0 ? (
+              <div className={`${t.surface} rounded-2xl p-8 text-center`}>
+                <p className={`${t.textSecondary} text-sm`}>Aucun Pokémon</p>
+              </div>
+            ) : (
+              <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+                {player.pokemon.map((p, idx) => {
+                  const isLast = idx === player.pokemon.length - 1;
+                  return (
+                    <SwipeableRow
+                      key={p.id}
+                      onDelete={() => setDeletingPokemon(p.id)}
+                      surfaceClass={t.surface}
+                      className={!isLast ? `border-b ${t.divider}` : ''}
+                    >
+                      <div className={`flex items-center gap-3 px-4 py-3 ${t.surface}`}>
+                        <img
+                          src={getPokemonImageUrl(p.pokeId)}
+                          alt={p.name}
+                          className="w-11 h-11 object-contain flex-shrink-0"
+                          onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-semibold ${t.text} truncate`}>{p.name}</p>
+                          <p className={`${t.textSecondary} text-xs mt-0.5`}>Niveau {p.level}</p>
+                        </div>
+                        <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
                       </div>
-                      <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
-                    </div>
-                  </SwipeableRow>
-                );
-              })}
+                    </SwipeableRow>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {activeTab === 'teams' && (
+          <section>
+            <div className="flex justify-between items-baseline mb-3 px-1">
+              <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
+                Équipes ({playerTeams.length})
+              </h2>
+              {onAddTeam && (
+                <button
+                  onClick={openCreateTeam}
+                  className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
+                >
+                  <Plus size={16} />
+                  Créer
+                </button>
+              )}
             </div>
-          )}
-        </section>
+            {playerTeams.length === 0 ? (
+              <div className={`${t.surface} rounded-2xl p-8 text-center`}>
+                <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-3`}>
+                  <Shield size={22} />
+                </div>
+                <p className={`${t.textSecondary} text-sm`}>Aucune équipe</p>
+              </div>
+            ) : (
+              <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+                {playerTeams.map((team, idx) => {
+                  const isLast = idx === playerTeams.length - 1;
+                  const rowContent = (
+                    <>
+                      <div className={`w-12 h-12 rounded-2xl ${t.surfaceMuted} p-1 grid grid-cols-2 grid-rows-2 gap-0.5 flex-shrink-0`}>
+                        {[0, 1, 2, 3].map((slot) => {
+                          const pokemon = (team.pokemon || [])[slot];
+                          return (
+                            <div key={slot} className="flex items-center justify-center overflow-hidden">
+                              {pokemon && (
+                                <img
+                                  src={getPokemonImageUrl(pokemon.pokeId)}
+                                  alt={pokemon.name}
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
+                        <p className={`${t.textSecondary} text-xs mt-0.5`}>
+                          {team.format} · {(team.pokemon || []).length} Pokémon
+                        </p>
+                      </div>
+                      {onSelectTeam ? <ChevronRight size={18} className={t.textTertiary} /> : null}
+                    </>
+                  );
+
+                  return onSelectTeam ? (
+                    <button
+                      key={team._id}
+                      onClick={() => onSelectTeam(team)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''} text-left active:bg-black/5 dark:active:bg-white/5`}
+                    >
+                      {rowContent}
+                    </button>
+                  ) : (
+                    <div
+                      key={team._id}
+                      className={`flex items-center gap-3 px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''}`}
+                    >
+                      {rowContent}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {activeTab === 'facts' && (
+          <section>
+            <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-3 px-1`}>
+              Fun facts
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {funFacts.map(({ Icon, label, value, detail, tile }) => (
+                <div key={label} className={`${t.surface} rounded-2xl p-4 min-h-[132px] flex flex-col`}>
+                  <div className={`w-9 h-9 rounded-xl ${tile} flex items-center justify-center mb-3`}>
+                    <Icon size={17} />
+                  </div>
+                  <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>{label}</p>
+                  <p className={`font-black ${t.text} truncate mt-1`}>{value}</p>
+                  <p className={`${t.textSecondary} text-xs font-semibold mt-auto pt-2 leading-snug`}>
+                    {detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* ── Modal Ajouter Pokémon ── */}
@@ -223,6 +540,236 @@ export const PlayerDetail = ({
           alreadyPickedIds={(player.pokemon || []).map((p) => p.pokeId)}
           onSelect={handleAddPokemon}
           onClose={() => setAddingPokemon(false)}
+        />
+      )}
+
+      {/* ── Modal Modifier joueur ── */}
+      {editingPlayer && (
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
+          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+            <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
+              <button
+                onClick={() => setEditingPlayer(false)}
+                className={`${t.accent} font-semibold`}
+              >
+                Annuler
+              </button>
+              <h2 className={`text-base font-black ${t.text}`}>Modifier le joueur</h2>
+              <button
+                onClick={handleSavePlayer}
+                disabled={!editName.trim()}
+                className={`${t.accent} font-bold ${!editName.trim() ? 'opacity-40' : ''}`}
+              >
+                OK
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-8 space-y-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={() => editFileInputRef.current?.click()}
+                  className="relative"
+                  aria-label="Changer la photo"
+                >
+                  <PlayerAvatar
+                    player={{ name: editName, avatar: editAvatar }}
+                    size={104}
+                    textSize="text-4xl"
+                  />
+                  <div className={`absolute bottom-0 right-0 w-9 h-9 rounded-full ${t.accentBg} text-white flex items-center justify-center border-4 ${isDark ? 'border-black' : 'border-gray-50'}`}>
+                    <Camera size={16} />
+                  </div>
+                </button>
+                <input
+                  ref={editFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleEditAvatarPick}
+                  className="hidden"
+                />
+                {editAvatar && (
+                  <button
+                    onClick={() => setEditAvatar(null)}
+                    className={`mt-2 ${t.danger} text-xs font-semibold`}
+                  >
+                    Retirer la photo
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                  Nom du joueur
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Matthias"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
+                  autoFocus
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Créer équipe ── */}
+      {creatingTeam && (() => {
+        const required = requiredPokemonForFormat(newTeamData.format);
+        const currentCount = newTeamData.pokemon.length;
+        const isAtMax = currentCount >= required;
+
+        return (
+          <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
+            <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+              <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
+                <button
+                  onClick={() => {
+                    setCreatingTeam(false);
+                    resetTeamForm();
+                  }}
+                  className={`${t.accent} font-semibold`}
+                >
+                  Annuler
+                </button>
+                <h2 className={`text-base font-black ${t.text}`}>Nouvelle équipe</h2>
+                <button
+                  onClick={handleSaveTeam}
+                  className={`${t.accent} font-bold`}
+                >
+                  Créer
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+                <div>
+                  <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                    Nom de l'équipe
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Équipe de feu"
+                    value={newTeamData.name}
+                    onChange={(e) => setNewTeamData({ ...newTeamData, name: e.target.value })}
+                    className={`w-full ${t.inputSoft} ${teamFormErrors.name ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
+                    autoFocus
+                  />
+                  {teamFormErrors.name && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>Ce champ est requis</p>}
+                </div>
+
+                <div>
+                  <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                    Propriétaire
+                  </label>
+                  <div className={`${t.inputSoft} rounded-xl px-4 py-3 font-semibold ${t.text}`}>
+                    {player.name}
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                    Format
+                  </label>
+                  <div className={`flex gap-1 p-1 rounded-xl ${t.surfaceMuted}`}>
+                    {['1v1', '2v2'].map((fmt) => (
+                      <button
+                        key={fmt}
+                        onClick={() => {
+                          const max = requiredPokemonForFormat(fmt);
+                          setNewTeamData({
+                            ...newTeamData,
+                            format: fmt,
+                            pokemon: newTeamData.pokemon.slice(0, max),
+                          });
+                        }}
+                        className={`flex-1 py-2 rounded-lg font-semibold text-sm transition ${
+                          newTeamData.format === fmt
+                            ? `${t.surface} ${t.text} shadow-sm`
+                            : t.textSecondary
+                        }`}
+                      >
+                        {fmt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} ml-1`}>
+                      Pokémon (
+                      <span className={currentCount === required ? t.success : t.warning}>
+                        {currentCount}/{required}
+                      </span>
+                      )
+                    </label>
+                    <button
+                      onClick={() => setPickingTeamPokemon(true)}
+                      disabled={isAtMax}
+                      className={`${t.accent} text-sm font-semibold flex items-center gap-1 ${isAtMax ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    >
+                      <Plus size={16} />
+                      Ajouter
+                    </button>
+                  </div>
+
+                  {newTeamData.pokemon.length === 0 ? (
+                    <div className={`${t.surface} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
+                      Aucun Pokémon sélectionné
+                    </div>
+                  ) : (
+                    <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+                      {newTeamData.pokemon.map((p, idx) => {
+                        const isLast = idx === newTeamData.pokemon.length - 1;
+                        return (
+                          <SwipeableRow
+                            key={p.id}
+                            onDelete={() => handleRemoveTeamPokemon(p.id)}
+                            surfaceClass={t.surface}
+                            className={!isLast ? `border-b ${t.divider}` : ''}
+                          >
+                            <div className={`flex items-center gap-3 px-4 py-2.5 ${t.surface}`}>
+                              <img
+                                src={getPokemonImageUrl(p.pokeId)}
+                                alt={p.name}
+                                className="w-10 h-10 object-contain flex-shrink-0"
+                                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                              />
+                              <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</span>
+                              <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
+                            </div>
+                          </SwipeableRow>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {teamFormErrors.pokemon && currentCount !== required && (
+                    <p className={`${t.danger} text-xs mt-2 ml-1`}>
+                      {currentCount < required
+                        ? `Il manque ${required - currentCount} Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`
+                        : `Trop de Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {pickingTeamPokemon && (
+        <PokemonPicker
+          t={t}
+          isDark={isDark}
+          title="Choisir un Pokémon"
+          alreadyPickedIds={newTeamData.pokemon.map((p) => p.pokeId)}
+          defaultResults={(player.pokemon || []).map((p) => ({ pokeId: p.pokeId, name: p.name }))}
+          defaultLabel={`Pokémon de ${player.name}`}
+          onSelect={handleSelectTeamPokemon}
+          onClose={() => setPickingTeamPokemon(false)}
         />
       )}
 
