@@ -15,7 +15,7 @@ const StatTile = ({ Icon, value, label, tile, t }) => (
 );
 
 export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle }) => {
-  const recentBattles = sortBattlesDesc(battles).slice(0, 5);
+  const recentBattles = sortBattlesDesc(battles).slice(0, 3);
   const groupedRecentBattles = groupBattlesByDate(recentBattles);
   const { getPokemonImageUrl } = usePokemon();
   const [collapsedGroups, setCollapsedGroups] = useState(new Set());
@@ -67,7 +67,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
               Combats récents
             </h2>
-            {battles.length > 5 && (
+            {battles.length > 3 && (
               <button
                 onClick={() => setCurrentTab('battles')}
                 className={`${t.accent} text-sm font-semibold flex items-center gap-0.5`}
@@ -93,7 +93,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   <div key={group.date} className={`${t.surface} rounded-2xl overflow-hidden`}>
                     <button
                       onClick={() => toggleGroup(group.date)}
-                      className={`w-full flex items-center justify-between gap-2 px-4 py-2 ${t.surfaceMuted} active:opacity-80`}
+                      className={`w-full flex items-center justify-between gap-2 px-4 py-3 ${t.surfaceMuted} active:opacity-80`}
                     >
                       <span className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${t.textSecondary}`}>
                         <Calendar size={13} />
@@ -142,11 +142,11 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                           </div>
 
                           {/* Format + score centré */}
-                          <div className="flex-shrink-0 flex flex-col items-center gap-1">
+                          <div className="flex-shrink-0 flex flex-col items-center gap-2">
                             <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
                               {b.format}
                             </span>
-                            <p className={`font-black text-base ${t.text} whitespace-nowrap leading-none`}>
+                            <p className={`font-black text-xl ${t.text} whitespace-nowrap leading-none`}>
                               {p2Elim}–{p1Elim}
                             </p>
                           </div>
