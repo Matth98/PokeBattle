@@ -51,11 +51,11 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
         })}
         <button
           onClick={onCreateBattle}
-          className="relative -mt-9 mx-auto flex flex-col items-center justify-end gap-1 text-amber-500"
+          className="relative -mt-5 mx-auto flex flex-col items-center justify-end gap-1 text-amber-500"
           aria-label="Créer un combat"
         >
-          <span className="w-20 h-20 rounded-[1.7rem] bg-amber-500 text-white flex items-center justify-center shadow-xl shadow-amber-500/30 active:scale-95 transition">
-            <Plus size={38} strokeWidth={2.4} aria-hidden="true" />
+          <span className="w-[60px] h-[60px] rounded-[1.25rem] bg-amber-500 text-white flex items-center justify-center shadow-xl shadow-amber-500/30 active:scale-95 transition">
+            <Plus size={29} strokeWidth={2.4} aria-hidden="true" />
           </span>
           <span className="text-xs tracking-wide font-bold">
             Combat

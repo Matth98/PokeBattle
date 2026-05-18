@@ -308,28 +308,28 @@ export const PlayerDetail = ({
       label: 'KO infligés',
       value: `${opponentEliminatedCount}`,
       detail: `${playerEliminatedCount} Pokémon perdus`,
-      tile: t.iconTileRed,
+      tile: isDark ? 'bg-pink-500/15 text-pink-300' : 'bg-pink-50 text-pink-600',
     },
     {
       Icon: Trophy,
       label: 'Victoires parfaites',
       value: `${perfectWins}`,
       detail: 'Sans Pokémon éliminé',
-      tile: t.iconTileEmerald,
+      tile: isDark ? 'bg-lime-500/15 text-lime-300' : 'bg-lime-50 text-lime-700',
     },
     {
       Icon: Target,
       label: 'Pokémon joués',
       value: `${uniqueBattlePokemonCount}`,
       detail: 'Espèces vues en combat',
-      tile: t.iconTileAmber,
+      tile: isDark ? 'bg-cyan-500/15 text-cyan-300' : 'bg-cyan-50 text-cyan-700',
     },
     {
       Icon: SlidersHorizontal,
       label: 'Format favori',
       value: favoriteFormat ? favoriteFormat[0] : 'Pas encore',
       detail: favoriteFormat ? `${favoriteFormat[1]} combat${favoriteFormat[1] > 1 ? 's' : ''}` : 'Aucun combat enregistré',
-      tile: t.iconTileIndigo,
+      tile: isDark ? 'bg-fuchsia-500/15 text-fuchsia-300' : 'bg-fuchsia-50 text-fuchsia-700',
     },
   ];
   const tabs = [
