@@ -54,7 +54,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
           className="relative -mt-5 mx-auto flex flex-col items-center justify-end gap-1 text-amber-500"
           aria-label="Créer un combat"
         >
-          <span className="w-[60px] h-[60px] rounded-[1.25rem] bg-amber-500 text-white flex items-center justify-center shadow-xl shadow-amber-500/30 active:scale-95 transition">
+          <span className="w-[60px] h-[60px] rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xl shadow-amber-500/30 active:scale-95 transition">
             <Plus size={29} strokeWidth={2.4} aria-hidden="true" />
           </span>
           <span className="text-xs tracking-wide font-bold">

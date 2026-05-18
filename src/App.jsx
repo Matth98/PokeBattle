@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { theme } from './utils/theme';
 import { useAPI } from './hooks/useAPI';
 import { Home } from './components/Home';
@@ -29,10 +29,38 @@ function App() {
   const [isDark, setIsDark] = useState(false);
   const t = isDark ? theme.dark : theme.light;
 
-  const [currentTab, setCurrentTab] = useState('home');
+  const [currentTab, _setCurrentTabState] = useState('home');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
+
+  // ── Mémoire de scroll par onglet ──
+  // setCurrentTab : navigation "avant" — sauvegarde la position quittée et scroll top
+  // goBackTo : navigation "retour" — restaure la position sauvegardée pour l'onglet cible
+  const scrollMemoryRef = useRef(new Map());
+  const shouldRestoreRef = useRef(false);
+
+  const setCurrentTab = useCallback((newTab) => {
+    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    shouldRestoreRef.current = false;
+    _setCurrentTabState(newTab);
+  }, [currentTab]);
+
+  const goBackTo = useCallback((newTab) => {
+    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    shouldRestoreRef.current = true;
+    _setCurrentTabState(newTab);
+  }, [currentTab]);
+
+  useLayoutEffect(() => {
+    if (shouldRestoreRef.current) {
+      const saved = scrollMemoryRef.current.get(currentTab) || 0;
+      window.scrollTo({ top: saved, behavior: 'auto' });
+      shouldRestoreRef.current = false;
+    } else {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [currentTab]);
 
   const [showNewPlayerForm, setShowNewPlayerForm] = useState(false);
   const [showNewBattleForm, setShowNewBattleForm] = useState(false);
@@ -243,7 +271,7 @@ function App() {
           isDark={isDark}
           onBack={() => {
             setSelectedPlayer(null);
-            setCurrentTab('players');
+            goBackTo('players');
           }}
           onUpdate={handleUpdatePlayer}
           onAddTeam={handleAddTeam}
@@ -293,7 +321,7 @@ function App() {
           isDark={isDark}
           onBack={() => {
             setSelectedTeam(null);
-            setCurrentTab('teams');
+            goBackTo('teams');
           }}
           onEdit={(team) => {
             setSelectedTeam(team);
@@ -345,7 +373,7 @@ function App() {
           isDark={isDark}
           onBack={() => {
             setSelectedBattle(null);
-            setCurrentTab('battles');
+            goBackTo('battles');
           }}
           onEdit={(b) => {
             setSelectedBattle(b);

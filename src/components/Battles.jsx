@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronRight, ChevronUp, ChevronDown, Shield, FileText } from 'lucide-react';
+import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
 import { TeamSelectorModal } from './TeamSelectorModal';
 import { SwipeableRow } from './SwipeableRow';
+import { DraggableList } from './DraggableList';
 
 const emptyBattle = () => ({
   format: '1v1',
@@ -633,61 +634,59 @@ export const Battles = ({
                           </div>
                         ) : (
                           <div className={`${t.surface} rounded-2xl overflow-hidden`}>
-                            {slotPokemon.map((p, pIdx) => {
-                              const isLast = pIdx === slotPokemon.length - 1;
-                              return (
-                                <SwipeableRow
-                                  key={p.id}
-                                  onDelete={() => handleRemovePokemonFromSlot(slot, p.id)}
-                                  surfaceClass={t.surface}
-                                  className={!isLast ? `border-b ${t.divider}` : ''}
-                                >
-                                  <div className={`${t.surface} flex items-center gap-2 px-3 py-2`}>
-                                    {/* Flèches réorganisation */}
-                                    <div className="flex flex-col gap-0.5">
-                                      <button
-                                        onClick={() => handleMovePokemon(slot, pIdx, 'up')}
-                                        disabled={pIdx === 0}
-                                        className={`${t.textTertiary} ${pIdx === 0 ? 'opacity-30' : ''}`}
-                                        aria-label="Monter"
+                            <DraggableList
+                              items={slotPokemon}
+                              getKey={(p) => p.id}
+                              onReorder={(next) =>
+                                setBattleSelectedPokemon((prev) => ({ ...prev, [slot]: next }))
+                              }
+                              renderItem={(p, dragHandleProps, isDragging) => {
+                                const pIdx = slotPokemon.findIndex((x) => x.id === p.id);
+                                const isLast = pIdx === slotPokemon.length - 1;
+                                return (
+                                  <SwipeableRow
+                                    onDelete={() => handleRemovePokemonFromSlot(slot, p.id)}
+                                    surfaceClass={t.surface}
+                                    className={!isLast ? `border-b ${t.divider}` : ''}
+                                    disabled={isDragging}
+                                  >
+                                    <div className={`${t.surface} flex items-center gap-2 px-2 py-2`}>
+                                      {/* Poignée de drag & drop */}
+                                      <span
+                                        {...dragHandleProps}
+                                        className={`${t.textTertiary} active:${t.text} flex-shrink-0 px-1 py-1.5 -my-1.5 select-none`}
+                                        aria-label="Réorganiser"
+                                        title="Glisse pour réordonner"
                                       >
-                                        <ChevronUp size={12} />
-                                      </button>
+                                        <GripVertical size={18} />
+                                      </span>
+                                      {/* Checkbox d'élimination — pastille ronde */}
                                       <button
-                                        onClick={() => handleMovePokemon(slot, pIdx, 'down')}
-                                        disabled={pIdx === slotPokemon.length - 1}
-                                        className={`${t.textTertiary} ${pIdx === slotPokemon.length - 1 ? 'opacity-30' : ''}`}
-                                        aria-label="Descendre"
+                                        onClick={() => handleToggleEliminated(slot, p.id)}
+                                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition ${
+                                          p.eliminated
+                                            ? 'bg-red-500 border-transparent'
+                                            : `${t.textTertiary} border-current`
+                                        }`}
+                                        aria-label={p.eliminated ? 'Marquer non éliminé' : 'Marquer éliminé'}
+                                        title="Cocher = éliminé (donne 1 point à l'adversaire)"
                                       >
-                                        <ChevronDown size={12} />
+                                        {p.eliminated && <Check size={12} className="text-white" />}
                                       </button>
+                                      <img
+                                        src={getPokemonImageUrl(p.pokeId)}
+                                        alt={p.name}
+                                        className={`w-9 h-9 object-contain flex-shrink-0 ${p.eliminated ? 'grayscale opacity-50' : ''}`}
+                                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                      />
+                                      <span className={`flex-1 font-semibold text-sm truncate ${p.eliminated ? `${t.textTertiary} line-through` : t.text}`}>
+                                        {p.name}
+                                      </span>
                                     </div>
-                                    {/* Checkbox d'élimination — pastille ronde */}
-                                    <button
-                                      onClick={() => handleToggleEliminated(slot, p.id)}
-                                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition ${
-                                        p.eliminated
-                                          ? 'bg-red-500 border-transparent'
-                                          : `${t.textTertiary} border-current`
-                                      }`}
-                                      aria-label={p.eliminated ? 'Marquer non éliminé' : 'Marquer éliminé'}
-                                      title="Cocher = éliminé (donne 1 point à l'adversaire)"
-                                    >
-                                      {p.eliminated && <Check size={12} className="text-white" />}
-                                    </button>
-                                    <img
-                                      src={getPokemonImageUrl(p.pokeId)}
-                                      alt={p.name}
-                                      className={`w-9 h-9 object-contain flex-shrink-0 ${p.eliminated ? 'grayscale opacity-50' : ''}`}
-                                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                    />
-                                    <span className={`flex-1 font-semibold text-sm truncate ${p.eliminated ? `${t.textTertiary} line-through` : t.text}`}>
-                                      {p.name}
-                                    </span>
-                                  </div>
-                                </SwipeableRow>
-                              );
-                            })}
+                                  </SwipeableRow>
+                                );
+                              }}
+                            />
                           </div>
                         )}
                       </>
