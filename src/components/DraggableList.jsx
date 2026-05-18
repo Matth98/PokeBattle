@@ -22,6 +22,9 @@ export const DraggableList = ({ items, getKey, onReorder, renderItem }) => {
   const [draggingIdx, setDraggingIdx] = useState(null);
   const [dragY, setDragY] = useState(0);
   const [targetIdx, setTargetIdx] = useState(null);
+  // Désactive momentanément les transitions au moment du drop, sinon les items
+  // rebondissent visuellement entre leur ancien translateY et la nouvelle position.
+  const [skipTransition, setSkipTransition] = useState(false);
 
   // Calcule l'index cible en fonction du déplacement vertical
   const computeTargetIdx = (deltaY, fromIdx) => {
@@ -57,6 +60,9 @@ export const DraggableList = ({ items, getKey, onReorder, renderItem }) => {
     if (fromIdx === null) return;
     const toIdx = computeTargetIdx(e.clientY - startYRef.current, fromIdx);
     fromIdxRef.current = null;
+    // Coupe les transitions pour ce frame : le commit du nouvel ordre rend tout
+    // avec translateY=0 instantanément, sans animation de rebond.
+    setSkipTransition(true);
     setDraggingIdx(null);
     setTargetIdx(null);
     setDragY(0);
@@ -67,6 +73,13 @@ export const DraggableList = ({ items, getKey, onReorder, renderItem }) => {
       onReorder(next);
     }
   };
+
+  // Une fois le DOM peint sans transition, on les réactive pour le prochain drag
+  useLayoutEffect(() => {
+    if (!skipTransition) return;
+    const id = requestAnimationFrame(() => setSkipTransition(false));
+    return () => cancelAnimationFrame(id);
+  }, [skipTransition]);
 
   // Si l'utilisateur scrolle ou que le pointer est lâché hors handle, on annule proprement
   useLayoutEffect(() => {
@@ -112,7 +125,7 @@ export const DraggableList = ({ items, getKey, onReorder, renderItem }) => {
             ref={(el) => (itemRefs.current[idx] = el)}
             style={{
               transform: `translateY(${translateY}px)`,
-              transition: isDragging ? 'none' : 'transform 0.2s ease',
+              transition: (isDragging || skipTransition) ? 'none' : 'transform 0.2s ease',
               zIndex: isDragging ? 10 : 'auto',
               position: 'relative',
               opacity: isDragging ? 0.95 : 1,
