@@ -93,7 +93,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   <div key={group.date} className={`${t.surface} rounded-2xl overflow-hidden`}>
                     <button
                       onClick={() => toggleGroup(group.date)}
-                      className={`w-full flex items-center justify-between gap-2 px-4 py-3 ${t.surfaceMuted} active:opacity-80`}
+                      className={`no-press-fx w-full flex items-center justify-between gap-2 px-4 py-3 ${t.surfaceMuted} active:opacity-80`}
                     >
                       <span className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${t.textSecondary}`}>
                         <Calendar size={13} />

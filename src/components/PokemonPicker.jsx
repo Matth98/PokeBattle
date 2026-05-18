@@ -32,8 +32,8 @@ export const PokemonPicker = ({
   const showDefaultLabel = !hasQuery && defaultLabel && (defaultResults?.length ?? 0) > 0;
 
   return (
-    <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
-      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+    <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
+      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
         {/* Grip + Header */}
         <div
           className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider}`}

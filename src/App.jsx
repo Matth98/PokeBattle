@@ -9,6 +9,7 @@ import { TeamDetail } from './components/TeamDetail';
 import { Battles } from './components/Battles';
 import { BattleDetail } from './components/BattleDetail';
 import { Navigation } from './components/Navigation';
+import { ToastProvider, useToast } from './components/Toast';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -25,8 +26,8 @@ if (typeof document !== 'undefined' && !document.querySelector('link[href*="font
   document.head.appendChild(link);
 }
 
-function App() {
-  const [isDark, setIsDark] = useState(false);
+function AppContent({ isDark, setIsDark }) {
+  const toast = useToast();
   const t = isDark ? theme.dark : theme.light;
 
   const [currentTab, _setCurrentTabState] = useState('home');
@@ -135,6 +136,9 @@ function App() {
     const newPlayer = await createPlayer(payload);
     if (newPlayer) {
       setPlayers([...players, newPlayer]);
+      toast.success(`${newPlayer.name} ajouté`);
+    } else {
+      toast.error('Erreur lors de la création');
     }
   };
 
@@ -143,26 +147,39 @@ function App() {
     if (updated) {
       setPlayers(players.map(p => p._id === id ? updated : p));
       setSelectedPlayer(updated);
+    } else {
+      toast.error('Erreur lors de la mise à jour');
     }
   };
 
   const handleDeletePlayer = async (id) => {
+    const target = players.find((p) => p._id === id);
     const success = await deletePlayer(id);
     if (success) {
       setPlayers(players.filter(p => p._id !== id));
+      toast.success(`${target?.name || 'Joueur'} supprimé`);
+    } else {
+      toast.error('Erreur lors de la suppression');
     }
   };
 
   const handleDeleteMultiplePlayers = async (ids) => {
     for (const id of ids) {
-      await handleDeletePlayer(id);
+      const target = players.find((p) => p._id === id);
+      const success = await deletePlayer(id);
+      if (success) setPlayers((prev) => prev.filter((p) => p._id !== id));
+      if (!success && target) toast.error(`Échec : ${target.name}`);
     }
+    toast.success(`${ids.length} joueur${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`);
   };
 
   const handleAddTeam = async (teamData) => {
     const newTeam = await createTeam(teamData);
     if (newTeam) {
       setTeams([...teams, newTeam]);
+      toast.success(`Équipe « ${newTeam.name} » créée`);
+    } else {
+      toast.error('Erreur lors de la création');
     }
   };
 
@@ -171,20 +188,29 @@ function App() {
     if (updated) {
       setTeams(teams.map(t => t._id === id ? updated : t));
       setSelectedTeam(updated);
+      toast.success(`Équipe « ${updated.name} » mise à jour`);
+    } else {
+      toast.error('Erreur lors de la mise à jour');
     }
   };
 
   const handleDeleteTeam = async (id) => {
+    const target = teams.find((tt) => tt._id === id);
     const success = await deleteTeam(id);
     if (success) {
       setTeams(teams.filter(t => t._id !== id));
+      toast.success(`Équipe « ${target?.name || ''} » supprimée`);
+    } else {
+      toast.error('Erreur lors de la suppression');
     }
   };
 
   const handleDeleteMultipleTeams = async (ids) => {
     for (const id of ids) {
-      await handleDeleteTeam(id);
+      const success = await deleteTeam(id);
+      if (success) setTeams((prev) => prev.filter((t) => t._id !== id));
     }
+    toast.success(`${ids.length} équipe${ids.length > 1 ? 's' : ''} supprimée${ids.length > 1 ? 's' : ''}`);
   };
 
   const handleAddBattle = async (battleData) => {
@@ -192,6 +218,10 @@ function App() {
     if (newBattle) {
       setBattles([...battles, newBattle]);
       loadAllData();
+      setCurrentTab('battles');
+      toast.success('Combat enregistré');
+    } else {
+      toast.error('Erreur lors de la création');
     }
   };
 
@@ -201,6 +231,9 @@ function App() {
       setBattles(battles.map(b => b._id === id ? updated : b));
       setSelectedBattle(updated);
       loadAllData();
+      toast.success('Combat mis à jour');
+    } else {
+      toast.error('Erreur lors de la mise à jour');
     }
   };
 
@@ -209,13 +242,19 @@ function App() {
     if (success) {
       setBattles(battles.filter(b => b._id !== id));
       loadAllData();
+      toast.success('Combat supprimé');
+    } else {
+      toast.error('Erreur lors de la suppression');
     }
   };
 
   const handleDeleteMultipleBattles = async (ids) => {
     for (const id of ids) {
-      await handleDeleteBattle(id);
+      const success = await deleteBattle(id);
+      if (success) setBattles((prev) => prev.filter((b) => b._id !== id));
     }
+    loadAllData();
+    toast.success(`${ids.length} combat${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`);
   };
 
   if (loading) {
@@ -385,19 +424,53 @@ function App() {
         />
       )}
 
+      {currentTab !== 'battles' && showNewBattleForm && (
+        <Battles
+          battles={battles}
+          players={players}
+          teams={teams}
+          t={t}
+          isDark={isDark}
+          onSelectBattle={(b) => {
+            setSelectedBattle(b);
+            setCurrentTab('battleDetail');
+          }}
+          onAddBattle={handleAddBattle}
+          onUpdateBattle={handleUpdateBattle}
+          onUpdatePlayer={handleUpdatePlayer}
+          onDeleteBattle={handleDeleteBattle}
+          onDeleteMultiple={handleDeleteMultipleBattles}
+          selectionMode={selectionMode}
+          setSelectionMode={setSelectionMode}
+          selectedItems={selectedItems}
+          setSelectedItems={setSelectedItems}
+          showForm={showNewBattleForm}
+          setShowForm={setShowBattleForm}
+          editingBattle={null}
+          renderPage={false}
+        />
+      )}
+
       <Navigation
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
         isDark={isDark}
         t={t}
         onCreateBattle={() => {
-          setSelectedBattle(null);
           setBattleEditOrigin(null);
-          setCurrentTab('battles');
           setShowNewBattleForm(true);
         }}
       />
     </div>
+  );
+}
+
+function App() {
+  const [isDark, setIsDark] = useState(false);
+  return (
+    <ToastProvider isDark={isDark}>
+      <AppContent isDark={isDark} setIsDark={setIsDark} />
+    </ToastProvider>
   );
 }
 

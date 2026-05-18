@@ -303,8 +303,8 @@ export const Teams = ({
       {confirmingDeleteId && (() => {
         const team = teams.find((tt) => tt._id === confirmingDeleteId);
         return (
-          <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
-            <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+          <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+            <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
               <p className={`font-black text-lg ${t.text} mb-1`}>
                 Supprimer {team?.name} ?
               </p>
@@ -333,8 +333,8 @@ export const Teams = ({
 
       {/* ── Modale confirmation suppression multiple ── */}
       {deletingSelected && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
-          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {selectedItems.length} équipe{selectedItems.length > 1 ? 's' : ''} ?
             </p>
@@ -359,8 +359,8 @@ export const Teams = ({
 
       {/* ── Formulaire Créer / Modifier équipe (full-screen sheet iOS) ── */}
       {showForm && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
-          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
+          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
             {/* Barre supérieure */}
             <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
               <button

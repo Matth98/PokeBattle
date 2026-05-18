@@ -17,8 +17,8 @@ export const TeamSelectorModal = ({
   );
 
   return (
-    <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
-      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+    <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
+      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
         {/* Grip + Header */}
         <div className={`${t.surfaceBlur} px-5 pt-3 pb-4 border-b ${t.divider}`}>
           <div className={`w-10 h-1 ${t.surfaceMuted} rounded-full mx-auto mb-3`} aria-hidden="true" />

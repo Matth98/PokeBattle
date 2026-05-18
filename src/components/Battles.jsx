@@ -51,6 +51,7 @@ export const Battles = ({
   setShowForm,
   editingBattle,
   clearEditingBattle,
+  renderPage = true,
 }) => {
   const [newBattleData, setNewBattleData] = useState(emptyBattle());
   const [battleSelectedPokemon, setBattleSelectedPokemon] = useState({ player1: [], player2: [] });
@@ -266,7 +267,9 @@ export const Battles = ({
   const inSelection = selectionMode === 'battles';
 
   return (
-    <div className={`min-h-screen ${t.pageBg}`}>
+    <>
+      {renderPage && (
+        <div className={`min-h-screen ${t.pageBg}`}>
       {/* ── En-tête sticky ── */}
       <div
         className={`${t.surfaceBlur} sticky top-0 z-10 px-5 pt-12 pb-3 border-b ${t.divider}`}
@@ -354,7 +357,7 @@ export const Battles = ({
                 <div key={group.date} className={`${t.surface} rounded-2xl overflow-hidden`}>
                   <button
                     onClick={() => toggleGroup(group.date)}
-                    className={`w-full flex items-center justify-between gap-2 px-4 py-3 ${t.surfaceMuted} active:opacity-80`}
+                    className={`no-press-fx w-full flex items-center justify-between gap-2 px-4 py-3 ${t.surfaceMuted} active:opacity-80`}
                   >
                     <span className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${t.textSecondary}`}>
                       <Calendar size={13} />
@@ -460,6 +463,8 @@ export const Battles = ({
           </div>
         )}
       </div>
+    </div>
+  )}
 
       {/* ── Modale confirmation suppression unitaire (swipe) ── */}
       {confirmingDeleteId && (() => {
@@ -467,8 +472,8 @@ export const Battles = ({
         const p1 = b ? players.find((p) => p._id === b.player1) : null;
         const p2 = b ? players.find((p) => p._id === b.player2) : null;
         return (
-          <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
-            <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+          <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+            <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
               <p className={`font-black text-lg ${t.text} mb-1`}>
                 Supprimer ce combat ?
               </p>
@@ -502,8 +507,8 @@ export const Battles = ({
 
       {/* ── Modale confirmation suppression multiple ── */}
       {deletingSelected && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
-          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {selectedItems.length} combat{selectedItems.length > 1 ? 's' : ''} ?
             </p>
@@ -528,8 +533,8 @@ export const Battles = ({
 
       {/* ── Formulaire Nouveau / Modifier combat (full-screen sheet iOS) ── */}
       {showForm && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
-          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
+          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
             {/* Barre supérieure */}
             <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
               <button
@@ -795,6 +800,6 @@ export const Battles = ({
           onClose={closePicker}
         />
       )}
-    </div>
+    </>
   );
 };

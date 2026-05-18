@@ -640,8 +640,8 @@ export const PlayerDetail = ({
 
       {/* ── Modal Modifier joueur ── */}
       {editingPlayer && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
-          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
+          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
             <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
               <button
                 onClick={() => setEditingPlayer(false)}
@@ -717,8 +717,8 @@ export const PlayerDetail = ({
         const isAtMax = currentCount >= required;
 
         return (
-          <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
-            <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+          <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
+            <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
               <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
                 <button
                   onClick={() => {
@@ -872,8 +872,8 @@ export const PlayerDetail = ({
 
       {/* ── Modal Confirmation suppression ── */}
       {deletingPokemon && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
-          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {deletingPokemonObj?.name} ?
             </p>
