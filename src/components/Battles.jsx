@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronRight, ChevronUp, ChevronDown, Shield, FileText } from 'lucide-react';
 import { formatDate } from '../utils/dates';
+import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
 import { TeamSelectorModal } from './TeamSelectorModal';
@@ -249,7 +250,18 @@ export const Battles = ({
     setDeletingSelected(false);
   };
 
-  const sortedBattles = [...battles].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const sortedBattles = sortBattlesDesc(battles);
+  const groupedBattles = groupBattlesByDate(sortedBattles);
+  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
+
+  const toggleGroup = (date) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date);
+      else next.add(date);
+      return next;
+    });
+  };
   const inSelection = selectionMode === 'battles';
 
   return (
@@ -334,72 +346,114 @@ export const Battles = ({
             </button>
           </div>
         ) : (
-          <div className={`${t.surface} rounded-2xl overflow-hidden`}>
-            {sortedBattles.map((b, idx) => {
-              const p1 = players.find((p) => p._id === b.player1);
-              const p2 = players.find((p) => p._id === b.player2);
-              const p1Elim = (b.team1 || []).filter((p) => p.eliminated).length;
-              const p2Elim = (b.team2 || []).filter((p) => p.eliminated).length;
-              const isSelected = selectedItems.includes(b._id);
-              const isLast = idx === sortedBattles.length - 1;
-
+          <div className="space-y-4">
+            {groupedBattles.map((group) => {
+              const isCollapsed = collapsedGroups.has(group.date);
               return (
-                <SwipeableRow
-                  key={b._id}
-                  onDelete={() => setConfirmingDeleteId(b._id)}
-                  disabled={inSelection}
-                  surfaceClass={t.surface}
-                  className={!isLast ? `border-b ${t.divider}` : ''}
-                >
+                <div key={group.date} className={`${t.surface} rounded-2xl overflow-hidden`}>
                   <button
-                    onClick={() =>
-                      inSelection
-                        ? setSelectedItems(
-                            isSelected
-                              ? selectedItems.filter((id) => id !== b._id)
-                              : [...selectedItems, b._id]
-                          )
-                        : onSelectBattle(b)
-                    }
-                    className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} active:bg-black/5 dark:active:bg-white/5 text-left`}
+                    onClick={() => toggleGroup(group.date)}
+                    className={`w-full flex items-center justify-between gap-2 px-4 py-2 ${t.surfaceMuted} active:opacity-80`}
                   >
-                    {inSelection && (
-                      <span
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}
-                      >
-                        {isSelected && <Check size={14} className="text-white" />}
-                      </span>
-                    )}
-
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-xl ${t.iconTileAmber} flex items-center justify-center`}>
-                      <Zap size={18} />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className={`flex-1 min-w-0 truncate text-left font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
-                          {p1?.name || '—'}
-                        </p>
-                        <p className={`font-black text-base ${t.text} whitespace-nowrap px-1`}>
-                          {p2Elim}–{p1Elim}
-                        </p>
-                        <p className={`flex-1 min-w-0 truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
-                          {p2?.name || '—'}
-                        </p>
-                      </div>
-                      <div className={`flex items-center gap-1.5 mt-0.5 ${t.textTertiary} text-xs`}>
-                        <Calendar size={11} />
-                        <span>{formatDate(b.date)}</span>
-                        <span className="text-[10px]">•</span>
-                        <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
-                          {b.format}
-                        </span>
-                      </div>
-                    </div>
-
-                    {!inSelection && <ChevronRight size={16} className={t.textTertiary} />}
+                    <span className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${t.textSecondary}`}>
+                      <Calendar size={13} />
+                      {formatDate(group.date)}
+                    </span>
+                    {isCollapsed
+                      ? <ChevronDown size={16} className={t.textSecondary} />
+                      : <ChevronUp size={16} className={t.textSecondary} />}
                   </button>
-                </SwipeableRow>
+
+                  {!isCollapsed && group.battles.map((b, idx) => {
+                    const p1 = players.find((p) => p._id === b.player1);
+                    const p2 = players.find((p) => p._id === b.player2);
+                    const p1Elim = (b.team1 || []).filter((p) => p.eliminated).length;
+                    const p2Elim = (b.team2 || []).filter((p) => p.eliminated).length;
+                    const isSelected = selectedItems.includes(b._id);
+                    const isLast = idx === group.battles.length - 1;
+
+                    return (
+                      <SwipeableRow
+                        key={b._id}
+                        onDelete={() => setConfirmingDeleteId(b._id)}
+                        disabled={inSelection}
+                        surfaceClass={t.surface}
+                        className={!isLast ? `border-b ${t.divider}` : ''}
+                      >
+                        <button
+                          onClick={() =>
+                            inSelection
+                              ? setSelectedItems(
+                                  isSelected
+                                    ? selectedItems.filter((id) => id !== b._id)
+                                    : [...selectedItems, b._id]
+                                )
+                              : onSelectBattle(b)
+                          }
+                          className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} active:bg-black/5 dark:active:bg-white/5 text-left`}
+                        >
+                          {inSelection && (
+                            <span
+                              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}
+                            >
+                              {isSelected && <Check size={14} className="text-white" />}
+                            </span>
+                          )}
+
+                          {/* Joueur 1 — nom + Pokémon ferré gauche */}
+                          <div className="flex-1 min-w-0">
+                            <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
+                              {p1?.name || '—'}
+                            </p>
+                            {(b.team1 || []).length > 0 && (
+                              <div className="flex gap-0.5 mt-1">
+                                {b.team1.map((pk, i) => (
+                                  <img
+                                    key={pk.id || i}
+                                    src={getPokemonImageUrl(pk.pokeId)}
+                                    alt={pk.name}
+                                    className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
+                                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Format + score centré */}
+                          <div className="flex-shrink-0 flex flex-col items-center gap-1">
+                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+                              {b.format}
+                            </span>
+                            <p className={`font-black text-base ${t.text} whitespace-nowrap leading-none`}>
+                              {p2Elim}–{p1Elim}
+                            </p>
+                          </div>
+
+                          {/* Joueur 2 — nom + Pokémon ferré droite */}
+                          <div className="flex-1 min-w-0">
+                            <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
+                              {p2?.name || '—'}
+                            </p>
+                            {(b.team2 || []).length > 0 && (
+                              <div className="flex gap-0.5 mt-1 justify-end">
+                                {b.team2.map((pk, i) => (
+                                  <img
+                                    key={pk.id || i}
+                                    src={getPokemonImageUrl(pk.pokeId)}
+                                    alt={pk.name}
+                                    className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
+                                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      </SwipeableRow>
+                    );
+                  })}
+                </div>
               );
             })}
           </div>
