@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Plus, Trash2, X, Check, CheckSquare, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
@@ -142,54 +142,65 @@ export const Teams = ({
     setDeletingSelected(false);
   };
 
+  const inSelection = selectionMode === 'teams';
+
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${t.bg}`}>
-      <div className={`${t.headerBg} pt-8 pb-6 px-6 border-b ${t.headerBorder}`}>
-        <div className="flex justify-between items-center mb-4">
-          <h1 className={`text-2xl font-black ${t.text}`}>🛡️ Équipes</h1>
-          <div className="flex gap-2">
-            {selectionMode === 'teams' ? (
+    <div className={`min-h-screen ${t.pageBg}`}>
+      {/* ── En-tête sticky ── */}
+      <div
+        className={`${t.surfaceBlur} sticky top-0 z-10 px-5 pt-12 pb-3 border-b ${t.divider}`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)' }}
+      >
+        <div className="flex justify-between items-center">
+          <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>Équipes</h1>
+          <div className="flex items-center gap-2">
+            {inSelection ? (
               <>
+                <button
+                  onClick={() => setSelectedItems(teams.map((team) => team._id))}
+                  className={`px-3 h-9 rounded-full ${t.surfaceMuted} ${t.text} text-sm font-semibold`}
+                >
+                  Tout
+                </button>
+                <button
+                  onClick={() => setDeletingSelected(true)}
+                  disabled={selectedItems.length === 0}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center ${t.dangerBg} text-white ${selectedItems.length === 0 ? 'opacity-40' : ''}`}
+                  aria-label="Supprimer la sélection"
+                >
+                  <Trash2 size={18} />
+                </button>
                 <button
                   onClick={() => {
                     setSelectionMode(null);
                     setSelectedItems([]);
                   }}
-                  className={`border-2 ${isDark ? 'border-gray-600' : 'border-gray-300'} px-3 py-1 rounded-full font-bold text-sm`}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
+                  aria-label="Annuler"
                 >
-                  Annuler
-                </button>
-                <button
-                  onClick={() => setSelectedItems(teams.map(t => t._id))}
-                  className="bg-blue-500 text-white px-3 py-1 rounded-full font-bold text-sm"
-                >
-                  Tout sélectionner
-                </button>
-                <button
-                  onClick={() => setDeletingSelected(true)}
-                  disabled={selectedItems.length === 0}
-                  className={`bg-red-500 text-white px-3 py-1 rounded-full font-bold text-sm ${selectedItems.length === 0 ? 'opacity-50' : ''}`}
-                >
-                  🗑️ Supprimer
+                  <X size={18} />
                 </button>
               </>
             ) : (
               <>
+                <button
+                  onClick={() => setSelectionMode('teams')}
+                  disabled={teams.length === 0}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text} ${teams.length === 0 ? 'opacity-40' : ''}`}
+                  aria-label="Sélectionner"
+                >
+                  <CheckSquare size={18} />
+                </button>
                 <button
                   onClick={() => {
                     if (clearEditingTeam) clearEditingTeam();
                     setNewTeamData(emptyTeamData());
                     setShowForm(true);
                   }}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-full font-bold text-sm"
+                  className={`w-9 h-9 rounded-full flex items-center justify-center ${t.accentBg} text-white`}
+                  aria-label="Nouvelle équipe"
                 >
-                  + Nouveau
-                </button>
-                <button
-                  onClick={() => setSelectionMode('teams')}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-full font-bold text-sm"
-                >
-                  ✓ Sélectionner
+                  <Plus size={20} />
                 </button>
               </>
             )}
@@ -197,107 +208,113 @@ export const Teams = ({
         </div>
       </div>
 
-      <div className="px-6 mt-6 pb-32 space-y-3">
+      <div className="px-5 mt-5 pb-32">
         {teams.length === 0 ? (
-          <div className="h-screen flex items-center justify-center -mt-20">
-            <div className="text-center">
-              <p className="text-6xl mb-4">🛡️</p>
-              <h2 className={`text-2xl font-black ${t.text} mb-2`}>Aucune équipe</h2>
-              <p className={`${t.textSecondary} mb-6`}>Crée une équipe pour commencer!</p>
-              <button
-                onClick={() => setShowForm(true)}
-                className="bg-orange-500 text-white px-6 py-3 rounded-full font-black"
-              >
-                + Créer une équipe
-              </button>
+          <div className={`${t.surface} rounded-2xl p-10 text-center mt-12`}>
+            <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-4`}>
+              <Shield size={26} />
             </div>
+            <p className={`${t.text} font-bold text-lg mb-1`}>Aucune équipe</p>
+            <p className={`${t.textSecondary} text-sm mb-6`}>Crée une équipe pour commencer.</p>
+            <button
+              onClick={() => setShowForm(true)}
+              className={`${t.accentBg} text-white px-5 py-2.5 rounded-full font-semibold inline-flex items-center gap-2`}
+            >
+              <Plus size={16} />
+              Créer une équipe
+            </button>
           </div>
         ) : (
-          teams.map(team => {
-            // Miniature : grille 2x2 des Pokémon de l'équipe (max 4)
-            const thumbSlots = (team.pokemon || []).slice(0, 4);
-            return (
-              <SwipeableRow
-                key={team._id}
-                onDelete={() => onDeleteTeam(team._id)}
-                disabled={selectionMode === 'teams'}
-                className="rounded-2xl"
-              >
-                <div
-                  className={`${t.bgPrimary} rounded-2xl p-3 border ${selectedItems.includes(team._id) ? 'border-orange-500' : t.border} flex items-center gap-3`}
+          <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+            {teams.map((team, idx) => {
+              const thumbSlots = (team.pokemon || []).slice(0, 4);
+              const isSelected = selectedItems.includes(team._id);
+              const isLast = idx === teams.length - 1;
+              return (
+                <SwipeableRow
+                  key={team._id}
+                  onDelete={() => onDeleteTeam(team._id)}
+                  disabled={inSelection}
+                  className={!isLast ? `border-b ${t.divider}` : ''}
                 >
-                  {selectionMode === 'teams' && (
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.includes(team._id)}
-                      onChange={() =>
-                        setSelectedItems(
-                          selectedItems.includes(team._id)
-                            ? selectedItems.filter(id => id !== team._id)
-                            : [...selectedItems, team._id]
-                        )
-                      }
-                      className="w-5 h-5"
-                    />
-                  )}
-
-                  {/* Miniature 2x2 */}
-                  <div className={`flex-shrink-0 w-16 h-16 rounded-xl ${isDark ? 'bg-gray-700' : 'bg-gray-100'} p-1 grid grid-cols-2 grid-rows-2 gap-0.5`}>
-                    {[0, 1, 2, 3].map((i) => {
-                      const p = thumbSlots[i];
-                      return (
-                        <div key={i} className="flex items-center justify-center overflow-hidden">
-                          {p ? (
-                            <img
-                              src={getPokemonImageUrl(p.pokeId)}
-                              alt={p.name}
-                              className="w-full h-full object-contain"
-                              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                            />
-                          ) : null}
-                        </div>
-                      );
-                    })}
-                  </div>
-
                   <button
-                    onClick={() => !selectionMode && onSelectTeam(team)}
-                    disabled={selectionMode === 'teams'}
-                    className="flex-1 min-w-0 text-left disabled:opacity-50"
+                    onClick={() =>
+                      inSelection
+                        ? setSelectedItems(
+                            isSelected
+                              ? selectedItems.filter((id) => id !== team._id)
+                              : [...selectedItems, team._id]
+                          )
+                        : onSelectTeam(team)
+                    }
+                    className={`w-full flex items-center gap-3 p-3 ${t.surface} active:bg-black/5 dark:active:bg-white/5 text-left`}
                   >
-                    <h3 className={`font-black ${t.text} truncate`}>{team.name}</h3>
-                    <p className={`${t.textSecondary} text-sm flex items-center gap-2 mt-0.5`}>
-                      <span className="truncate">{team.owner} · {(team.pokemon || []).length} Pokémon</span>
-                      <span className="inline-block bg-orange-500 bg-opacity-20 text-orange-500 px-2 py-0.5 rounded-full font-bold text-xs flex-shrink-0">
-                        {team.format}
+                    {inSelection && (
+                      <span
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}
+                      >
+                        {isSelected && <Check size={14} className="text-white" />}
                       </span>
-                    </p>
+                    )}
+
+                    {/* Miniature 2x2 */}
+                    <div className={`flex-shrink-0 w-14 h-14 rounded-xl ${t.surfaceMuted} p-1 grid grid-cols-2 grid-rows-2 gap-0.5`}>
+                      {[0, 1, 2, 3].map((i) => {
+                        const p = thumbSlots[i];
+                        return (
+                          <div key={i} className="flex items-center justify-center overflow-hidden">
+                            {p ? (
+                              <img
+                                src={getPokemonImageUrl(p.pokeId)}
+                                alt={p.name}
+                                className="w-full h-full object-contain"
+                                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                              />
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
+                      <p className={`${t.textSecondary} text-xs mt-0.5 flex items-center gap-1.5`}>
+                        <span className="truncate">
+                          {team.owner} · {(team.pokemon || []).length} Pokémon
+                        </span>
+                        <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+                          {team.format}
+                        </span>
+                      </p>
+                    </div>
+
+                    {!inSelection && <ChevronRight size={18} className={t.textTertiary} />}
                   </button>
-                  {selectionMode !== 'teams' && <ChevronRight size={20} className={`flex-shrink-0 ${t.textSecondary}`} />}
-                </div>
-              </SwipeableRow>
-            );
-          })
+                </SwipeableRow>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      {/* Modal confirmation suppression */}
+      {/* ── Modale confirmation suppression multiple ── */}
       {deletingSelected && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center">
-          <div className={`${t.bgPrimary} rounded-2xl p-6 max-w-sm mx-4 border ${t.border}`}>
-            <p className={`font-black ${t.text} mb-4`}>
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-end sm:items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+            <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {selectedItems.length} équipe{selectedItems.length > 1 ? 's' : ''} ?
             </p>
-            <div className="flex gap-3">
+            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+            <div className="flex gap-2">
               <button
                 onClick={() => setDeletingSelected(false)}
-                className={`flex-1 ${isDark ? 'bg-gray-700' : 'bg-gray-200'} ${t.text} py-2 rounded-lg font-bold`}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
                 Annuler
               </button>
               <button
                 onClick={handleDeleteMultiple}
-                className="flex-1 bg-red-500 text-white py-2 rounded-lg font-bold"
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
               >
                 Supprimer
               </button>
@@ -306,124 +323,144 @@ export const Teams = ({
         </div>
       )}
 
-      {/* Modal Créer Équipe */}
+      {/* ── Formulaire Créer / Modifier équipe (full-screen sheet iOS) ── */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex flex-col">
-          <div className={`${t.bgPrimary} flex-1 overflow-y-auto flex flex-col`}>
-            <div className="p-6 flex-1 overflow-y-auto">
-              <h2 className={`text-2xl font-black ${t.text} mb-6`}>
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
+          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+            {/* Barre supérieure */}
+            <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  resetForm();
+                }}
+                className={`${t.accent} font-semibold`}
+              >
+                Annuler
+              </button>
+              <h2 className={`text-base font-black ${t.text}`}>
                 {isEditing ? 'Modifier l\'équipe' : 'Créer une équipe'}
               </h2>
-              <div className="space-y-4">
+              <button
+                onClick={handleSaveTeam}
+                className={`${t.accent} font-bold`}
+              >
+                {isEditing ? 'Enregistrer' : 'Créer'}
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+              {/* Nom */}
+              <div>
+                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                  Nom de l'équipe
+                </label>
                 <input
                   type="text"
-                  placeholder="Nom"
+                  placeholder="Ex: Mon équipe de feu"
                   value={newTeamData.name}
                   onChange={(e) => setNewTeamData({ ...newTeamData, name: e.target.value })}
-                  className={`w-full border ${teamFormErrors.name ? 'border-red-500' : t.input} rounded-xl px-4 py-3`}
+                  className={`w-full ${t.inputSoft} ${teamFormErrors.name ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
                 />
-                {teamFormErrors.name && <p className="text-red-500 text-sm">Ce champ est requis</p>}
+                {teamFormErrors.name && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>Ce champ est requis</p>}
+              </div>
 
+              {/* Propriétaire */}
+              <div>
+                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                  Propriétaire
+                </label>
                 <select
                   value={newTeamData.owner || ''}
                   onChange={(e) => setNewTeamData({ ...newTeamData, owner: e.target.value })}
-                  className={`w-full border ${teamFormErrors.owner ? 'border-red-500' : t.input} rounded-xl px-4 py-3`}
+                  className={`w-full ${t.inputSoft} ${teamFormErrors.owner ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
                 >
-                  <option value="">Sélectionner un propriétaire</option>
+                  <option value="">Sélectionner un joueur</option>
                   {players.map(p => (
                     <option key={p._id} value={p._id}>{p.name}</option>
                   ))}
                 </select>
-                {teamFormErrors.owner && <p className="text-red-500 text-sm">Ce champ est requis</p>}
+                {teamFormErrors.owner && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>Ce champ est requis</p>}
+              </div>
 
-                <div className="flex gap-2">
+              {/* Format - Segmented control iOS */}
+              <div>
+                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                  Format
+                </label>
+                <div className={`flex gap-1 p-1 rounded-xl ${t.surfaceMuted}`}>
+                  {['1v1', '2v2'].map((fmt) => (
+                    <button
+                      key={fmt}
+                      onClick={() => setNewTeamData({ ...newTeamData, format: fmt })}
+                      className={`flex-1 py-2 rounded-lg font-semibold text-sm transition ${
+                        newTeamData.format === fmt
+                          ? `${t.surface} ${t.text} shadow-sm`
+                          : t.textSecondary
+                      }`}
+                    >
+                      {fmt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pokémon */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} ml-1`}>
+                    Pokémon (
+                    <span className={currentCount === required ? t.success : t.warning}>
+                      {currentCount}/{required}
+                    </span>
+                    )
+                  </label>
                   <button
-                    onClick={() => setNewTeamData({ ...newTeamData, format: '1v1' })}
-                    className={`flex-1 py-3 rounded-xl font-black ${newTeamData.format === '1v1' ? 'bg-orange-500 text-white' : `${t.bgPrimary} border ${t.border}`}`}
+                    onClick={() => setPickingPokemon(true)}
+                    disabled={isAtMax}
+                    className={`${t.accent} text-sm font-semibold flex items-center gap-1 ${isAtMax ? 'opacity-40 cursor-not-allowed' : ''}`}
                   >
-                    1v1
-                  </button>
-                  <button
-                    onClick={() => setNewTeamData({ ...newTeamData, format: '2v2' })}
-                    className={`flex-1 py-3 rounded-xl font-black ${newTeamData.format === '2v2' ? 'bg-orange-500 text-white' : `${t.bgPrimary} border ${t.border}`}`}
-                  >
-                    2v2
+                    <Plus size={16} />
+                    Ajouter
                   </button>
                 </div>
 
-                {/* Sélection des Pokémon */}
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className={`block font-bold ${t.text}`}>
-                      Pokémon (
-                      <span className={currentCount === required ? 'text-green-500' : 'text-orange-500'}>
-                        {currentCount}/{required}
-                      </span>
-                      )
-                    </label>
-                    <button
-                      onClick={() => setPickingPokemon(true)}
-                      disabled={isAtMax}
-                      className={`bg-orange-500 text-white px-3 py-1 rounded-full font-bold text-sm ${isAtMax ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      + Ajouter
-                    </button>
+                {newTeamData.pokemon.length === 0 ? (
+                  <div className={`${t.surface} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
+                    Aucun Pokémon sélectionné
                   </div>
-
-                  {newTeamData.pokemon.length === 0 ? (
-                    <div className={`rounded-xl p-4 border ${teamFormErrors.pokemon ? 'border-red-500' : t.border} text-center ${t.textSecondary} text-sm`}>
-                      Aucun Pokémon sélectionné
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {newTeamData.pokemon.map((p) => (
+                ) : (
+                  <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+                    {newTeamData.pokemon.map((p, idx) => {
+                      const isLast = idx === newTeamData.pokemon.length - 1;
+                      return (
                         <SwipeableRow
                           key={p.id}
                           onDelete={() => handleRemovePokemonFromForm(p.id)}
-                          className="rounded-xl"
+                          className={!isLast ? `border-b ${t.divider}` : ''}
                         >
-                          <div
-                            className={`flex items-center gap-3 p-2 rounded-xl border ${t.border} ${t.bgPrimary}`}
-                          >
+                          <div className={`flex items-center gap-3 px-4 py-2.5 ${t.surface}`}>
                             <img
                               src={getPokemonImageUrl(p.pokeId)}
                               alt={p.name}
                               className="w-10 h-10 object-contain flex-shrink-0"
                               onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                             />
-                            <span className={`flex-1 font-bold ${t.text}`}>{p.name}</span>
+                            <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</span>
+                            <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
                           </div>
                         </SwipeableRow>
-                      ))}
-                    </div>
-                  )}
-                  {teamFormErrors.pokemon && currentCount !== required && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {currentCount < required
-                        ? `Il manque ${required - currentCount} Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`
-                        : `Trop de Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className={`border-t ${t.headerBorder} p-6`}>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowForm(false);
-                    resetForm();
-                  }}
-                  className={`flex-1 ${isDark ? 'bg-gray-700' : 'bg-gray-200'} ${t.text} py-3 rounded-xl font-bold`}
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleSaveTeam}
-                  className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-black"
-                >
-                  {isEditing ? 'Mettre à jour' : 'Créer'}
-                </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {teamFormErrors.pokemon && currentCount !== required && (
+                  <p className={`${t.danger} text-xs mt-2 ml-1`}>
+                    {currentCount < required
+                      ? `Il manque ${required - currentCount} Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`
+                      : `Trop de Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`}
+                  </p>
+                )}
               </div>
             </div>
           </div>

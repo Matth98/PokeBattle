@@ -1,16 +1,7 @@
 import React from 'react';
+import { X, Shield } from 'lucide-react';
+import { usePokemon } from '../hooks/usePokemon';
 
-/**
- * Modal de sélection d'une équipe pour un joueur, filtrée par format.
- *
- * Props :
- * - t, isDark : thème
- * - teams : liste complète des équipes
- * - playerId : id du joueur dont on veut les équipes
- * - format : format du combat ('1v1' | '2v2') — seules les équipes de ce format sont affichées
- * - onSelect(team) : appelé quand une équipe est choisie
- * - onClose() : fermeture
- */
 export const TeamSelectorModal = ({
   t,
   isDark,
@@ -20,51 +11,89 @@ export const TeamSelectorModal = ({
   onSelect,
   onClose,
 }) => {
+  const { getPokemonImageUrl } = usePokemon();
   const filtered = teams.filter(
-    (team) =>
-      team.ownerId === playerId &&
-      team.format === format
+    (team) => team.ownerId === playerId && team.format === format
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex flex-col">
-      <div className={`${t.bgPrimary} flex-1 overflow-y-auto flex flex-col`}>
-        <div className="p-6 flex-1 overflow-y-auto">
-          <h2 className={`text-2xl font-black ${t.text} mb-4`}>Sélectionner une équipe</h2>
+    <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
+      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+        {/* Grip + Header */}
+        <div className={`${t.surfaceBlur} px-5 pt-3 pb-4 border-b ${t.divider}`}>
+          <div className={`w-10 h-1 ${t.surfaceMuted} rounded-full mx-auto mb-3`} aria-hidden="true" />
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className={`text-lg font-black ${t.text}`}>Sélectionner une équipe</h2>
+              <p className={`${t.textSecondary} text-xs mt-0.5`}>Format {format}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
+              aria-label="Fermer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
 
+        {/* Liste */}
+        <div
+          className="flex-1 overflow-y-auto px-5 pt-4"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
+        >
           {filtered.length === 0 ? (
-            <div className="text-center py-12">
-              <p className={`${t.textSecondary} mb-2`}>
-                Aucune équipe au format {format} pour ce joueur
-              </p>
+            <div className={`${t.surface} rounded-2xl p-8 text-center mt-8`}>
+              <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-3`}>
+                <Shield size={22} />
+              </div>
+              <p className={`${t.text} font-semibold mb-1`}>Aucune équipe en {format}</p>
               <p className={`${t.textSecondary} text-sm`}>
                 Crée d'abord une équipe depuis l'onglet Équipes.
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {filtered.map((team) => (
-                <button
-                  key={team._id}
-                  onClick={() => onSelect(team)}
-                  className={`w-full ${t.bgPrimary} rounded-lg p-4 border ${t.border} text-left hover:shadow-md transition`}
-                >
-                  <h3 className={`font-black ${t.text}`}>{team.name}</h3>
-                  <p className={`${t.textSecondary} text-sm`}>
-                    {team.format} · {team.pokemon?.length || 0} Pokémon
-                  </p>
-                </button>
-              ))}
+            <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
+              {filtered.map((team, idx) => {
+                const thumbSlots = (team.pokemon || []).slice(0, 4);
+                const isLast = idx === filtered.length - 1;
+                return (
+                  <button
+                    key={team._id}
+                    onClick={() => onSelect(team)}
+                    className={`w-full flex items-center gap-3 p-3 text-left active:bg-black/5 dark:active:bg-white/5 ${
+                      !isLast ? `border-b ${t.divider}` : ''
+                    }`}
+                  >
+                    {/* Mini miniature 2x2 */}
+                    <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${t.surface} p-1 grid grid-cols-2 grid-rows-2 gap-0.5`}>
+                      {[0, 1, 2, 3].map((i) => {
+                        const p = thumbSlots[i];
+                        return (
+                          <div key={i} className="flex items-center justify-center overflow-hidden">
+                            {p ? (
+                              <img
+                                src={getPokemonImageUrl(p.pokeId)}
+                                alt={p.name}
+                                className="w-full h-full object-contain"
+                                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                              />
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
+                      <p className={`${t.textSecondary} text-xs mt-0.5`}>
+                        {(team.pokemon || []).length} Pokémon
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
-        </div>
-        <div className={`border-t ${t.headerBorder} p-6`}>
-          <button
-            onClick={onClose}
-            className={`w-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} ${t.text} py-3 rounded-xl font-bold`}
-          >
-            Fermer
-          </button>
         </div>
       </div>
     </div>

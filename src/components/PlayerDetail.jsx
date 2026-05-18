@@ -1,7 +1,25 @@
 import React, { useState } from 'react';
+import { ChevronLeft, Plus, Trophy, Zap, AlertTriangle } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
+
+const AVATAR_PALETTE = [
+  'bg-indigo-500',
+  'bg-blue-500',
+  'bg-emerald-500',
+  'bg-amber-500',
+  'bg-pink-500',
+  'bg-purple-500',
+  'bg-orange-500',
+  'bg-teal-500',
+];
+const avatarColor = (name = '') => {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+};
+const initials = (name = '?') => name.trim().charAt(0).toUpperCase() || '?';
 
 export const PlayerDetail = ({
   player,
@@ -10,7 +28,7 @@ export const PlayerDetail = ({
   onBack,
   onUpdate,
   onUpdateTeam,
-  isDark
+  isDark,
 }) => {
   const [addingPokemon, setAddingPokemon] = useState(false);
   const { getPokemonImageUrl } = usePokemon();
@@ -19,23 +37,19 @@ export const PlayerDetail = ({
   const handleAddPokemon = async (pokemon) => {
     const updated = {
       ...player,
-      pokemon: [...(player.pokemon || []), {
-        id: Date.now().toString(),
-        pokeId: pokemon.pokeId,
-        name: pokemon.name,
-        level: 50
-      }]
+      pokemon: [
+        ...(player.pokemon || []),
+        { id: Date.now().toString(), pokeId: pokemon.pokeId, name: pokemon.name, level: 50 },
+      ],
     };
     await onUpdate(player._id, updated);
     setAddingPokemon(false);
   };
 
-  // Pokémon en cours de suppression (objet complet, pas juste l'id)
   const deletingPokemonObj = deletingPokemon
     ? player.pokemon.find((p) => p.id === deletingPokemon)
     : null;
 
-  // Équipes du joueur qui contiennent ce Pokémon (matching par pokeId)
   const teamsContainingDeleted = deletingPokemonObj
     ? teams.filter(
         (team) =>
@@ -47,8 +61,6 @@ export const PlayerDetail = ({
   const handleDeletePokemon = async () => {
     if (!deletingPokemonObj) return;
     const pokeIdToRemove = deletingPokemonObj.pokeId;
-
-    // 1. Retirer le Pokémon des équipes concernées
     if (onUpdateTeam) {
       for (const team of teamsContainingDeleted) {
         await onUpdateTeam(team._id, {
@@ -57,113 +69,187 @@ export const PlayerDetail = ({
         });
       }
     }
-
-    // 2. Retirer le Pokémon du roster du joueur
     await onUpdate(player._id, {
       ...player,
       pokemon: player.pokemon.filter((p) => p.id !== deletingPokemon),
     });
-
     setDeletingPokemon(null);
   };
 
   if (!player) return null;
 
-  return (
-    <div className={`min-h-screen bg-gradient-to-br ${t.bg}`}>
-      <div className={`${t.headerBg} pt-8 pb-6 px-6 border-b ${t.headerBorder}`}>
-        <button onClick={onBack} className="text-orange-500 mb-4 font-bold">
-          ← Retour
-        </button>
-        <h1 className={`text-2xl font-black ${t.text}`}>{player.name}</h1>
-        <p className={`${t.textSecondary}`}>🏆 {player.stats?.wins || 0}V - {player.stats?.losses || 0}D</p>
-      </div>
+  const wins = player.stats?.wins || 0;
+  const losses = player.stats?.losses || 0;
+  const total = wins + losses;
+  const winRate = total > 0 ? Math.round((wins / total) * 100) : null;
 
-      <div className="px-6 mt-6 pb-32">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className={`text-lg font-black ${t.text}`}>Pokémon ({player.pokemon?.length || 0})</h2>
+  return (
+    <div className={`min-h-screen ${t.pageBg}`}>
+      {/* ── En-tête sticky ── */}
+      <div
+        className={`${t.surfaceBlur} sticky top-0 z-10 px-4 border-b ${t.divider}`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
+      >
+        <div className="flex items-center justify-between">
           <button
-            onClick={() => setAddingPokemon(true)}
-            className="bg-orange-500 text-white px-4 py-2 rounded-full font-bold text-sm"
+            onClick={onBack}
+            className={`flex items-center gap-1 -ml-1 ${t.accent} font-semibold`}
+            aria-label="Retour"
           >
-            + Ajouter
+            <ChevronLeft size={22} />
+            <span className="text-base">Joueurs</span>
           </button>
         </div>
-
-        {!player.pokemon || player.pokemon.length === 0 ? (
-          <div className={`${t.bgPrimary} rounded-2xl p-6 border ${t.border} text-center ${t.textSecondary}`}>
-            Aucun Pokémon
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {player.pokemon.map(p => (
-              <SwipeableRow
-                key={p.id}
-                onDelete={() => setDeletingPokemon(p.id)}
-                className="rounded-2xl"
-              >
-                <div className={`${t.bgPrimary} rounded-2xl p-4 border ${t.border} flex items-center gap-3`}>
-                  <img src={getPokemonImageUrl(p.pokeId)} alt={p.name} className="w-12 h-12 object-contain" />
-                  <div>
-                    <p className={`font-black ${t.text}`}>{p.name}</p>
-                    <p className={`${t.textSecondary} text-sm`}>Niveau {p.level}</p>
-                  </div>
-                </div>
-              </SwipeableRow>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Modal Ajouter Pokémon */}
+      <div className="px-5 mt-6 pb-32 space-y-6">
+        {/* ── Hero ── */}
+        <div className="flex flex-col items-center text-center">
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center text-white font-black text-4xl ${avatarColor(player.name)} mb-3`}>
+            {initials(player.name)}
+          </div>
+          <h1 className={`text-2xl font-black tracking-tight ${t.text}`}>{player.name}</h1>
+          <p className={`${t.textSecondary} text-sm mt-1`}>
+            {total} combat{total > 1 ? 's' : ''}
+            {winRate !== null && ` · ${winRate}% de victoires`}
+          </p>
+        </div>
+
+        {/* ── Tuiles stats ── */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className={`${t.surface} rounded-2xl p-4 flex flex-col gap-1.5`}>
+            <div className={`w-8 h-8 rounded-lg ${t.iconTileEmerald} flex items-center justify-center`}>
+              <Trophy size={16} />
+            </div>
+            <p className={`text-2xl font-black ${t.text} leading-none`}>{wins}</p>
+            <p className={`${t.textSecondary} text-xs font-medium`}>Victoires</p>
+          </div>
+          <div className={`${t.surface} rounded-2xl p-4 flex flex-col gap-1.5`}>
+            <div className={`w-8 h-8 rounded-lg ${t.iconTileRed} flex items-center justify-center`}>
+              <Zap size={16} />
+            </div>
+            <p className={`text-2xl font-black ${t.text} leading-none`}>{losses}</p>
+            <p className={`${t.textSecondary} text-xs font-medium`}>Défaites</p>
+          </div>
+          <div className={`${t.surface} rounded-2xl p-4 flex flex-col gap-1.5`}>
+            <div className={`w-8 h-8 rounded-lg ${t.iconTileIndigo} flex items-center justify-center`}>
+              <Trophy size={16} />
+            </div>
+            <p className={`text-2xl font-black ${t.text} leading-none`}>
+              {winRate !== null ? `${winRate}%` : '—'}
+            </p>
+            <p className={`${t.textSecondary} text-xs font-medium`}>Winrate</p>
+          </div>
+        </div>
+
+        {/* ── Pokémon ── */}
+        <section>
+          <div className="flex justify-between items-baseline mb-3 px-1">
+            <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
+              Pokémon ({player.pokemon?.length || 0})
+            </h2>
+            <button
+              onClick={() => setAddingPokemon(true)}
+              className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
+            >
+              <Plus size={16} />
+              Ajouter
+            </button>
+          </div>
+
+          {!player.pokemon || player.pokemon.length === 0 ? (
+            <div className={`${t.surface} rounded-2xl p-8 text-center`}>
+              <p className={`${t.textSecondary} text-sm`}>Aucun Pokémon</p>
+            </div>
+          ) : (
+            <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+              {player.pokemon.map((p, idx) => {
+                const isLast = idx === player.pokemon.length - 1;
+                return (
+                  <SwipeableRow
+                    key={p.id}
+                    onDelete={() => setDeletingPokemon(p.id)}
+                    className={!isLast ? `border-b ${t.divider}` : ''}
+                  >
+                    <div className={`flex items-center gap-3 px-4 py-3 ${t.surface}`}>
+                      <img
+                        src={getPokemonImageUrl(p.pokeId)}
+                        alt={p.name}
+                        className="w-11 h-11 object-contain flex-shrink-0"
+                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold ${t.text} truncate`}>{p.name}</p>
+                        <p className={`${t.textSecondary} text-xs mt-0.5`}>Niveau {p.level}</p>
+                      </div>
+                      <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
+                    </div>
+                  </SwipeableRow>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* ── Modal Ajouter Pokémon ── */}
       {addingPokemon && (
         <PokemonPicker
           t={t}
           isDark={isDark}
           title="Ajouter un Pokémon"
-          alreadyPickedIds={(player.pokemon || []).map(p => p.pokeId)}
+          alreadyPickedIds={(player.pokemon || []).map((p) => p.pokeId)}
           onSelect={handleAddPokemon}
           onClose={() => setAddingPokemon(false)}
         />
       )}
 
-      {/* Modal Confirmation suppression */}
+      {/* ── Modal Confirmation suppression ── */}
       {deletingPokemon && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center px-4">
-          <div className={`${t.bgPrimary} rounded-2xl p-6 max-w-sm w-full border ${t.border}`}>
-            <p className={`font-black text-lg ${t.text} mb-2`}>
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-end sm:items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+            <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {deletingPokemonObj?.name} ?
             </p>
 
             {teamsContainingDeleted.length > 0 && (
-              <div className={`mt-3 mb-4 p-3 rounded-lg border border-orange-400 bg-orange-500 bg-opacity-10`}>
-                <p className={`text-sm font-bold text-orange-500 mb-1`}>
-                  ⚠️ {deletingPokemonObj?.name} est utilisé dans {teamsContainingDeleted.length === 1 ? 'une équipe' : `${teamsContainingDeleted.length} équipes`} :
-                </p>
-                <ul className={`text-sm ${t.text} list-disc list-inside`}>
-                  {teamsContainingDeleted.map((team) => (
-                    <li key={team._id}>
-                      <span className="font-bold">{team.name}</span>
-                      <span className={t.textSecondary}> ({team.format})</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className={`text-xs ${t.textSecondary} mt-2`}>
-                  Il sera également retiré de {teamsContainingDeleted.length === 1 ? 'cette équipe' : 'ces équipes'}.
-                </p>
+              <div className={`mt-3 mb-4 p-3 rounded-xl ${t.warningSoftBg}`}>
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={16} className={`${t.warningSoftText} flex-shrink-0 mt-0.5`} />
+                  <div>
+                    <p className={`text-sm font-semibold ${t.warningSoftText} mb-1`}>
+                      Présent dans {teamsContainingDeleted.length === 1 ? 'une équipe' : `${teamsContainingDeleted.length} équipes`}
+                    </p>
+                    <ul className={`text-sm ${t.text} space-y-0.5`}>
+                      {teamsContainingDeleted.map((team) => (
+                        <li key={team._id} className="flex items-center gap-1.5">
+                          <span className="font-semibold">{team.name}</span>
+                          <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+                            {team.format}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className={`text-xs ${t.textSecondary} mt-2`}>
+                      Il sera également retiré de {teamsContainingDeleted.length === 1 ? 'cette équipe' : 'ces équipes'}.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
 
-            <div className="flex gap-3 mt-4">
+            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+
+            <div className="flex gap-2">
               <button
                 onClick={() => setDeletingPokemon(null)}
-                className={`flex-1 ${isDark ? 'bg-gray-700' : 'bg-gray-200'} ${t.text} py-3 rounded-lg font-bold`}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
                 Annuler
               </button>
               <button
                 onClick={handleDeletePokemon}
-                className="flex-1 bg-red-500 text-white py-3 rounded-lg font-bold"
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
               >
                 Supprimer
               </button>
