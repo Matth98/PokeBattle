@@ -48,12 +48,16 @@ export const useAPI = () => {
     }
   }, []);
 
-  const createPlayer = useCallback(async (name) => {
+  const createPlayer = useCallback(async (payload) => {
     try {
+      const body =
+        typeof payload === 'string'
+          ? { name: payload, stats: { wins: 0, losses: 0 }, pokemon: [] }
+          : { ...payload, stats: { wins: 0, losses: 0 }, pokemon: [] };
       const res = await fetch(`${API_BASE_URL}/players`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, stats: { wins: 0, losses: 0 }, pokemon: [] })
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error('Erreur création joueur');
       return await res.json();

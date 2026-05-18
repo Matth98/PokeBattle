@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Trash2 } from 'lucide-react';
 
 /**
  * Ligne "swipeable" : un swipe vers la gauche révèle un bouton d'action (suppression).
@@ -6,19 +7,23 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
  * Props :
  * - children : contenu de la ligne
  * - onDelete : callback appelé quand on tape sur le bouton révélé
- * - actionLabel : texte/emoji du bouton (par défaut '🗑️')
+ * - actionLabel : icône Lucide pour le bouton (élément React, défaut Trash2)
  * - actionWidth : largeur de la zone d'action en pixels (par défaut 88)
  * - threshold : distance de swipe à dépasser pour rester ouvert (par défaut 50)
  * - className : classes appliquées au wrapper externe (utile pour border-radius)
+ * - surfaceClass : classes Tailwind pour le fond opaque (défaut 'bg-white').
+ *                  CRITIQUE : doit être opaque, sinon l'action rouge transparaît
+ *                  quand on tape (active:bg-black/5 sur les enfants devient semi-transparent).
  * - disabled : désactive le swipe (ex: en mode sélection)
  */
 export const SwipeableRow = ({
   children,
   onDelete,
-  actionLabel = '🗑️',
+  actionLabel,
   actionWidth = 88,
   threshold = 50,
   className = '',
+  surfaceClass = 'bg-white',
   disabled = false,
 }) => {
   const containerRef = useRef(null);
@@ -133,15 +138,16 @@ export const SwipeableRow = ({
         <button
           type="button"
           onClick={handleConfirmDelete}
-          className="w-full h-full text-white font-bold text-xl"
+          className="w-full h-full text-white font-bold flex items-center justify-center"
           aria-label="Supprimer"
         >
-          {actionLabel}
+          {actionLabel || <Trash2 size={18} />}
         </button>
       </div>
 
-      {/* Contenu glissant */}
+      {/* Contenu glissant — fond opaque obligatoire pour masquer l'action rouge */}
       <div
+        className={surfaceClass}
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isDragging ? 'none' : 'transform 0.2s ease-out',

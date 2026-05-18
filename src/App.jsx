@@ -101,8 +101,10 @@ function App() {
     if (t) setTeams(t);
   };
 
-  const handleAddPlayer = async (name) => {
-    const newPlayer = await createPlayer(name);
+  const handleAddPlayer = async (data) => {
+    // data peut être un string (nom) pour rétro-compat, ou { name, avatar }
+    const payload = typeof data === 'string' ? { name: data } : data;
+    const newPlayer = await createPlayer(payload);
     if (newPlayer) {
       setPlayers([...players, newPlayer]);
     }

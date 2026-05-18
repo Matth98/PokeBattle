@@ -167,7 +167,7 @@ export const BattleDetail = ({
 
       {/* ── Modale confirmation ── */}
       {confirmingDelete && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-end sm:items-center justify-center p-4`}>
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>Supprimer ce combat ?</p>
             <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>

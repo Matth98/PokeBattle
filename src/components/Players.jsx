@@ -1,23 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Square, Users } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Users, Camera } from 'lucide-react';
 import { SwipeableRow } from './SwipeableRow';
-
-const AVATAR_PALETTE = [
-  'bg-indigo-500',
-  'bg-blue-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-pink-500',
-  'bg-purple-500',
-  'bg-orange-500',
-  'bg-teal-500',
-];
-const avatarColor = (name = '') => {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
-};
-const initials = (name = '?') => name.trim().charAt(0).toUpperCase() || '?';
+import { PlayerAvatar } from './PlayerAvatar';
+import { resizeImageToDataUrl } from '../utils/imageResize';
 
 export const Players = ({
   players,
@@ -35,15 +20,36 @@ export const Players = ({
   setShowForm,
 }) => {
   const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerAvatar, setNewPlayerAvatar] = useState(null); // data URL
   const [deletingSelected, setDeletingSelected] = useState(false);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const fileInputRef = useRef(null);
 
   const inSelection = selectionMode === 'players';
 
+  const resetForm = () => {
+    setNewPlayerName('');
+    setNewPlayerAvatar(null);
+  };
+
   const handleAddPlayer = async () => {
     if (!newPlayerName.trim()) return;
-    await onAddPlayer(newPlayerName);
-    setNewPlayerName('');
+    await onAddPlayer({ name: newPlayerName, avatar: newPlayerAvatar });
+    resetForm();
     setShowForm(false);
+  };
+
+  const handleAvatarPick = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await resizeImageToDataUrl(file);
+      setNewPlayerAvatar(dataUrl);
+    } catch (err) {
+      alert('Image invalide : ' + err.message);
+    } finally {
+      e.target.value = ''; // permet de re-choisir le même fichier
+    }
   };
 
   const handleDeleteMultiple = async () => {
@@ -51,6 +57,17 @@ export const Players = ({
     setSelectionMode(null);
     setSelectedItems([]);
     setDeletingSelected(false);
+  };
+
+  const playerToDelete = confirmingDeleteId
+    ? players.find((p) => p._id === confirmingDeleteId)
+    : null;
+
+  const handleConfirmSingleDelete = async () => {
+    if (confirmingDeleteId) {
+      await onDeletePlayer(confirmingDeleteId);
+      setConfirmingDeleteId(null);
+    }
   };
 
   return (
@@ -138,8 +155,9 @@ export const Players = ({
               return (
                 <SwipeableRow
                   key={p._id}
-                  onDelete={() => onDeletePlayer(p._id)}
+                  onDelete={() => setConfirmingDeleteId(p._id)}
                   disabled={inSelection}
+                  surfaceClass={t.surface}
                   className={!isLast ? `border-b ${t.divider}` : ''}
                 >
                   <button
@@ -162,10 +180,7 @@ export const Players = ({
                       </span>
                     )}
 
-                    {/* Avatar coloré avec initiale */}
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-black text-base ${avatarColor(p.name)} flex-shrink-0`}>
-                      {initials(p.name)}
-                    </div>
+                    <PlayerAvatar player={p} size={44} className="flex-shrink-0" />
 
                     <div className="flex-1 min-w-0">
                       <p className={`font-semibold ${t.text} truncate`}>{p.name}</p>
@@ -185,7 +200,7 @@ export const Players = ({
 
       {/* ── Modale confirmation suppression multiple ── */}
       {deletingSelected && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-end sm:items-center justify-center p-4`}>
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {selectedItems.length} joueur{selectedItems.length > 1 ? 's' : ''} ?
@@ -209,40 +224,105 @@ export const Players = ({
         </div>
       )}
 
-      {/* ── Modale Nouveau joueur (form sheet iOS-like) ── */}
-      {showForm && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-end justify-center`}>
-          <div
-            className={`${t.surface} w-full max-w-md rounded-t-3xl sm:rounded-3xl sm:mb-12 p-6`}
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
-          >
-            <div className={`w-10 h-1 ${t.surfaceMuted} rounded-full mx-auto mb-5`} aria-hidden="true" />
-            <h2 className={`text-xl font-black ${t.text} mb-4`}>Nouveau joueur</h2>
-            <input
-              type="text"
-              placeholder="Nom du joueur"
-              value={newPlayerName}
-              onChange={(e) => setNewPlayerName(e.target.value)}
-              className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 mb-5 outline-none focus:ring-2 ${t.accentRing}`}
-              autoFocus
-            />
+      {/* ── Modale confirmation suppression unitaire (swipe) ── */}
+      {confirmingDeleteId && (
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+            <p className={`font-black text-lg ${t.text} mb-1`}>
+              Supprimer {playerToDelete?.name} ?
+            </p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  setShowForm(false);
-                  setNewPlayerName('');
-                }}
+                onClick={() => setConfirmingDeleteId(null)}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
                 Annuler
               </button>
               <button
+                onClick={handleConfirmSingleDelete}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modale Nouveau joueur (full-height sheet iOS) ── */}
+      {showForm && (
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex flex-col`}>
+          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}>
+            {/* Barre supérieure */}
+            <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  resetForm();
+                }}
+                className={`${t.accent} font-semibold`}
+              >
+                Annuler
+              </button>
+              <h2 className={`text-base font-black ${t.text}`}>Nouveau joueur</h2>
+              <button
                 onClick={handleAddPlayer}
                 disabled={!newPlayerName.trim()}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.accentBg} text-white ${!newPlayerName.trim() ? 'opacity-40' : ''}`}
+                className={`${t.accent} font-bold ${!newPlayerName.trim() ? 'opacity-40' : ''}`}
               >
                 Créer
               </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-8 space-y-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+              {/* Avatar uploader */}
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative group"
+                  aria-label="Choisir une photo"
+                >
+                  <PlayerAvatar
+                    player={{ name: newPlayerName, avatar: newPlayerAvatar }}
+                    size={104}
+                    textSize="text-4xl"
+                  />
+                  <div className={`absolute bottom-0 right-0 w-9 h-9 rounded-full ${t.accentBg} text-white flex items-center justify-center border-4 ${isDark ? 'border-black' : 'border-gray-50'}`}>
+                    <Camera size={16} />
+                  </div>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarPick}
+                  className="hidden"
+                />
+                {newPlayerAvatar && (
+                  <button
+                    onClick={() => setNewPlayerAvatar(null)}
+                    className={`mt-2 ${t.danger} text-xs font-semibold`}
+                  >
+                    Retirer la photo
+                  </button>
+                )}
+              </div>
+
+              {/* Nom */}
+              <div>
+                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                  Nom du joueur
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Matthias"
+                  value={newPlayerName}
+                  onChange={(e) => setNewPlayerName(e.target.value)}
+                  className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
+                  autoFocus
+                />
+              </div>
             </div>
           </div>
         </div>

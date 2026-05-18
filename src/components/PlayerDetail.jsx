@@ -1,25 +1,10 @@
-import React, { useState } from 'react';
-import { ChevronLeft, Plus, Trophy, Zap, AlertTriangle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ChevronLeft, Plus, Trophy, Zap, AlertTriangle, Camera } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
-
-const AVATAR_PALETTE = [
-  'bg-indigo-500',
-  'bg-blue-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-pink-500',
-  'bg-purple-500',
-  'bg-orange-500',
-  'bg-teal-500',
-];
-const avatarColor = (name = '') => {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
-};
-const initials = (name = '?') => name.trim().charAt(0).toUpperCase() || '?';
+import { PlayerAvatar } from './PlayerAvatar';
+import { resizeImageToDataUrl } from '../utils/imageResize';
 
 export const PlayerDetail = ({
   player,
@@ -33,6 +18,20 @@ export const PlayerDetail = ({
   const [addingPokemon, setAddingPokemon] = useState(false);
   const { getPokemonImageUrl } = usePokemon();
   const [deletingPokemon, setDeletingPokemon] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleAvatarPick = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await resizeImageToDataUrl(file);
+      await onUpdate(player._id, { ...player, avatar: dataUrl });
+    } catch (err) {
+      alert('Image invalide : ' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
 
   const handleAddPokemon = async (pokemon) => {
     const updated = {
@@ -105,14 +104,36 @@ export const PlayerDetail = ({
       <div className="px-5 mt-6 pb-32 space-y-6">
         {/* ── Hero ── */}
         <div className="flex flex-col items-center text-center">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center text-white font-black text-4xl ${avatarColor(player.name)} mb-3`}>
-            {initials(player.name)}
-          </div>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="relative mb-3"
+            aria-label="Changer la photo"
+          >
+            <PlayerAvatar player={player} size={96} textSize="text-4xl" />
+            <div className={`absolute bottom-0 right-0 w-8 h-8 rounded-full ${t.accentBg} text-white flex items-center justify-center border-4 ${isDark ? 'border-black' : 'border-gray-50'}`}>
+              <Camera size={14} />
+            </div>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarPick}
+            className="hidden"
+          />
           <h1 className={`text-2xl font-black tracking-tight ${t.text}`}>{player.name}</h1>
           <p className={`${t.textSecondary} text-sm mt-1`}>
             {total} combat{total > 1 ? 's' : ''}
             {winRate !== null && ` · ${winRate}% de victoires`}
           </p>
+          {player.avatar && (
+            <button
+              onClick={() => onUpdate(player._id, { ...player, avatar: null })}
+              className={`mt-2 ${t.danger} text-xs font-semibold`}
+            >
+              Retirer la photo
+            </button>
+          )}
         </div>
 
         {/* ── Tuiles stats ── */}
@@ -169,6 +190,7 @@ export const PlayerDetail = ({
                   <SwipeableRow
                     key={p.id}
                     onDelete={() => setDeletingPokemon(p.id)}
+                    surfaceClass={t.surface}
                     className={!isLast ? `border-b ${t.divider}` : ''}
                   >
                     <div className={`flex items-center gap-3 px-4 py-3 ${t.surface}`}>
@@ -206,7 +228,7 @@ export const PlayerDetail = ({
 
       {/* ── Modal Confirmation suppression ── */}
       {deletingPokemon && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-end sm:items-center justify-center p-4`}>
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {deletingPokemonObj?.name} ?

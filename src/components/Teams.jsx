@@ -4,7 +4,7 @@ import { usePokemon } from '../hooks/usePokemon';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
 
-const emptyTeamData = () => ({ name: '', owner: null, format: '2v2', pokemon: [] });
+const emptyTeamData = () => ({ name: '', owner: null, format: '1v1', pokemon: [] });
 
 export const Teams = ({
   teams,
@@ -29,6 +29,7 @@ export const Teams = ({
   const [newTeamData, setNewTeamData] = useState(emptyTeamData());
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, owner: false, pokemon: false });
   const [deletingSelected, setDeletingSelected] = useState(false);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
   const [pickingPokemon, setPickingPokemon] = useState(false);
   const { getPokemonImageUrl } = usePokemon();
 
@@ -233,8 +234,9 @@ export const Teams = ({
               return (
                 <SwipeableRow
                   key={team._id}
-                  onDelete={() => onDeleteTeam(team._id)}
+                  onDelete={() => setConfirmingDeleteId(team._id)}
                   disabled={inSelection}
+                  surfaceClass={t.surface}
                   className={!isLast ? `border-b ${t.divider}` : ''}
                 >
                   <button
@@ -297,9 +299,41 @@ export const Teams = ({
         )}
       </div>
 
+      {/* ── Modale confirmation suppression unitaire (swipe) ── */}
+      {confirmingDeleteId && (() => {
+        const team = teams.find((tt) => tt._id === confirmingDeleteId);
+        return (
+          <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
+            <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
+              <p className={`font-black text-lg ${t.text} mb-1`}>
+                Supprimer {team?.name} ?
+              </p>
+              <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmingDeleteId(null)}
+                  className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={async () => {
+                    await onDeleteTeam(confirmingDeleteId);
+                    setConfirmingDeleteId(null);
+                  }}
+                  className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Modale confirmation suppression multiple ── */}
       {deletingSelected && (
-        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-end sm:items-center justify-center p-4`}>
+        <div className={`fixed inset-0 ${t.overlay} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {selectedItems.length} équipe{selectedItems.length > 1 ? 's' : ''} ?
@@ -437,6 +471,7 @@ export const Teams = ({
                         <SwipeableRow
                           key={p.id}
                           onDelete={() => handleRemovePokemonFromForm(p.id)}
+                          surfaceClass={t.surface}
                           className={!isLast ? `border-b ${t.divider}` : ''}
                         >
                           <div className={`flex items-center gap-3 px-4 py-2.5 ${t.surface}`}>
