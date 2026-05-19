@@ -117,7 +117,7 @@ function AppContent({ isDark, setIsDark }) {
 
   useEffect(() => {
     loadAllData();
-  }, []);
+  }, [loadAllData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAllData = async () => {
     const [p, b, t] = await Promise.all([

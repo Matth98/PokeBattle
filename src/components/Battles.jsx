@@ -115,17 +115,6 @@ export const Battles = ({
     }));
   };
 
-  // Déplace un Pokémon vers le haut ou le bas
-  const handleMovePokemon = (slot, index, direction) => {
-    setBattleSelectedPokemon((prev) => {
-      const list = [...prev[slot]];
-      const targetIdx = direction === 'up' ? index - 1 : index + 1;
-      if (targetIdx < 0 || targetIdx >= list.length) return prev;
-      [list[index], list[targetIdx]] = [list[targetIdx], list[index]];
-      return { ...prev, [slot]: list };
-    });
-  };
-
   // Changement manuel du gagnant — écrase la valeur auto, tient jusqu'à la
   // prochaine modification d'une case "éliminé".
   const handleWinnerChange = (value) => {
