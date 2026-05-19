@@ -319,6 +319,7 @@ function AppContent({ isDark, setIsDark }) {
           onUpdate={handleUpdatePlayer}
           onAddTeam={handleAddTeam}
           onUpdateTeam={handleUpdateTeam}
+          onDeleteTeam={handleDeleteTeam}
           onSelectTeam={(team) => {
             setSelectedTeam(team);
             setCurrentTab('teamDetail');

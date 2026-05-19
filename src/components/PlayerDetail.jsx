@@ -32,6 +32,7 @@ export const PlayerDetail = ({
   onUpdate,
   onAddTeam,
   onUpdateTeam,
+  onDeleteTeam,
   onSelectTeam,
   isDark,
 }) => {
@@ -58,6 +59,7 @@ export const PlayerDetail = ({
   }, [player, battles]);
   const pokemonTypes = usePokemonTypes(allPokeIdsForTypes);
   const [deletingPokemon, setDeletingPokemon] = useState(null);
+  const [deletingTeam, setDeletingTeam] = useState(null);
   const fileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
 
@@ -214,6 +216,12 @@ export const PlayerDetail = ({
       pokemon: player.pokemon.filter((p) => p.id !== deletingPokemon),
     });
     setDeletingPokemon(null);
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!deletingTeam || !onDeleteTeam) return;
+    await onDeleteTeam(deletingTeam);
+    setDeletingTeam(null);
   };
 
   if (!player) return null;
@@ -613,21 +621,32 @@ export const PlayerDetail = ({
                     </>
                   );
 
-                  return onSelectTeam ? (
+                  const inner = onSelectTeam ? (
                     <button
-                      key={team._id}
                       onClick={() => onSelectTeam(team)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''} text-left`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface}`}
                     >
                       {rowContent}
                     </button>
                   ) : (
-                    <div
-                      key={team._id}
-                      className={`flex items-center gap-3 px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''}`}
-                    >
+                    <div className={`flex items-center gap-3 px-4 py-3 ${t.surface}`}>
                       {rowContent}
                     </div>
+                  );
+
+                  return (
+                    <SwipeableRow
+                      key={team._id}
+                      onDelete={onDeleteTeam ? () => setDeletingTeam(team._id) : undefined}
+                      surfaceClass={t.surface}
+                      className={[
+                        !isLast ? `border-b ${t.divider}` : '',
+                        idx === 0 ? 'rounded-t-2xl' : '',
+                        isLast ? 'rounded-b-2xl' : '',
+                      ].filter(Boolean).join(' ')}
+                    >
+                      {inner}
+                    </SwipeableRow>
                   );
                 })}
               </div>
@@ -947,6 +966,32 @@ export const PlayerDetail = ({
           onSelect={handleSelectTeamPokemon}
           onClose={() => setPickingTeamPokemon(false)}
         />
+      )}
+
+      {/* ── Modal Confirmation suppression équipe ── */}
+      {deletingTeam && (
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+            <p className={`font-black text-lg ${t.text} mb-1`}>
+              Supprimer {playerTeams.find((tm) => tm._id === deletingTeam)?.name} ?
+            </p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeletingTeam(null)}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteTeam}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Modal Confirmation suppression ── */}
