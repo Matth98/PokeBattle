@@ -119,7 +119,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-3 ${
                             !isLast ? `border-b ${t.divider}` : ''
-                          } active:bg-black/5 dark:active:bg-white/5 text-left`}
+                          } text-left`}
                         >
                           {/* Joueur 1 — nom + Pokémon ferré gauche */}
                           <div className="flex-1 min-w-0">

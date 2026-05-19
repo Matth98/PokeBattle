@@ -316,8 +316,9 @@ export const PlayerDetail = ({
         ? `${mostUsedType[1]} apparition${mostUsedType[1] > 1 ? 's' : ''} en combat`
         : 'Ajoute un combat pour le révéler',
       tile: mostUsedTypeColors
-        ? `${mostUsedTypeColors.bg} ${mostUsedTypeColors.text}`
+        ? `${mostUsedTypeColors.softBg} ${mostUsedTypeColors.softText}`
         : t.iconTileEmerald,
+      visual: mostUsedTypeName ? { type: 'typeIcon', typeName: mostUsedTypeName } : null,
     },
     {
       Icon: Swords,
@@ -660,6 +661,15 @@ export const PlayerDetail = ({
                           </div>
                         );
                       })}
+                    </div>
+                  ) : visual?.type === 'typeIcon' ? (
+                    <div className={`w-12 h-12 rounded-2xl ${tile} flex items-center justify-center mb-3`}>
+                      <img
+                        src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${visual.typeName}.svg`}
+                        alt={visual.typeName}
+                        className="w-8 h-8 object-contain"
+                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                      />
                     </div>
                   ) : (
                     <div className={`w-9 h-9 rounded-xl ${tile} flex items-center justify-center mb-3`}>

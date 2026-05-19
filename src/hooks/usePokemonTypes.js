@@ -28,25 +28,28 @@ export const TYPE_FR = {
 };
 
 // Couleurs canoniques pour les badges (Tailwind arbitrary values pour pile la teinte)
+// - bg / text : version "pleine" (badge solide, texte blanc)
+// - softBg / softText : version "tuile pastel" (fond très transparent, texte coloré),
+//   utilisée pour les cartes Fun Facts à la place des tuiles t.iconTile*
 export const TYPE_COLORS = {
-  normal:   { bg: 'bg-[#A8A77A]', text: 'text-white' },
-  fire:     { bg: 'bg-[#EE8130]', text: 'text-white' },
-  water:    { bg: 'bg-[#6390F0]', text: 'text-white' },
-  grass:    { bg: 'bg-[#7AC74C]', text: 'text-white' },
-  electric: { bg: 'bg-[#F7D02C]', text: 'text-gray-900' },
-  ice:      { bg: 'bg-[#96D9D6]', text: 'text-gray-900' },
-  fighting: { bg: 'bg-[#C22E28]', text: 'text-white' },
-  poison:   { bg: 'bg-[#A33EA1]', text: 'text-white' },
-  ground:   { bg: 'bg-[#E2BF65]', text: 'text-gray-900' },
-  flying:   { bg: 'bg-[#A98FF3]', text: 'text-white' },
-  psychic:  { bg: 'bg-[#F95587]', text: 'text-white' },
-  bug:      { bg: 'bg-[#A6B91A]', text: 'text-white' },
-  rock:     { bg: 'bg-[#B6A136]', text: 'text-white' },
-  ghost:    { bg: 'bg-[#735797]', text: 'text-white' },
-  dragon:   { bg: 'bg-[#6F35FC]', text: 'text-white' },
-  dark:     { bg: 'bg-[#705746]', text: 'text-white' },
-  steel:    { bg: 'bg-[#B7B7CE]', text: 'text-gray-900' },
-  fairy:    { bg: 'bg-[#D685AD]', text: 'text-white' },
+  normal:   { bg: 'bg-[#A8A77A]', text: 'text-white',      softBg: 'bg-[#A8A77A]/15', softText: 'text-[#A8A77A]' },
+  fire:     { bg: 'bg-[#EE8130]', text: 'text-white',      softBg: 'bg-[#EE8130]/15', softText: 'text-[#EE8130]' },
+  water:    { bg: 'bg-[#6390F0]', text: 'text-white',      softBg: 'bg-[#6390F0]/15', softText: 'text-[#6390F0]' },
+  grass:    { bg: 'bg-[#7AC74C]', text: 'text-white',      softBg: 'bg-[#7AC74C]/15', softText: 'text-[#7AC74C]' },
+  electric: { bg: 'bg-[#F7D02C]', text: 'text-gray-900',   softBg: 'bg-[#F7D02C]/20', softText: 'text-[#B89500]' },
+  ice:      { bg: 'bg-[#96D9D6]', text: 'text-gray-900',   softBg: 'bg-[#96D9D6]/25', softText: 'text-[#3DA5A0]' },
+  fighting: { bg: 'bg-[#C22E28]', text: 'text-white',      softBg: 'bg-[#C22E28]/15', softText: 'text-[#C22E28]' },
+  poison:   { bg: 'bg-[#A33EA1]', text: 'text-white',      softBg: 'bg-[#A33EA1]/15', softText: 'text-[#A33EA1]' },
+  ground:   { bg: 'bg-[#E2BF65]', text: 'text-gray-900',   softBg: 'bg-[#E2BF65]/20', softText: 'text-[#9A7E1F]' },
+  flying:   { bg: 'bg-[#A98FF3]', text: 'text-white',      softBg: 'bg-[#A98FF3]/20', softText: 'text-[#7E5BD9]' },
+  psychic:  { bg: 'bg-[#F95587]', text: 'text-white',      softBg: 'bg-[#F95587]/15', softText: 'text-[#F95587]' },
+  bug:      { bg: 'bg-[#A6B91A]', text: 'text-white',      softBg: 'bg-[#A6B91A]/15', softText: 'text-[#7A8A0A]' },
+  rock:     { bg: 'bg-[#B6A136]', text: 'text-white',      softBg: 'bg-[#B6A136]/20', softText: 'text-[#7E6E15]' },
+  ghost:    { bg: 'bg-[#735797]', text: 'text-white',      softBg: 'bg-[#735797]/20', softText: 'text-[#735797]' },
+  dragon:   { bg: 'bg-[#6F35FC]', text: 'text-white',      softBg: 'bg-[#6F35FC]/15', softText: 'text-[#6F35FC]' },
+  dark:     { bg: 'bg-[#705746]', text: 'text-white',      softBg: 'bg-[#705746]/20', softText: 'text-[#705746]' },
+  steel:    { bg: 'bg-[#B7B7CE]', text: 'text-gray-900',   softBg: 'bg-[#B7B7CE]/25', softText: 'text-[#6B6B85]' },
+  fairy:    { bg: 'bg-[#D685AD]', text: 'text-white',      softBg: 'bg-[#D685AD]/20', softText: 'text-[#C04F8A]' },
 };
 
 const fetchPokemonTypes = (pokeId) => {
