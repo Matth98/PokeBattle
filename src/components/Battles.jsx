@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2 } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { PokemonPicker } from './PokemonPicker';
 import { TeamSelectorModal } from './TeamSelectorModal';
 import { SwipeableRow } from './SwipeableRow';
@@ -105,6 +106,26 @@ export const Battles = ({
     if (clearEditingBattle) clearEditingBattle();
   };
 
+  // Fermeture animée du formulaire (Cancel ou après sauvegarde)
+  const [isFormClosing, setIsFormClosing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const closeFormWithAnimation = useCallback(() => {
+    setIsFormClosing(true);
+    setTimeout(() => {
+      setIsFormClosing(false);
+      resetForm();
+      setShowForm(false);
+    }, 240);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fermeture animée des modales de confirmation
+  const { isClosing: isConfirmDeleteClosing, handleClose: cancelConfirmDelete } = useAnimatedClose(
+    () => setConfirmingDeleteId(null), 180,
+  );
+  const { isClosing: isDeletingSelectedClosing, handleClose: cancelDeletingSelected } = useAnimatedClose(
+    () => setDeletingSelected(false), 180,
+  );
+
   // Toggle l'état "éliminé" d'un Pokémon
   const handleToggleEliminated = (slot, id) => {
     setBattleSelectedPokemon((prev) => ({
@@ -199,15 +220,19 @@ export const Battles = ({
       team1: battleSelectedPokemon.player1,
       team2: battleSelectedPokemon.player2,
     };
-    resetForm();
-    setShowForm(false);
-    if (isEditing) {
-      await onUpdateBattle(editingBattle._id, payload);
-    } else {
-      await onAddBattle(payload);
+    setIsSaving(true);
+    try {
+      if (isEditing) {
+        await onUpdateBattle(editingBattle._id, payload);
+      } else {
+        await onAddBattle(payload);
+      }
+      // Ajoute automatiquement au roster les Pokémon qui n'y sont pas déjà
+      await syncBattlePokemonToRosters(payload);
+    } finally {
+      setIsSaving(false);
     }
-    // Ajoute automatiquement au roster les Pokémon qui n'y sont pas déjà
-    await syncBattlePokemonToRosters(payload);
+    closeFormWithAnimation();
   };
 
   // Synchronise les Pokémon du combat avec le roster des joueurs
@@ -470,8 +495,8 @@ export const Battles = ({
         const p1 = b ? players.find((p) => p._id === b.player1) : null;
         const p2 = b ? players.find((p) => p._id === b.player2) : null;
         return (
-          <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
-            <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+          <div className={`fixed inset-0 ${t.overlay} ${isConfirmDeleteClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
+            <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmDeleteClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
               <p className={`font-black text-lg ${t.text} mb-1`}>
                 Supprimer ce combat ?
               </p>
@@ -483,7 +508,7 @@ export const Battles = ({
               <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setConfirmingDeleteId(null)}
+                  onClick={cancelConfirmDelete}
                   className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
                 >
                   Annuler
@@ -505,15 +530,15 @@ export const Battles = ({
 
       {/* ── Modale confirmation suppression multiple ── */}
       {deletingSelected && (
-        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
-          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+        <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {selectedItems.length} combat{selectedItems.length > 1 ? 's' : ''} ?
             </p>
             <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
             <div className="flex gap-2">
               <button
-                onClick={() => setDeletingSelected(false)}
+                onClick={cancelDeletingSelected}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
                 Annuler
@@ -531,28 +556,33 @@ export const Battles = ({
 
       {/* ── Formulaire Nouveau / Modifier combat (full-screen sheet iOS) ── */}
       {showForm && (
-        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
-          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
+        <div className={`fixed inset-0 ${t.overlay} ${isFormClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
+          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isFormClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
             {/* Barre supérieure */}
-            <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
-              <button
-                onClick={() => {
-                  setShowForm(false);
-                  resetForm();
-                }}
-                className={`${t.accent} font-semibold`}
-              >
-                Annuler
-              </button>
+            <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
+              <div className="flex-1">
+                <button
+                  onClick={closeFormWithAnimation}
+                  disabled={isSaving}
+                  className={`${t.accent} font-semibold disabled:opacity-40`}
+                >
+                  Annuler
+                </button>
+              </div>
               <h2 className={`text-base font-black ${t.text}`}>
                 {isEditing ? 'Modifier le combat' : 'Nouveau combat'}
               </h2>
-              <button
-                onClick={handleSaveBattle}
-                className={`${t.accent} font-bold`}
-              >
-                {isEditing ? 'Enregistrer' : 'Créer'}
-              </button>
+              <div className="flex-1 flex justify-end">
+                <button
+                  onClick={handleSaveBattle}
+                  disabled={isSaving}
+                  className={`${t.accent} font-bold flex items-center gap-1 disabled:opacity-60`}
+                >
+                  {isSaving
+                    ? <Loader2 size={16} className="animate-spin" />
+                    : (isEditing ? 'Enregistrer' : 'Créer')}
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>

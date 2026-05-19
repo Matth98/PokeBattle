@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, Pencil, Calendar, Trash2, FileText } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 
 const TeamSection = ({ title, isWinner, pokemon, getPokemonImageUrl, t }) => (
   <section>
@@ -60,6 +61,10 @@ export const BattleDetail = ({
 }) => {
   const { getPokemonImageUrl } = usePokemon();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const { isClosing: isConfirmClosing, handleClose: handleCancelDelete } = useAnimatedClose(
+    () => setConfirmingDelete(false),
+    180,
+  );
 
   if (!battle) return null;
 
@@ -168,13 +173,13 @@ export const BattleDetail = ({
 
       {/* ── Modale confirmation ── */}
       {confirmingDelete && (
-        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
-          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+        <div className={`fixed inset-0 ${t.overlay} ${isConfirmClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>Supprimer ce combat ?</p>
             <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
             <div className="flex gap-2">
               <button
-                onClick={() => setConfirmingDelete(false)}
+                onClick={handleCancelDelete}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
                 Annuler

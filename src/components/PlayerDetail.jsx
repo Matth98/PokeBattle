@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import {
   AlertTriangle,
   Camera,
@@ -61,6 +62,34 @@ export const PlayerDetail = ({
   const pokemonTypes = usePokemonTypes(allPokeIdsForTypes);
   const [deletingPokemon, setDeletingPokemon] = useState(null);
   const [deletingTeam, setDeletingTeam] = useState(null);
+  const { isClosing: isDeletingTeamClosing, handleClose: cancelDeletingTeam } = useAnimatedClose(
+    () => setDeletingTeam(null), 180,
+  );
+  const { isClosing: isDeletingPokemonClosing, handleClose: cancelDeletingPokemon } = useAnimatedClose(
+    () => setDeletingPokemon(null), 180,
+  );
+
+  // Fermeture animée "Modifier joueur"
+  const [isEditPlayerClosing, setIsEditPlayerClosing] = useState(false);
+  const cancelEditPlayer = useCallback(() => {
+    setIsEditPlayerClosing(true);
+    setTimeout(() => {
+      setIsEditPlayerClosing(false);
+      setEditingPlayer(false);
+    }, 240);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fermeture animée "Nouvelle équipe" (dans PlayerDetail)
+  const [isCreateTeamClosing, setIsCreateTeamClosing] = useState(false);
+  const cancelCreateTeam = useCallback(() => {
+    setIsCreateTeamClosing(true);
+    setTimeout(() => {
+      setIsCreateTeamClosing(false);
+      setCreatingTeam(false);
+      resetTeamForm();
+    }, 240);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const fileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
 
@@ -739,23 +768,27 @@ export const PlayerDetail = ({
 
       {/* ── Modal Modifier joueur ── */}
       {editingPlayer && (
-        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
-          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
-            <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
-              <button
-                onClick={() => setEditingPlayer(false)}
-                className={`${t.accent} font-semibold`}
-              >
-                Annuler
-              </button>
+        <div className={`fixed inset-0 ${t.overlay} ${isEditPlayerClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
+          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isEditPlayerClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
+            <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
+              <div className="flex-1">
+                <button
+                  onClick={cancelEditPlayer}
+                  className={`${t.accent} font-semibold`}
+                >
+                  Annuler
+                </button>
+              </div>
               <h2 className={`text-base font-black ${t.text}`}>Modifier le joueur</h2>
-              <button
-                onClick={handleSavePlayer}
-                disabled={!editName.trim()}
-                className={`${t.accent} font-bold ${!editName.trim() ? 'opacity-40' : ''}`}
-              >
-                OK
-              </button>
+              <div className="flex-1 flex justify-end">
+                <button
+                  onClick={handleSavePlayer}
+                  disabled={!editName.trim()}
+                  className={`${t.accent} font-bold ${!editName.trim() ? 'opacity-40' : ''}`}
+                >
+                  OK
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-8 space-y-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
@@ -816,25 +849,26 @@ export const PlayerDetail = ({
         const isAtMax = currentCount >= required;
 
         return (
-          <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
-            <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
-              <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center justify-between`}>
-                <button
-                  onClick={() => {
-                    setCreatingTeam(false);
-                    resetTeamForm();
-                  }}
-                  className={`${t.accent} font-semibold`}
-                >
-                  Annuler
-                </button>
+          <div className={`fixed inset-0 ${t.overlay} ${isCreateTeamClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
+            <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isCreateTeamClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
+              <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
+                <div className="flex-1">
+                  <button
+                    onClick={cancelCreateTeam}
+                    className={`${t.accent} font-semibold`}
+                  >
+                    Annuler
+                  </button>
+                </div>
                 <h2 className={`text-base font-black ${t.text}`}>Nouvelle équipe</h2>
-                <button
-                  onClick={handleSaveTeam}
-                  className={`${t.accent} font-bold`}
-                >
-                  Créer
-                </button>
+                <div className="flex-1 flex justify-end">
+                  <button
+                    onClick={handleSaveTeam}
+                    className={`${t.accent} font-bold`}
+                  >
+                    Créer
+                  </button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
@@ -971,15 +1005,15 @@ export const PlayerDetail = ({
 
       {/* ── Modal Confirmation suppression équipe ── */}
       {deletingTeam && (
-        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
-          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+        <div className={`fixed inset-0 ${t.overlay} ${isDeletingTeamClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingTeamClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {playerTeams.find((tm) => tm._id === deletingTeam)?.name} ?
             </p>
             <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
             <div className="flex gap-2">
               <button
-                onClick={() => setDeletingTeam(null)}
+                onClick={cancelDeletingTeam}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
                 Annuler
@@ -997,8 +1031,8 @@ export const PlayerDetail = ({
 
       {/* ── Modal Confirmation suppression ── */}
       {deletingPokemon && (
-        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
-          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+        <div className={`fixed inset-0 ${t.overlay} ${isDeletingPokemonClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingPokemonClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
               Supprimer {deletingPokemonObj?.name} ?
             </p>
@@ -1033,7 +1067,7 @@ export const PlayerDetail = ({
 
             <div className="flex gap-2">
               <button
-                onClick={() => setDeletingPokemon(null)}
+                onClick={cancelDeletingPokemon}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
                 Annuler

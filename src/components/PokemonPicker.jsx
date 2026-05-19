@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 
 /**
  * Modal de recherche/sélection d'un Pokémon. Full-screen sheet iOS.
@@ -26,14 +27,15 @@ export const PokemonPicker = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { searchResults, searchLoading, error, searchPokemon, getPokemonImageUrl } = usePokemon();
+  const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
 
   const hasQuery = searchTerm.trim().length > 0;
   const displayed = hasQuery ? searchResults : (defaultResults || []);
   const showDefaultLabel = !hasQuery && defaultLabel && (defaultResults?.length ?? 0) > 0;
 
   return (
-    <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
-      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
+    <div className={`fixed inset-0 ${t.overlay} ${isClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
+      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
         {/* Grip + Header */}
         <div
           className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider}`}
@@ -42,7 +44,7 @@ export const PokemonPicker = ({
           <div className="flex items-center justify-between">
             <h2 className={`text-lg font-black ${t.text}`}>{title}</h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className={`w-8 h-8 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
               aria-label="Fermer"
             >

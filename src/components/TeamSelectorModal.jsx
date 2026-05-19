@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 
 export const TeamSelectorModal = ({
   t,
@@ -12,13 +13,14 @@ export const TeamSelectorModal = ({
   onClose,
 }) => {
   const { getPokemonImageUrl } = usePokemon();
+  const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
   const filtered = teams.filter(
     (team) => team.ownerId === playerId && team.format === format
   );
 
   return (
-    <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex flex-col`}>
-      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl anim-slide-up`}>
+    <div className={`fixed inset-0 ${t.overlay} ${isClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
+      <div className={`${t.surface} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
         {/* Grip + Header */}
         <div className={`${t.surfaceBlur} px-5 pt-3 pb-4 border-b ${t.divider}`}>
           <div className={`w-10 h-1 ${t.surfaceMuted} rounded-full mx-auto mb-3`} aria-hidden="true" />
@@ -28,7 +30,7 @@ export const TeamSelectorModal = ({
               <p className={`${t.textSecondary} text-xs mt-0.5`}>Format {format}</p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className={`w-8 h-8 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
               aria-label="Fermer"
             >
