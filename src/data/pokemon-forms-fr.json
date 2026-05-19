@@ -1,4 +1,9 @@
 [
+  { "pokeId": 10008, "name": "Motisma Chaleur" },
+  { "pokeId": 10009, "name": "Motisma Lavage" },
+  { "pokeId": 10010, "name": "Motisma Froid" },
+  { "pokeId": 10011, "name": "Motisma Hélice" },
+  { "pokeId": 10012, "name": "Motisma Tonte" },
   { "pokeId": 10091, "name": "Rattata d'Alola" },
   { "pokeId": 10092, "name": "Rattatac d'Alola" },
   { "pokeId": 10100, "name": "Raichu d'Alola" },
