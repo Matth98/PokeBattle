@@ -353,9 +353,12 @@ export const Battles = ({
                       <Calendar size={13} />
                       {formatDate(group.date)}
                     </span>
-                    {isCollapsed
-                      ? <ChevronDown size={16} className={t.textSecondary} />
-                      : <ChevronUp size={16} className={t.textSecondary} />}
+                    <span className={`flex items-center gap-2`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? `${t.surfaceMuted} ${t.textSecondary}` : 'bg-gray-200 text-gray-600'}`}>{group.battles.length}</span>
+                      {isCollapsed
+                        ? <ChevronDown size={16} className={t.textSecondary} />
+                        : <ChevronUp size={16} className={t.textSecondary} />}
+                    </span>
                   </button>
 
                   {!isCollapsed && group.battles.map((b, idx) => {
