@@ -117,6 +117,7 @@ function AppContent({ isDark, setIsDark }) {
 
   useEffect(() => {
     loadAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadAllData = async () => {
