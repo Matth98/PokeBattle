@@ -505,7 +505,7 @@ export const PlayerDetail = ({
               </div>
             ) : (
               <div className={`${t.surface} rounded-2xl overflow-hidden`}>
-                {player.pokemon.map((p, idx) => {
+                {[...player.pokemon].sort((a, b) => a.pokeId - b.pokeId).map((p, idx) => {
                   const isLast = idx === player.pokemon.length - 1;
                   return (
                     <SwipeableRow
