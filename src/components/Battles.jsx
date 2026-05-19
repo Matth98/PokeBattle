@@ -115,6 +115,7 @@ export const Battles = ({
     }));
   };
 
+
   // Changement manuel du gagnant — écrase la valeur auto, tient jusqu'à la
   // prochaine modification d'une case "éliminé".
   const handleWinnerChange = (value) => {

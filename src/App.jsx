@@ -115,6 +115,11 @@ function AppContent({ isDark, setIsDark }) {
   const [battles, setBattles] = useState([]);
   const [teams, setTeams] = useState([]);
 
+  useEffect(() => {
+    loadAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const loadAllData = async () => {
     const [p, b, t] = await Promise.all([
       fetchPlayers(),

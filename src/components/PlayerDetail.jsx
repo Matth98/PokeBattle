@@ -246,7 +246,24 @@ export const PlayerDetail = ({
   );
   const mostUsedPokemon = topPokemon(playerBattlePokemon);
   const mostFacedPokemon = topPokemon(opponentBattlePokemon);
-  const biggestTeam = [...playerTeams].sort((a, b) => (b.pokemon?.length || 0) - (a.pokemon?.length || 0))[0];
+  const teamPlayCounts = new Map();
+  playerBattles.forEach((battle) => {
+    const battlePokeIds = new Set(
+      (battle.player1 === player._id ? battle.team1 || [] : battle.team2 || []).map((p) => p.pokeId)
+    );
+    playerTeams.forEach((team) => {
+      const teamPokeIds = new Set((team.pokemon || []).map((p) => p.pokeId));
+      if (
+        teamPokeIds.size === battlePokeIds.size &&
+        [...teamPokeIds].every((id) => battlePokeIds.has(id))
+      ) {
+        teamPlayCounts.set(team._id, (teamPlayCounts.get(team._id) || 0) + 1);
+      }
+    });
+  });
+  const biggestTeam = playerTeams.length
+    ? [...playerTeams].sort((a, b) => (teamPlayCounts.get(b._id) || 0) - (teamPlayCounts.get(a._id) || 0))[0]
+    : undefined;
   const rosterSize = player.pokemon?.length || 0;
   const teamPokemonCount = playerTeams.reduce((sum, team) => sum + (team.pokemon?.length || 0), 0);
   const uniqueBattlePokemonCount = countPokemon(playerBattlePokemon).size;
