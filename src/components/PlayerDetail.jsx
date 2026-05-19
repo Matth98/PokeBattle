@@ -17,6 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
+import { usePokemonTypes, TYPE_FR, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -44,6 +45,8 @@ export const PlayerDetail = ({
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, pokemon: false });
   const [newTeamData, setNewTeamData] = useState({ name: '', format: '1v1', pokemon: [] });
   const { getPokemonImageUrl } = usePokemon();
+  const rosterPokeIds = (player?.pokemon || []).map((p) => p.pokeId);
+  const pokemonTypes = usePokemonTypes(rosterPokeIds);
   const [deletingPokemon, setDeletingPokemon] = useState(null);
   const fileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
@@ -464,7 +467,11 @@ export const PlayerDetail = ({
                       key={p.id}
                       onDelete={() => setDeletingPokemon(p.id)}
                       surfaceClass={t.surface}
-                      className={!isLast ? `border-b ${t.divider}` : ''}
+                      className={[
+                        !isLast ? `border-b ${t.divider}` : '',
+                        idx === 0 ? 'rounded-t-2xl' : '',
+                        isLast ? 'rounded-b-2xl' : '',
+                      ].filter(Boolean).join(' ')}
                     >
                       <div className={`flex items-center gap-3 px-4 py-3 ${t.surface}`}>
                         <img
@@ -475,7 +482,25 @@ export const PlayerDetail = ({
                         />
                         <div className="flex-1 min-w-0">
                           <p className={`font-semibold ${t.text} truncate`}>{p.name}</p>
-                          <p className={`${t.textSecondary} text-xs mt-0.5`}>Niveau {p.level}</p>
+                          {(() => {
+                            const types = pokemonTypes[p.pokeId] || [];
+                            if (types.length === 0) return null;
+                            return (
+                              <div className="flex gap-1 mt-1 flex-wrap">
+                                {types.map((tname) => {
+                                  const colors = TYPE_COLORS[tname] || { bg: 'bg-gray-400', text: 'text-white' };
+                                  return (
+                                    <span
+                                      key={tname}
+                                      className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}
+                                    >
+                                      {TYPE_FR[tname] || tname}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
                         </div>
                         <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
                       </div>
@@ -547,7 +572,7 @@ export const PlayerDetail = ({
                     <button
                       key={team._id}
                       onClick={() => onSelectTeam(team)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''} text-left active:bg-black/5 dark:active:bg-white/5`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''} text-left`}
                     >
                       {rowContent}
                     </button>

@@ -55,3 +55,16 @@ button.no-press-fx:active,
 [data-no-press-fx]:active {
   transform: none !important;
 }
+
+/* ── Press feedback sur les SwipeableRow : c'est la CARTE entière qui scale,
+   pas le bouton interne (sinon on voit un gap autour). Désactivé pendant le swipe. ── */
+[data-swipe-row] {
+  transition: transform 0.12s ease-out;
+}
+[data-swipe-row]:has(button:active):not([data-swiping]) {
+  transform: scale(0.97);
+}
+/* Les boutons dans une SwipeableRow ne scalent pas individuellement (sinon double effet + gap) */
+[data-swipe-row] button:active {
+  transform: none;
+}

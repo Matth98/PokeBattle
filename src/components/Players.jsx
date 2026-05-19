@@ -158,7 +158,11 @@ export const Players = ({
                   onDelete={() => setConfirmingDeleteId(p._id)}
                   disabled={inSelection}
                   surfaceClass={t.surface}
-                  className={!isLast ? `border-b ${t.divider}` : ''}
+                  className={[
+                    !isLast ? `border-b ${t.divider}` : '',
+                    idx === 0 ? 'rounded-t-2xl' : '',
+                    isLast ? 'rounded-b-2xl' : '',
+                  ].filter(Boolean).join(' ')}
                 >
                   <button
                     onClick={() =>
@@ -170,7 +174,7 @@ export const Players = ({
                           )
                         : onSelectPlayer(p)
                     }
-                    className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} active:bg-black/5 dark:active:bg-white/5 text-left`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left`}
                   >
                     {inSelection && (
                       <span

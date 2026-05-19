@@ -35,6 +35,9 @@ export const SwipeableRow = ({
   const [translateX, setTranslateX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  // Vrai dès que le geste verrouille l'axe horizontal — sert à désactiver le
+  // press feedback (scale) du wrapper via la règle CSS [data-swiping] dans index.css
+  const [isSwiping, setIsSwiping] = useState(false);
 
   const applyTranslate = useCallback((x) => {
     currentXRef.current = x;
@@ -86,6 +89,7 @@ export const SwipeableRow = ({
     if (lockedAxisRef.current == null) {
       if (Math.abs(dx) + Math.abs(dy) < 6) return;
       lockedAxisRef.current = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      if (lockedAxisRef.current === 'x') setIsSwiping(true);
     }
     if (lockedAxisRef.current === 'y') return; // l'utilisateur scrolle, on laisse faire
 
@@ -107,6 +111,7 @@ export const SwipeableRow = ({
     startXRef.current = null;
     startYRef.current = null;
     lockedAxisRef.current = null;
+    setIsSwiping(false);
   };
 
   const handleConfirmDelete = (e) => {
@@ -128,6 +133,8 @@ export const SwipeableRow = ({
   return (
     <div
       ref={containerRef}
+      data-swipe-row=""
+      data-swiping={isSwiping ? '' : undefined}
       className={`relative overflow-hidden ${className}`}
     >
       {/* Action révélée derrière */}
