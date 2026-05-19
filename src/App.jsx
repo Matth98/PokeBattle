@@ -115,10 +115,6 @@ function AppContent({ isDark, setIsDark }) {
   const [battles, setBattles] = useState([]);
   const [teams, setTeams] = useState([]);
 
-  useEffect(() => {
-    loadAllData();
-  }, []);
-
   const loadAllData = async () => {
     const [p, b, t] = await Promise.all([
       fetchPlayers(),
@@ -129,6 +125,9 @@ function AppContent({ isDark, setIsDark }) {
     if (b) setBattles(b);
     if (t) setTeams(t);
   };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadAllData(); }, []);
 
   const handleAddPlayer = async (data) => {
     // data peut être un string (nom) pour rétro-compat, ou { name, avatar }
