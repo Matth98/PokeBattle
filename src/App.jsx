@@ -244,7 +244,6 @@ function AppContent({ isDark, setIsDark }) {
     if (newBattle) {
       setBattles([...battles, newBattle]);
       loadAllData();
-      setCurrentTab('battles');
       toast.success('Combat enregistré');
     } else {
       toast.error('Erreur lors de la création');

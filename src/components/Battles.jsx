@@ -197,6 +197,8 @@ export const Battles = ({
       team1: battleSelectedPokemon.player1,
       team2: battleSelectedPokemon.player2,
     };
+    resetForm();
+    setShowForm(false);
     if (isEditing) {
       await onUpdateBattle(editingBattle._id, payload);
     } else {
@@ -204,8 +206,6 @@ export const Battles = ({
     }
     // Ajoute automatiquement au roster les Pokémon qui n'y sont pas déjà
     await syncBattlePokemonToRosters(payload);
-    resetForm();
-    setShowForm(false);
   };
 
   // Synchronise les Pokémon du combat avec le roster des joueurs
