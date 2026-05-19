@@ -137,20 +137,23 @@ export const SwipeableRow = ({
       data-swiping={isSwiping ? '' : undefined}
       className={`relative overflow-hidden ${className}`}
     >
-      {/* Action révélée derrière */}
-      <div
-        className="absolute inset-y-0 right-0 flex items-center justify-center bg-red-500"
-        style={{ width: actionWidth }}
-      >
-        <button
-          type="button"
-          onClick={handleConfirmDelete}
-          className="w-full h-full text-white font-bold flex items-center justify-center"
-          aria-label="Supprimer"
+      {/* Action révélée derrière — n'est MONTÉE DANS LE DOM que pendant un swipe
+          ou quand le swipe est resté ouvert. Sinon : aucun pixel rouge possible. */}
+      {(isSwiping || isOpen) && (
+        <div
+          className="absolute inset-y-0 right-0 flex items-center justify-center bg-red-500"
+          style={{ width: actionWidth }}
         >
-          {actionLabel || <Trash2 size={18} />}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={handleConfirmDelete}
+            className="w-full h-full text-white font-bold flex items-center justify-center"
+            aria-label="Supprimer"
+          >
+            {actionLabel || <Trash2 size={18} />}
+          </button>
+        </div>
+      )}
 
       {/* Contenu glissant — fond opaque obligatoire pour masquer l'action rouge */}
       <div

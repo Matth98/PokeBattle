@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, Pencil, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
+import { usePokemonTypes, TYPE_FR, TYPE_COLORS } from '../hooks/usePokemonTypes';
 
 export const TeamDetail = ({
   team,
@@ -10,6 +11,8 @@ export const TeamDetail = ({
   onEdit,
 }) => {
   const { getPokemonImageUrl } = usePokemon();
+  const rosterPokeIds = (team?.pokemon || []).map((p) => p.pokeId);
+  const pokemonTypes = usePokemonTypes(rosterPokeIds);
 
   if (!team) return null;
 
@@ -90,6 +93,7 @@ export const TeamDetail = ({
             <div className={`${t.surface} rounded-2xl overflow-hidden`}>
               {team.pokemon.map((p, idx) => {
                 const isLast = idx === team.pokemon.length - 1;
+                const types = pokemonTypes[p.pokeId] || [];
                 return (
                   <div
                     key={p.id}
@@ -101,7 +105,24 @@ export const TeamDetail = ({
                       className="w-11 h-11 object-contain flex-shrink-0"
                       onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                     />
-                    <p className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-semibold ${t.text} truncate`}>{p.name}</p>
+                      {types.length > 0 && (
+                        <div className="flex gap-1 mt-1 flex-wrap">
+                          {types.map((tname) => {
+                            const colors = TYPE_COLORS[tname] || { bg: 'bg-gray-400', text: 'text-white' };
+                            return (
+                              <span
+                                key={tname}
+                                className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}
+                              >
+                                {TYPE_FR[tname] || tname}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                     <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
                   </div>
                 );

@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import {
   AlertTriangle,
-  Boxes,
   Camera,
   ChevronLeft,
   ChevronRight,
   Flame,
+  Palette,
   Pencil,
   Plus,
   Shield,
@@ -45,8 +45,18 @@ export const PlayerDetail = ({
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, pokemon: false });
   const [newTeamData, setNewTeamData] = useState({ name: '', format: '1v1', pokemon: [] });
   const { getPokemonImageUrl } = usePokemon();
-  const rosterPokeIds = (player?.pokemon || []).map((p) => p.pokeId);
-  const pokemonTypes = usePokemonTypes(rosterPokeIds);
+  // PokeIds à récupérer en types : roster du joueur + Pokémon utilisés dans ses combats
+  const allPokeIdsForTypes = React.useMemo(() => {
+    if (!player) return [];
+    const ids = new Set((player.pokemon || []).map((p) => p.pokeId));
+    (battles || []).forEach((b) => {
+      if (b.player1 !== player._id && b.player2 !== player._id) return;
+      const myTeam = b.player1 === player._id ? (b.team1 || []) : (b.team2 || []);
+      myTeam.forEach((p) => { if (p?.pokeId) ids.add(p.pokeId); });
+    });
+    return [...ids];
+  }, [player, battles]);
+  const pokemonTypes = usePokemonTypes(allPokeIdsForTypes);
   const [deletingPokemon, setDeletingPokemon] = useState(null);
   const fileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
@@ -260,6 +270,19 @@ export const PlayerDetail = ({
     return acc;
   }, new Map());
   const favoriteFormat = [...formatCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+
+  // Type Pokémon le plus utilisé en combat (agrégé sur toutes les apparitions)
+  const typeCounts = new Map();
+  playerBattlePokemon.forEach((p) => {
+    const ts = pokemonTypes[p?.pokeId] || [];
+    ts.forEach((typeName) => {
+      typeCounts.set(typeName, (typeCounts.get(typeName) || 0) + 1);
+    });
+  });
+  const mostUsedType = [...typeCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+  const mostUsedTypeName = mostUsedType ? mostUsedType[0] : null;
+  const mostUsedTypeColors = mostUsedTypeName ? TYPE_COLORS[mostUsedTypeName] : null;
+
   const funFacts = [
     {
       Icon: Flame,
@@ -286,6 +309,17 @@ export const PlayerDetail = ({
       visual: biggestTeam ? { type: 'team', team: biggestTeam } : null,
     },
     {
+      Icon: Palette,
+      label: 'Type le plus utilisé',
+      value: mostUsedType ? TYPE_FR[mostUsedTypeName] || mostUsedTypeName : 'Pas encore',
+      detail: mostUsedType
+        ? `${mostUsedType[1]} apparition${mostUsedType[1] > 1 ? 's' : ''} en combat`
+        : 'Ajoute un combat pour le révéler',
+      tile: mostUsedTypeColors
+        ? `${mostUsedTypeColors.bg} ${mostUsedTypeColors.text}`
+        : t.iconTileEmerald,
+    },
+    {
       Icon: Swords,
       label: 'Combats joués',
       value: `${playerBattles.length}`,
@@ -298,13 +332,6 @@ export const PlayerDetail = ({
       value: `${playerTeams.length}`,
       detail: `${teamPokemonCount} Pokémon alignés`,
       tile: t.iconTileIndigo,
-    },
-    {
-      Icon: Boxes,
-      label: 'Collection',
-      value: `${rosterSize}`,
-      detail: `Pokémon dans le roster`,
-      tile: t.iconTileEmerald,
     },
     {
       Icon: Zap,
