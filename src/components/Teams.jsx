@@ -25,6 +25,7 @@ export const Teams = ({
   setShowForm,
   editingTeam,
   clearEditingTeam,
+  renderPage = true,
 }) => {
   const [newTeamData, setNewTeamData] = useState(emptyTeamData());
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, owner: false, pokemon: false });
@@ -146,6 +147,8 @@ export const Teams = ({
   const inSelection = selectionMode === 'teams';
 
   return (
+    <>
+    {renderPage && (
     <div className={`min-h-screen ${t.pageBg}`}>
       {/* ── En-tête sticky ── */}
       <div
@@ -360,6 +363,8 @@ export const Teams = ({
           </div>
         </div>
       )}
+    </div>
+    )}
 
       {/* ── Formulaire Créer / Modifier équipe (full-screen sheet iOS) ── */}
       {showForm && (
@@ -525,6 +530,6 @@ export const Teams = ({
           />
         );
       })()}
-    </div>
+    </>
   );
 };

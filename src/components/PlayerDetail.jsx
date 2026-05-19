@@ -34,10 +34,11 @@ export const PlayerDetail = ({
   onUpdateTeam,
   onDeleteTeam,
   onSelectTeam,
+  initialActiveTab = 'pokemon',
   isDark,
 }) => {
   const [addingPokemon, setAddingPokemon] = useState(false);
-  const [activeTab, setActiveTab] = useState('pokemon');
+  const [activeTab, setActiveTab] = useState(initialActiveTab);
   const [editingPlayer, setEditingPlayer] = useState(false);
   const [editName, setEditName] = useState('');
   const [editAvatar, setEditAvatar] = useState(null);
@@ -623,7 +624,7 @@ export const PlayerDetail = ({
 
                   const inner = onSelectTeam ? (
                     <button
-                      onClick={() => onSelectTeam(team)}
+                      onClick={() => onSelectTeam(team, activeTab)}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface}`}
                     >
                       {rowContent}

@@ -34,23 +34,43 @@ function AppContent({ isDark, setIsDark }) {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [playerDetailTab, setPlayerDetailTab] = useState('pokemon');
 
   // ── Mémoire de scroll par onglet ──
-  // setCurrentTab : navigation "avant" — sauvegarde la position quittée et scroll top
-  // goBackTo : navigation "retour" — restaure la position sauvegardée pour l'onglet cible
   const scrollMemoryRef = useRef(new Map());
   const shouldRestoreRef = useRef(false);
+  // ── Pile de navigation pour le bouton précédent ──
+  // Chaque entrée : { tab: string, extra?: { playerDetailTab?: string } }
+  const navStack = useRef([]);
 
+  // Navigation principale (onglets) — réinitialise la pile
   const setCurrentTab = useCallback((newTab) => {
+    navStack.current = [];
     scrollMemoryRef.current.set(currentTab, window.scrollY);
     shouldRestoreRef.current = false;
     _setCurrentTabState(newTab);
   }, [currentTab]);
 
-  const goBackTo = useCallback((newTab) => {
+  // Navigation en profondeur — empile l'état courant
+  const navigateTo = useCallback((newTab, extra = {}) => {
+    navStack.current.push({ tab: currentTab, extra });
     scrollMemoryRef.current.set(currentTab, window.scrollY);
-    shouldRestoreRef.current = true;
+    shouldRestoreRef.current = false;
     _setCurrentTabState(newTab);
+  }, [currentTab]);
+
+  const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players' };
+
+  // Retour — dépile et restaure. Fallback si le stack est vide.
+  const navigateBack = useCallback(() => {
+    const prev = navStack.current.pop();
+    const target = prev ?? { tab: DETAIL_FALLBACKS[currentTab] ?? 'home', extra: {} };
+    if (target.extra?.playerDetailTab !== undefined) {
+      setPlayerDetailTab(target.extra.playerDetailTab);
+    }
+    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    shouldRestoreRef.current = !!prev;
+    _setCurrentTabState(target.tab);
   }, [currentTab]);
 
   useLayoutEffect(() => {
@@ -78,21 +98,11 @@ function AppContent({ isDark, setIsDark }) {
   // Wrappers de fermeture : si on était venus depuis la fiche détail, on y retourne
   const setShowBattleForm = (val) => {
     setShowNewBattleForm(val);
-    if (!val) {
-      if (battleEditOrigin === 'detail') {
-        setCurrentTab('battleDetail');
-      }
-      setBattleEditOrigin(null);
-    }
+    if (!val) setBattleEditOrigin(null);
   };
   const setShowTeamForm = (val) => {
     setShowNewTeamForm(val);
-    if (!val) {
-      if (teamEditOrigin === 'detail') {
-        setCurrentTab('teamDetail');
-      }
-      setTeamEditOrigin(null);
-    }
+    if (!val) setTeamEditOrigin(null);
   };
 
   const {
@@ -279,7 +289,7 @@ function AppContent({ isDark, setIsDark }) {
           isDark={isDark}
           setIsDark={setIsDark}
           t={t}
-          setCurrentTab={setCurrentTab}
+          setCurrentTab={navigateTo}
           setSelectedBattle={setSelectedBattle}
         />
       )}
@@ -291,7 +301,8 @@ function AppContent({ isDark, setIsDark }) {
           isDark={isDark}
           onSelectPlayer={(p) => {
             setSelectedPlayer(p);
-            setCurrentTab('playerDetail');
+            setPlayerDetailTab('pokemon');
+            navigateTo('playerDetail');
           }}
           onAddPlayer={handleAddPlayer}
           onDeletePlayer={handleDeletePlayer}
@@ -312,17 +323,18 @@ function AppContent({ isDark, setIsDark }) {
           battles={battles}
           t={t}
           isDark={isDark}
+          initialActiveTab={playerDetailTab}
           onBack={() => {
             setSelectedPlayer(null);
-            goBackTo('players');
+            navigateBack();
           }}
           onUpdate={handleUpdatePlayer}
           onAddTeam={handleAddTeam}
           onUpdateTeam={handleUpdateTeam}
           onDeleteTeam={handleDeleteTeam}
-          onSelectTeam={(team) => {
+          onSelectTeam={(team, activeTab) => {
             setSelectedTeam(team);
-            setCurrentTab('teamDetail');
+            navigateTo('teamDetail', { playerDetailTab: activeTab });
           }}
         />
       )}
@@ -335,7 +347,7 @@ function AppContent({ isDark, setIsDark }) {
           isDark={isDark}
           onSelectTeam={(team) => {
             setSelectedTeam(team);
-            setCurrentTab('teamDetail');
+            navigateTo('teamDetail');
           }}
           onAddTeam={handleAddTeam}
           onUpdateTeam={handleUpdateTeam}
@@ -358,6 +370,32 @@ function AppContent({ isDark, setIsDark }) {
         />
       )}
 
+      {currentTab !== 'teams' && showNewTeamForm && (
+        <Teams
+          teams={teams}
+          players={players}
+          t={t}
+          isDark={isDark}
+          onSelectTeam={(team) => {
+            setSelectedTeam(team);
+            navigateTo('teamDetail');
+          }}
+          onAddTeam={handleAddTeam}
+          onUpdateTeam={handleUpdateTeam}
+          onUpdatePlayer={handleUpdatePlayer}
+          onDeleteTeam={handleDeleteTeam}
+          onDeleteMultiple={handleDeleteMultipleTeams}
+          selectionMode={selectionMode}
+          setSelectionMode={setSelectionMode}
+          selectedItems={selectedItems}
+          setSelectedItems={setSelectedItems}
+          showForm={showNewTeamForm}
+          setShowForm={setShowTeamForm}
+          editingTeam={teamEditOrigin === 'detail' ? selectedTeam : null}
+          renderPage={false}
+        />
+      )}
+
       {currentTab === 'teamDetail' && (
         <TeamDetail
           team={selectedTeam}
@@ -365,12 +403,11 @@ function AppContent({ isDark, setIsDark }) {
           isDark={isDark}
           onBack={() => {
             setSelectedTeam(null);
-            goBackTo('teams');
+            navigateBack();
           }}
           onEdit={(team) => {
             setSelectedTeam(team);
             setTeamEditOrigin('detail');
-            setCurrentTab('teams');
             setShowNewTeamForm(true);
           }}
           onUpdate={handleUpdateTeam}
@@ -386,7 +423,7 @@ function AppContent({ isDark, setIsDark }) {
           isDark={isDark}
           onSelectBattle={(b) => {
             setSelectedBattle(b);
-            setCurrentTab('battleDetail');
+            navigateTo('battleDetail');
           }}
           onAddBattle={handleAddBattle}
           onUpdateBattle={handleUpdateBattle}
@@ -417,12 +454,11 @@ function AppContent({ isDark, setIsDark }) {
           isDark={isDark}
           onBack={() => {
             setSelectedBattle(null);
-            goBackTo('battles');
+            navigateBack();
           }}
           onEdit={(b) => {
             setSelectedBattle(b);
             setBattleEditOrigin('detail');
-            setCurrentTab('battles');
             setShowNewBattleForm(true);
           }}
           onDelete={handleDeleteBattle}
@@ -451,7 +487,7 @@ function AppContent({ isDark, setIsDark }) {
           setSelectedItems={setSelectedItems}
           showForm={showNewBattleForm}
           setShowForm={setShowBattleForm}
-          editingBattle={null}
+          editingBattle={battleEditOrigin === 'detail' ? selectedBattle : null}
           renderPage={false}
         />
       )}
