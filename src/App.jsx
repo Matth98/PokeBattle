@@ -35,17 +35,24 @@ function AppContent({ isDark, setIsDark }) {
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [playerDetailTab, setPlayerDetailTab] = useState('pokemon');
+  const [backLabel, setBackLabel] = useState('');
 
   // ── Mémoire de scroll par onglet ──
   const scrollMemoryRef = useRef(new Map());
   const shouldRestoreRef = useRef(false);
   // ── Pile de navigation pour le bouton précédent ──
-  // Chaque entrée : { tab: string, extra?: { playerDetailTab?: string } }
+  // Chaque entrée : { tab, extra?, label }
   const navStack = useRef([]);
+
+  const TAB_LABELS = { home: 'Accueil', battles: 'Combats', teams: 'Équipes', players: 'Joueurs' };
+  const getTabLabel = useCallback((tab) =>
+    tab === 'playerDetail' ? (selectedPlayer?.name || 'Joueur') : (TAB_LABELS[tab] || ''),
+  [selectedPlayer]);
 
   // Navigation principale (onglets) — réinitialise la pile
   const setCurrentTab = useCallback((newTab) => {
     navStack.current = [];
+    setBackLabel('');
     scrollMemoryRef.current.set(currentTab, window.scrollY);
     shouldRestoreRef.current = false;
     _setCurrentTabState(newTab);
@@ -53,21 +60,26 @@ function AppContent({ isDark, setIsDark }) {
 
   // Navigation en profondeur — empile l'état courant
   const navigateTo = useCallback((newTab, extra = {}) => {
-    navStack.current.push({ tab: currentTab, extra });
+    const label = getTabLabel(currentTab);
+    navStack.current.push({ tab: currentTab, extra, label });
+    setBackLabel(label);
     scrollMemoryRef.current.set(currentTab, window.scrollY);
     shouldRestoreRef.current = false;
     _setCurrentTabState(newTab);
-  }, [currentTab]);
+  }, [currentTab, getTabLabel]);
 
   const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players' };
 
   // Retour — dépile et restaure. Fallback si le stack est vide.
   const navigateBack = useCallback(() => {
     const prev = navStack.current.pop();
-    const target = prev ?? { tab: DETAIL_FALLBACKS[currentTab] ?? 'home', extra: {} };
+    const target = prev ?? { tab: DETAIL_FALLBACKS[currentTab] ?? 'home', extra: {}, label: '' };
     if (target.extra?.playerDetailTab !== undefined) {
       setPlayerDetailTab(target.extra.playerDetailTab);
     }
+    // Le nouveau label "retour" est l'entrée en dessous dans le stack (si elle existe)
+    const newTop = navStack.current[navStack.current.length - 1];
+    setBackLabel(newTop?.label || '');
     scrollMemoryRef.current.set(currentTab, window.scrollY);
     shouldRestoreRef.current = !!prev;
     _setCurrentTabState(target.tab);
@@ -401,6 +413,7 @@ function AppContent({ isDark, setIsDark }) {
           team={selectedTeam}
           t={t}
           isDark={isDark}
+          backLabel={backLabel}
           onBack={() => {
             setSelectedTeam(null);
             navigateBack();
@@ -452,6 +465,7 @@ function AppContent({ isDark, setIsDark }) {
           players={players}
           t={t}
           isDark={isDark}
+          backLabel={backLabel}
           onBack={() => {
             setSelectedBattle(null);
             navigateBack();

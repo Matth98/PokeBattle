@@ -56,6 +56,7 @@ export const BattleDetail = ({
   onBack,
   onEdit,
   onDelete,
+  backLabel = 'Combats',
 }) => {
   const { getPokemonImageUrl } = usePokemon();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -87,7 +88,7 @@ export const BattleDetail = ({
             aria-label="Retour"
           >
             <ChevronLeft size={22} />
-            <span className="text-base">Combats</span>
+            <span className="text-base">{backLabel}</span>
           </button>
           {onEdit && (
             <button

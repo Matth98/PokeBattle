@@ -9,6 +9,7 @@ export const TeamDetail = ({
   isDark,
   onBack,
   onEdit,
+  backLabel = 'Équipes',
 }) => {
   const { getPokemonImageUrl } = usePokemon();
   const rosterPokeIds = (team?.pokemon || []).map((p) => p.pokeId);
@@ -32,7 +33,7 @@ export const TeamDetail = ({
             aria-label="Retour"
           >
             <ChevronLeft size={22} />
-            <span className="text-base">Équipes</span>
+            <span className="text-base">{backLabel}</span>
           </button>
           {onEdit && (
             <button
