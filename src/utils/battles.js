@@ -5,8 +5,8 @@ export const getBattleDateKey = (battle) => {
 };
 
 export const getBattleSortTime = (battle) => {
-  if (battle?.timestamp) return new Date(battle.timestamp).getTime();
   if (battle?.date) return new Date(`${battle.date}T00:00:00`).getTime();
+  if (battle?.timestamp) return new Date(battle.timestamp).getTime();
   return 0;
 };
 
