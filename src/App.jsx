@@ -131,6 +131,9 @@ function AppContent({ isDark, setIsDark }) {
     if (t) setTeams(t);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadAllData(); }, []);
+
   const handleAddPlayer = async (data) => {
     // data peut être un string (nom) pour rétro-compat, ou { name, avatar }
     const payload = typeof data === 'string' ? { name: data } : data;
