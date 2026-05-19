@@ -174,7 +174,9 @@ export const Battles = ({
   const getPlayerRoster = (playerId) => {
     const player = players.find((p) => p._id === playerId);
     if (!player || !player.pokemon) return [];
-    return player.pokemon.map((p) => ({ pokeId: p.pokeId, name: p.name }));
+    return [...player.pokemon]
+      .sort((a, b) => a.pokeId - b.pokeId)
+      .map((p) => ({ pokeId: p.pokeId, name: p.name }));
   };
 
   const required = requiredPokemonForFormat(newBattleData.format);

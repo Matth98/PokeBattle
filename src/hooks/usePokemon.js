@@ -34,6 +34,7 @@ export const usePokemon = () => {
     // Filtrage en mémoire, instantané
     const filtered = NORMALIZED_INDEX
       .filter((p) => p._normalized.includes(q))
+      .sort((a, b) => a.pokeId - b.pokeId)
       .slice(0, 20)
       .map(({ pokeId, name }) => ({ pokeId, name }));
     setSearchResults(filtered);
