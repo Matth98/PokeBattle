@@ -122,46 +122,102 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
   const { data, loading, error } = usePokemonDetail(pokeId);
 
-  // ── Swipe-down to close ──
-  // 'idle' | 'dragging' | 'snapping' | 'closing'
-  const [swipeState, setSwipeState] = useState('idle');
-  const [swipeDragY, setSwipeDragY] = useState(0);
-  const dragYRef = useRef(0);
-  const touchStartYRef = useRef(null);
-  const touchStartScrollTopRef = useRef(0);
+  // ── Swipe-down to close — direct DOM manipulation for 60fps ──
+  const sheetRef  = useRef(null);
+  const overlayRef = useRef(null);
   const scrollRef = useRef(null);
+  const drag = useRef({ active: false, startY: 0, startTime: 0, startScrollTop: 0, lastY: 0 });
+  // Track whether we're mid-swipe-close to suppress CSS animation classes
+  const [swipeClosing, setSwipeClosing] = useState(false);
+
+  const setSheetY = (y) => {
+    if (!sheetRef.current) return;
+    sheetRef.current.style.transform = y > 0 ? `translateY(${y}px)` : '';
+    // Fade overlay proportionally (0px → opacity 1, 200px → opacity 0.3)
+    if (overlayRef.current) {
+      const opacity = Math.max(0.3, 1 - y / 300);
+      overlayRef.current.style.opacity = opacity;
+    }
+  };
+
+  const dismissSheet = useCallback((fromY) => {
+    setSwipeClosing(true);
+    const sheet = sheetRef.current;
+    if (sheet) {
+      sheet.style.transition = 'transform 0.28s cubic-bezier(0.4, 0, 1, 1)';
+      sheet.style.transform = `translateY(100vh)`;
+    }
+    if (overlayRef.current) {
+      overlayRef.current.style.transition = 'opacity 0.28s ease';
+      overlayRef.current.style.opacity = '0';
+    }
+    setTimeout(() => onClose(), 290);
+  }, [onClose]);
+
+  const snapBack = useCallback(() => {
+    const sheet = sheetRef.current;
+    if (sheet) {
+      sheet.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      sheet.style.transform = '';
+    }
+    if (overlayRef.current) {
+      overlayRef.current.style.transition = 'opacity 0.35s ease';
+      overlayRef.current.style.opacity = '1';
+    }
+    setTimeout(() => {
+      if (sheetRef.current) sheetRef.current.style.transition = '';
+      if (overlayRef.current) overlayRef.current.style.transition = '';
+    }, 360);
+  }, []);
 
   const handleTouchStart = useCallback((e) => {
-    touchStartYRef.current = e.touches[0].clientY;
-    touchStartScrollTopRef.current = scrollRef.current?.scrollTop ?? 0;
+    const scrollTop = scrollRef.current?.scrollTop ?? 0;
+    drag.current = {
+      active: false,
+      startY: e.touches[0].clientY,
+      startTime: Date.now(),
+      startScrollTop: scrollTop,
+      lastY: e.touches[0].clientY,
+    };
   }, []);
 
   const handleTouchMove = useCallback((e) => {
-    if (touchStartYRef.current === null) return;
-    const deltaY = e.touches[0].clientY - touchStartYRef.current;
-    // Only drag-to-close when scrolled to top and moving down
-    if (deltaY > 0 && touchStartScrollTopRef.current <= 0) {
-      dragYRef.current = deltaY;
-      setSwipeState('dragging');
-      setSwipeDragY(deltaY);
+    const d = drag.current;
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - d.startY;
+    d.lastY = currentY;
+
+    // Activate drag only if: moving down AND scroll was at top when gesture started
+    if (!d.active) {
+      if (deltaY > 8 && d.startScrollTop <= 0) {
+        d.active = true;
+      } else {
+        return;
+      }
+    }
+
+    if (deltaY > 0) {
+      // Apply directly to DOM — no React re-render
+      setSheetY(deltaY);
     }
   }, []);
 
   const handleTouchEnd = useCallback(() => {
-    touchStartYRef.current = null;
-    if (dragYRef.current > 80) {
-      // Swipe threshold reached: animate out and close
-      setSwipeState('closing');
-      setSwipeDragY(window.innerHeight);
-      setTimeout(() => onClose(), 290);
+    const d = drag.current;
+    if (!d.active) return;
+
+    const deltaY = d.lastY - d.startY;
+    const elapsed = Math.max(1, Date.now() - d.startTime);
+    const velocity = deltaY / elapsed; // px/ms
+
+    // Close if fast flick (velocity > 0.5 px/ms) OR large drag (> 120px)
+    if (velocity > 0.5 || deltaY > 120) {
+      dismissSheet(deltaY);
     } else {
-      // Snap back
-      setSwipeState('snapping');
-      setSwipeDragY(0);
-      dragYRef.current = 0;
-      setTimeout(() => setSwipeState('idle'), 300);
+      snapBack();
     }
-  }, [onClose]);
+    d.active = false;
+  }, [dismissSheet, snapBack]);
 
   const primaryType = data?.types?.[0] || 'normal';
   const accentHex = TYPE_HEX[primaryType] || '#6390F0';
@@ -185,20 +241,14 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
     { multVal: 2, label: 2 },
   ]);
 
-  // Swipe style — inline transform overrides CSS animation fill value
-  const swipeStyle = swipeState !== 'idle' ? {
-    transform: `translateY(${swipeDragY}px)`,
-    transition:
-      swipeState === 'dragging' ? 'none' :
-      swipeState === 'snapping' ? 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)' :
-      /* closing */               'transform 0.29s cubic-bezier(0.4, 0, 1, 1)',
-  } : {};
-
   return (
-    <div className={`fixed inset-0 bg-black/50 ${isClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
+    <div
+      ref={overlayRef}
+      className={`fixed inset-0 bg-black/50 ${swipeClosing ? '' : (isClosing ? 'anim-fade-out' : 'anim-fade-in')} z-[9999] flex flex-col`}
+    >
       <div
-        className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${swipeState === 'closing' ? '' : (isClosing ? 'anim-slide-down' : 'anim-slide-up')}`}
-        style={swipeStyle}
+        ref={sheetRef}
+        className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${swipeClosing ? '' : (isClosing ? 'anim-slide-down' : 'anim-slide-up')}`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
