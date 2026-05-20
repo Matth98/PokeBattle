@@ -255,7 +255,6 @@ function AppContent({ isDark, setIsDark }) {
     if (updated) {
       setBattles(battles.map(b => b._id === id ? updated : b));
       setSelectedBattle(updated);
-      loadAllData();
       toast.success('Combat mis à jour');
     } else {
       toast.error('Erreur lors de la mise à jour');

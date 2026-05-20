@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
+  Loader2,
   Palette,
   Pencil,
   Plus,
@@ -43,6 +44,7 @@ export const PlayerDetail = ({
   const [editingPlayer, setEditingPlayer] = useState(false);
   const [editName, setEditName] = useState('');
   const [editAvatar, setEditAvatar] = useState(null);
+  const [isSavingPlayer, setIsSavingPlayer] = useState(false);
   const [creatingTeam, setCreatingTeam] = useState(false);
   const [pickingTeamPokemon, setPickingTeamPokemon] = useState(false);
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, pokemon: false });
@@ -128,8 +130,13 @@ export const PlayerDetail = ({
   const handleSavePlayer = async () => {
     const name = editName.trim();
     if (!name) return;
-    await onUpdate(player._id, { ...player, name, avatar: editAvatar });
-    setEditingPlayer(false);
+    setIsSavingPlayer(true);
+    try {
+      await onUpdate(player._id, { ...player, name, avatar: editAvatar });
+    } finally {
+      setIsSavingPlayer(false);
+    }
+    cancelEditPlayer();
   };
 
   const requiredPokemonForFormat = (format) => (format === '1v1' ? 3 : 4);
@@ -783,10 +790,10 @@ export const PlayerDetail = ({
               <div className="flex-1 flex justify-end">
                 <button
                   onClick={handleSavePlayer}
-                  disabled={!editName.trim()}
+                  disabled={!editName.trim() || isSavingPlayer}
                   className={`${t.accent} font-bold ${!editName.trim() ? 'opacity-40' : ''}`}
                 >
-                  OK
+                  {isSavingPlayer ? <Loader2 size={18} className="animate-spin" /> : 'OK'}
                 </button>
               </div>
             </div>
