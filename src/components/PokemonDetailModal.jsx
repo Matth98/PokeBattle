@@ -36,18 +36,18 @@ function TypePictogram({ typeName }) {
   const c = TYPE_COLORS[typeName] || { text: 'text-white' };
   const label = TYPE_FR[typeName] || typeName;
   return (
-    <div className="relative w-10 h-10 flex-shrink-0" title={label}>
+    <div className="relative w-8 h-8 flex-shrink-0" title={label}>
       <img
         src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${typeName}.svg`}
         alt={label}
-        className="w-10 h-10 object-contain"
+        className="w-8 h-8 object-contain"
         onError={(e) => {
           e.currentTarget.style.display = 'none';
           e.currentTarget.nextSibling.style.display = 'flex';
         }}
       />
       <div
-        className="hidden w-10 h-10 rounded-full items-center justify-center absolute inset-0"
+        className="hidden w-8 h-8 rounded-full items-center justify-center absolute inset-0"
         style={{ backgroundColor: hex }}
       >
         <span className={`text-[9px] font-black ${c.text} uppercase tracking-wide`}>
@@ -61,8 +61,8 @@ function TypePictogram({ typeName }) {
 function MultBadge({ mult, isDark }) {
   const isWeak = typeof mult === 'number' && mult >= 2;
   return (
-    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
-      <span className={`text-xs font-black ${isWeak ? 'text-red-500' : 'text-green-600'}`}>
+    <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+      <span className={`text-[11px] font-black ${isWeak ? 'text-red-500' : 'text-green-600'}`}>
         ×{mult}
       </span>
     </div>
@@ -78,7 +78,7 @@ function EffectivenessSection({ label, grouped, isDark }) {
         {grouped.map(({ mult, types }) => (
           <div key={mult} className="flex items-center gap-3">
             <MultBadge mult={mult} isDark={isDark} />
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {types.map(typeName => <TypePictogram key={typeName} typeName={typeName} />)}
             </div>
           </div>

@@ -462,23 +462,9 @@ export const PlayerDetail = ({
       <div className="px-5 mt-6 pb-32 space-y-6">
         {/* ── Hero ── */}
         <div className="flex flex-col items-center text-center">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="relative mb-3"
-            aria-label="Changer la photo"
-          >
+          <div className="mb-3">
             <PlayerAvatar player={player} size={96} textSize="text-4xl" />
-            <div className={`absolute bottom-0 right-0 w-8 h-8 rounded-full ${t.accentBg} text-white flex items-center justify-center border-4 ${isDark ? 'border-black' : 'border-gray-50'}`}>
-              <Camera size={14} />
-            </div>
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarPick}
-            className="hidden"
-          />
+          </div>
           <h1 className={`text-2xl font-black tracking-tight ${t.text}`}>{player.name}</h1>
           <p className={`${t.textSecondary} text-sm mt-1`}>
             {total} combat{total > 1 ? 's' : ''}
