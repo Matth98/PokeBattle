@@ -1,12 +1,14 @@
 import { useEffect } from 'react';
 
 /**
- * Locks body scroll when a modal is open — works on iOS Safari.
+ * Locks body scroll when a modal is open — works on iOS Safari / PWA.
  *
- * iOS ignores `overflow: hidden` on <body> for touch events. The only
- * reliable fix is `position: fixed`, which removes the body from the
- * document flow entirely. We save the current scrollY and restore it
- * on unmount so the page doesn't jump to the top when the modal closes.
+ * We apply `overflow: hidden` on <html> rather than `position: fixed` on
+ * <body>. The `position: fixed` approach causes iOS to re-layout all fixed
+ * elements (including the bottom navigation bar), producing a visible jump
+ * when the modal opens or closes. In a PWA the body never scrolls anyway,
+ * so `overflow: hidden` on the root element is sufficient to prevent touch
+ * events from bleeding through the modal overlay.
  *
  * @param {boolean} isActive - Pass `true` (default) to lock immediately on
  *   mount (use in dedicated modal components). Pass a state boolean for
@@ -16,22 +18,12 @@ export const useBodyScrollLock = (isActive = true) => {
   useEffect(() => {
     if (!isActive) return;
 
-    const scrollY = window.scrollY;
-
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.style.overflowY = 'hidden';
+    const html = document.documentElement;
+    const prev = html.style.overflow;
+    html.style.overflow = 'hidden';
 
     return () => {
-      const savedTop = document.body.style.top;
-
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflowY = '';
-
-      window.scrollTo(0, parseInt(savedTop || '0') * -1);
+      html.style.overflow = prev;
     };
   }, [isActive]);
 };
