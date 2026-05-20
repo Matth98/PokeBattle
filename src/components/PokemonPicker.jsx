@@ -30,7 +30,8 @@ export const PokemonPicker = ({
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
 
   const hasQuery = searchTerm.trim().length > 0;
-  const displayed = hasQuery ? searchResults : (defaultResults || []);
+  const rawDisplayed = hasQuery ? searchResults : (defaultResults || []);
+  const displayed = !hasQuery ? [...rawDisplayed].sort((a, b) => a.pokeId - b.pokeId) : rawDisplayed;
   const showDefaultLabel = !hasQuery && defaultLabel && (defaultResults?.length ?? 0) > 0;
 
   return (
