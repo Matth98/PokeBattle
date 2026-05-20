@@ -22,6 +22,7 @@ export const theme = {
     surfaceModal: 'bg-gray-50',
     surfaceElevated: 'bg-white',
     surfaceMuted: 'bg-gray-100',
+    surfaceInset: 'bg-white',
     surfaceBlur: 'bg-white/75 backdrop-blur-xl',
     overlay: 'bg-black/30 backdrop-blur-sm',
 
@@ -85,6 +86,7 @@ export const theme = {
     surfaceModal: 'bg-zinc-900',
     surfaceElevated: 'bg-zinc-800',
     surfaceMuted: 'bg-zinc-800/60',
+    surfaceInset: 'bg-zinc-850',
     surfaceBlur: 'bg-black/70 backdrop-blur-xl',
     overlay: 'bg-black/60 backdrop-blur-sm',
 

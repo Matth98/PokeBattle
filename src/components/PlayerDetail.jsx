@@ -944,18 +944,18 @@ export const PlayerDetail = ({
                   </div>
 
                   {newTeamData.pokemon.length === 0 ? (
-                    <div className={`${t.surfaceMuted} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
+                    <div className={`${t.surfaceInset} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
                       Aucun Pokémon sélectionné
                     </div>
                   ) : (
-                    <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
+                    <div className={`${t.surfaceInset} rounded-2xl overflow-hidden`}>
                       {newTeamData.pokemon.map((p, idx) => {
                         const isLast = idx === newTeamData.pokemon.length - 1;
                         return (
                           <SwipeableRow
                             key={p.id}
                             onDelete={() => handleRemoveTeamPokemon(p.id)}
-                            surfaceClass={t.surfaceMuted}
+                            surfaceClass={t.surfaceInset}
                             className={!isLast ? `border-b ${t.divider}` : ''}
                           >
                             <div className="flex items-center gap-3 px-4 py-2.5">

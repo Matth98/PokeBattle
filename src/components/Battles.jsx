@@ -662,11 +662,11 @@ export const Battles = ({
                         </div>
 
                         {slotPokemon.length === 0 ? (
-                          <div className={`${t.surfaceMuted} rounded-2xl p-4 text-center ${t.textSecondary} text-sm`}>
+                          <div className={`${t.surfaceInset} rounded-2xl p-4 text-center ${t.textSecondary} text-sm`}>
                             Aucun Pokémon sélectionné
                           </div>
                         ) : (
-                          <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
+                          <div className={`${t.surfaceInset} rounded-2xl overflow-hidden`}>
                             <DraggableList
                               items={slotPokemon}
                               getKey={(p) => p.id}
@@ -679,11 +679,11 @@ export const Battles = ({
                                 return (
                                   <SwipeableRow
                                     onDelete={() => handleRemovePokemonFromSlot(slot, p.id)}
-                                    surfaceClass={t.surfaceMuted}
+                                    surfaceClass={t.surfaceInset}
                                     className={!isLast ? `border-b ${t.divider}` : ''}
                                     disabled={isDragging}
                                   >
-                                    <div className={`${t.surfaceMuted} flex items-center gap-2 px-2 py-2`}>
+                                    <div className="flex items-center gap-2 px-2 py-2">
                                       {/* Poignée de drag & drop */}
                                       <span
                                         {...dragHandleProps}
@@ -734,7 +734,7 @@ export const Battles = ({
                   <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                     Score
                   </label>
-                  <div className={`${t.surfaceMuted} rounded-2xl p-4 space-y-3`}>
+                  <div className={`${t.surfaceInset} rounded-2xl p-4 space-y-3`}>
                     <div className="flex items-center gap-3">
                       <p className={`flex-1 min-w-0 truncate text-left font-black text-base ${newBattleData.winner === 'player1' ? t.accent : t.text}`}>
                         {players.find((p) => p._id === newBattleData.player1)?.name || 'Joueur 1'}
