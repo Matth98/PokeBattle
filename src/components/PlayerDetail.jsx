@@ -26,6 +26,7 @@ import { PokemonDetailModal } from './PokemonDetailModal';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
+import { useAuth } from '../hooks/useAuth';
 
 export const PlayerDetail = ({
   player,
@@ -41,6 +42,11 @@ export const PlayerDetail = ({
   initialActiveTab = 'pokemon',
   isDark,
 }) => {
+  const { dbUser, isSuperAdmin } = useAuth();
+  const canEdit = isSuperAdmin ||
+    !player?.userId ||
+    (dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id));
+
   const [addingPokemon, setAddingPokemon] = useState(false);
   const [viewingPokemon, setViewingPokemon] = useState(null); // { pokeId, name }
   const [activeTab, setActiveTab] = useState(initialActiveTab);
@@ -452,13 +458,15 @@ export const PlayerDetail = ({
             <ChevronLeft size={22} />
             <span className="text-base">Joueurs</span>
           </button>
-          <button
-            onClick={openEditPlayer}
-            className={`flex items-center gap-1 ${t.accent} font-semibold`}
-          >
-            <Pencil size={16} />
-            <span className="text-base">Modifier</span>
-          </button>
+          {canEdit && (
+            <button
+              onClick={openEditPlayer}
+              className={`flex items-center gap-1 ${t.accent} font-semibold`}
+            >
+              <Pencil size={16} />
+              <span className="text-base">Modifier</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { useAuth } from '../hooks/useAuth';
 
 export const Players = ({
   players,
@@ -20,6 +21,12 @@ export const Players = ({
   showForm,
   setShowForm,
 }) => {
+  const { dbUser, isSuperAdmin } = useAuth();
+  const canEditPlayer = (player) =>
+    isSuperAdmin ||
+    !player.userId ||
+    (dbUser?._id && String(player.userId) === String(dbUser._id));
+
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerAvatar, setNewPlayerAvatar] = useState(null); // data URL
   const [deletingSelected, setDeletingSelected] = useState(false);
@@ -173,7 +180,7 @@ export const Players = ({
               return (
                 <SwipeableRow
                   key={p._id}
-                  onDelete={() => setConfirmingDeleteId(p._id)}
+                  onDelete={canEditPlayer(p) ? () => setConfirmingDeleteId(p._id) : undefined}
                   disabled={inSelection}
                   surfaceClass={t.surface}
                   className={[

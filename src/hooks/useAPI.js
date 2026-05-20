@@ -1,6 +1,12 @@
 import { useState, useCallback } from 'react';
+import { auth } from '../firebase';
 
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
+
+const getAuthHeaders = async () => {
+  const token = await auth.currentUser?.getIdToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const useAPI = () => {
   const [loading, setLoading] = useState(false);
@@ -8,7 +14,9 @@ export const useAPI = () => {
 
   const fetchPlayers = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/players`);
+      const res = await fetch(`${API_BASE_URL}/players`, {
+        headers: await getAuthHeaders(),
+      });
       if (!res.ok) throw new Error('Erreur chargement joueurs');
       return await res.json();
     } catch (err) {
@@ -19,7 +27,9 @@ export const useAPI = () => {
 
   const fetchBattles = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/battles`);
+      const res = await fetch(`${API_BASE_URL}/battles`, {
+        headers: await getAuthHeaders(),
+      });
       if (!res.ok) throw new Error('Erreur chargement combats');
       return await res.json();
     } catch (err) {
@@ -30,7 +40,9 @@ export const useAPI = () => {
 
   const fetchTeams = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/teams`);
+      const res = await fetch(`${API_BASE_URL}/teams`, {
+        headers: await getAuthHeaders(),
+      });
       if (!res.ok) throw new Error('Erreur chargement équipes');
       return await res.json();
     } catch (err) {
@@ -47,7 +59,7 @@ export const useAPI = () => {
           : { ...payload, stats: { wins: 0, losses: 0 }, pokemon: [] };
       const res = await fetch(`${API_BASE_URL}/players`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error('Erreur création joueur');
@@ -62,7 +74,7 @@ export const useAPI = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/players/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify(data)
       });
       if (!res.ok) throw new Error('Erreur modification joueur');
@@ -75,7 +87,10 @@ export const useAPI = () => {
 
   const deletePlayer = useCallback(async (id) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/players/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/players/${id}`, {
+        method: 'DELETE',
+        headers: await getAuthHeaders(),
+      });
       if (!res.ok) throw new Error('Erreur suppression joueur');
       return true;
     } catch (err) {
@@ -88,7 +103,7 @@ export const useAPI = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/battles`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify({ ...battleData, timestamp: new Date().toISOString() })
       });
       if (!res.ok) throw new Error('Erreur création combat');
@@ -103,7 +118,7 @@ export const useAPI = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/battles/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify(battleData)
       });
       if (!res.ok) throw new Error('Erreur modification combat');
@@ -116,7 +131,10 @@ export const useAPI = () => {
 
   const deleteBattle = useCallback(async (id) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/battles/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/battles/${id}`, {
+        method: 'DELETE',
+        headers: await getAuthHeaders(),
+      });
       if (!res.ok) throw new Error('Erreur suppression combat');
       return true;
     } catch (err) {
@@ -129,7 +147,7 @@ export const useAPI = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/teams`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify(teamData)
       });
       if (!res.ok) throw new Error('Erreur création équipe');
@@ -144,7 +162,7 @@ export const useAPI = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/teams/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify(teamData)
       });
       if (!res.ok) throw new Error('Erreur modification équipe');
@@ -157,7 +175,10 @@ export const useAPI = () => {
 
   const deleteTeam = useCallback(async (id) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/teams/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/teams/${id}`, {
+        method: 'DELETE',
+        headers: await getAuthHeaders(),
+      });
       if (!res.ok) throw new Error('Erreur suppression équipe');
       return true;
     } catch (err) {

@@ -3,6 +3,7 @@ import { ChevronLeft, Pencil, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { PokemonDetailModal } from './PokemonDetailModal';
+import { useAuth } from '../hooks/useAuth';
 
 export const TeamDetail = ({
   team,
@@ -12,6 +13,11 @@ export const TeamDetail = ({
   onEdit,
   backLabel = 'Équipes',
 }) => {
+  const { dbUser, isSuperAdmin } = useAuth();
+  const canEdit = isSuperAdmin ||
+    !team?.userId ||
+    (dbUser?._id && team?.userId && String(team.userId) === String(dbUser._id));
+
   const { getPokemonImageUrl } = usePokemon();
   const rosterPokeIds = (team?.pokemon || []).map((p) => p.pokeId);
   const pokemonTypes = usePokemonTypes(rosterPokeIds);
@@ -38,7 +44,7 @@ export const TeamDetail = ({
             <ChevronLeft size={22} />
             <span className="text-base">{backLabel}</span>
           </button>
-          {onEdit && (
+          {canEdit && onEdit && (
             <button
               onClick={() => onEdit(team)}
               className={`flex items-center gap-1 ${t.accent} font-semibold`}

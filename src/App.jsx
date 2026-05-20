@@ -10,6 +10,9 @@ import { Battles } from './components/Battles';
 import { BattleDetail } from './components/BattleDetail';
 import { Navigation } from './components/Navigation';
 import { ToastProvider, useToast } from './components/Toast';
+import { AuthProvider, useAuth } from './hooks/useAuth';
+import { LoginScreen } from './components/LoginScreen';
+import { ClaimPlayerScreen } from './components/ClaimPlayerScreen';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -27,6 +30,15 @@ if (typeof document !== 'undefined' && !document.querySelector('link[href*="font
 }
 
 function AppContent({ isDark, setIsDark }) {
+  const {
+    user,
+    loading: authLoading,
+    dbUser,
+    dbUserLoading,
+    refetchDbUser,
+    signInWithGoogle,
+    signInWithApple,
+  } = useAuth();
   const toast = useToast();
   const t = isDark ? theme.dark : theme.light;
 
@@ -137,6 +149,49 @@ function AppContent({ isDark, setIsDark }) {
   const [battles, setBattles] = useState([]);
   const [teams, setTeams] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [claimLoading, setClaimLoading] = useState(false);
+
+  const handleClaimPlayer = async (playerId) => {
+    setClaimLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res   = await fetch('https://pokebattle-backend.vercel.app/api/users/me/claim-player', {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ playerId }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || 'Erreur lors de la liaison');
+        return;
+      }
+      await refetchDbUser().catch(() => toast.error('Impossible de synchroniser le profil'));
+    } finally {
+      setClaimLoading(false);
+    }
+  };
+
+  const handleCreatePlayer = async ({ name, avatar }) => {
+    setClaimLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res   = await fetch('https://pokebattle-backend.vercel.app/api/users/me/create-player', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ name, avatar }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || 'Erreur lors de la création');
+        return;
+      }
+      const { player } = await res.json();
+      setPlayers((prev) => [...prev, player]);
+      await refetchDbUser().catch(() => toast.error('Impossible de synchroniser le profil'));
+    } finally {
+      setClaimLoading(false);
+    }
+  };
 
   const loadAllData = async () => {
     const [p, b, t] = await Promise.all([
@@ -155,8 +210,9 @@ function AppContent({ isDark, setIsDark }) {
     if (p) setPlayers(p);
   };
 
+  // Charge les données seulement une fois l'utilisateur authentifié
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { loadAllData(); }, []);
+  useEffect(() => { if (user) loadAllData(); }, [user]);
 
   const handleAddPlayer = async (data) => {
     // data peut être un string (nom) pour rétro-compat, ou { name, avatar }
@@ -284,11 +340,40 @@ function AppContent({ isDark, setIsDark }) {
     toast.success(`${ids.length} combat${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`);
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black">
+        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <LoginScreen
+        onSignInWithGoogle={signInWithGoogle}
+        onSignInWithApple={signInWithApple}
+      />
+    );
+  }
+
   if (initialLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <p className="text-xl font-black text-gray-900">Chargement...</p>
       </div>
+    );
+  }
+
+  // Première connexion : l'utilisateur n'est pas encore lié à une fiche joueur
+  if (!dbUserLoading && dbUser && dbUser.playerId === null) {
+    return (
+      <ClaimPlayerScreen
+        availablePlayers={players.filter((p) => !p.userId)}
+        onClaim={handleClaimPlayer}
+        onCreatePlayer={handleCreatePlayer}
+        loading={claimLoading}
+      />
     );
   }
 
@@ -524,9 +609,11 @@ function AppContent({ isDark, setIsDark }) {
 function App() {
   const [isDark, setIsDark] = useState(false);
   return (
-    <ToastProvider isDark={isDark}>
-      <AppContent isDark={isDark} setIsDark={setIsDark} />
-    </ToastProvider>
+    <AuthProvider>
+      <ToastProvider isDark={isDark}>
+        <AppContent isDark={isDark} setIsDark={setIsDark} />
+      </ToastProvider>
+    </AuthProvider>
   );
 }
 

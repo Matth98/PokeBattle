@@ -5,6 +5,7 @@ import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
+import { useAuth } from '../hooks/useAuth';
 
 const emptyTeamData = () => ({ name: '', owner: null, format: '1v1', pokemon: [] });
 
@@ -29,6 +30,12 @@ export const Teams = ({
   clearEditingTeam,
   renderPage = true,
 }) => {
+  const { dbUser, isSuperAdmin } = useAuth();
+  const canEditTeam = (team) =>
+    isSuperAdmin ||
+    !team.userId ||
+    (dbUser?._id && String(team.userId) === String(dbUser._id));
+
   const [newTeamData, setNewTeamData] = useState(emptyTeamData());
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, owner: false, pokemon: false });
   const [deletingSelected, setDeletingSelected] = useState(false);
@@ -264,7 +271,7 @@ export const Teams = ({
               return (
                 <SwipeableRow
                   key={team._id}
-                  onDelete={() => setConfirmingDeleteId(team._id)}
+                  onDelete={canEditTeam(team) ? () => setConfirmingDeleteId(team._id) : undefined}
                   disabled={inSelection}
                   surfaceClass={t.surface}
                   className={[

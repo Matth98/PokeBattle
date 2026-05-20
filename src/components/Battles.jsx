@@ -9,6 +9,7 @@ import { PokemonPicker } from './PokemonPicker';
 import { TeamSelectorModal } from './TeamSelectorModal';
 import { SwipeableRow } from './SwipeableRow';
 import { DraggableList } from './DraggableList';
+import { useAuth } from '../hooks/useAuth';
 
 const emptyBattle = () => ({
   format: '1v1',
@@ -55,6 +56,12 @@ export const Battles = ({
   clearEditingBattle,
   renderPage = true,
 }) => {
+  const { dbUser, isSuperAdmin } = useAuth();
+  const canDeleteBattle = (battle) =>
+    isSuperAdmin ||
+    !battle.createdBy ||
+    (dbUser?._id && String(battle.createdBy) === String(dbUser._id));
+
   const [newBattleData, setNewBattleData] = useState(emptyBattle());
   const [battleSelectedPokemon, setBattleSelectedPokemon] = useState({ player1: [], player2: [] });
   const [deletingSelected, setDeletingSelected] = useState(false);
@@ -402,7 +409,7 @@ export const Battles = ({
                     return (
                       <SwipeableRow
                         key={b._id}
-                        onDelete={() => setConfirmingDeleteId(b._id)}
+                        onDelete={canDeleteBattle(b) ? () => setConfirmingDeleteId(b._id) : undefined}
                         disabled={inSelection}
                         surfaceClass={t.surface}
                         className={[

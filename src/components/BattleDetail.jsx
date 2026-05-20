@@ -4,6 +4,7 @@ import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { PokemonDetailModal } from './PokemonDetailModal';
+import { useAuth } from '../hooks/useAuth';
 
 const TeamSection = ({ title, isWinner, pokemon, getPokemonImageUrl, t, onPokemonClick }) => (
   <section>
@@ -61,6 +62,15 @@ export const BattleDetail = ({
   onDelete,
   backLabel = 'Combats',
 }) => {
+  const { dbUser, isSuperAdmin } = useAuth();
+  const canEdit = isSuperAdmin || !battle?.createdBy || (battle && dbUser?.playerId && (
+    String(battle.player1?._id ?? battle.player1) === String(dbUser.playerId) ||
+    String(battle.player2?._id ?? battle.player2) === String(dbUser.playerId)
+  ));
+  const canDelete = isSuperAdmin ||
+    !battle?.createdBy ||
+    (battle && dbUser?._id && String(battle.createdBy) === String(dbUser._id));
+
   const { getPokemonImageUrl } = usePokemon();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [viewingPokemon, setViewingPokemon] = useState(null);
@@ -99,7 +109,7 @@ export const BattleDetail = ({
             <ChevronLeft size={22} />
             <span className="text-base">{backLabel}</span>
           </button>
-          {onEdit && (
+          {canEdit && onEdit && (
             <button
               onClick={() => onEdit(battle)}
               className={`flex items-center gap-1 ${t.accent} font-semibold`}
@@ -168,13 +178,15 @@ export const BattleDetail = ({
         )}
 
         {/* ── Supprimer ── */}
-        <button
-          onClick={() => setConfirmingDelete(true)}
-          className={`w-full ${t.surface} ${t.danger} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2`}
-        >
-          <Trash2 size={18} />
-          Supprimer ce combat
-        </button>
+        {canDelete && (
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className={`w-full ${t.surface} ${t.danger} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2`}
+          >
+            <Trash2 size={18} />
+            Supprimer ce combat
+          </button>
+        )}
       </div>
 
       {/* ── Modale confirmation ── */}
