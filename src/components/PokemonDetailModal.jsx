@@ -1,5 +1,5 @@
-import React, { useRef, useCallback } from 'react';
-import { motion, useMotionValue, useTransform, animate, useDragControls } from 'framer-motion';
+import React, { useRef, useCallback, useEffect } from 'react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -126,20 +126,17 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
   useBodyScrollLock();
 
   // ── Framer-motion spring bottom sheet ──
-  // Start y at full screen height so sheet begins off-screen (no conflict with initial prop)
-  const y = useMotionValue(typeof window !== 'undefined' ? window.innerHeight : 800);
-  // Overlay fades as sheet moves down: y=0 → opacity 1, y=45%H → opacity 0
-  const overlayOpacity = useTransform(
-    y,
-    [0, (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.45],
-    [1, 0],
-  );
-  const dragControls = useDragControls();
+  const H = typeof window !== 'undefined' ? window.innerHeight : 800;
+  // Start off-screen so the enter animation slides up from below
+  const y = useMotionValue(H);
+  // Overlay fades proportionally to sheet position
+  const overlayOpacity = useTransform(y, [0, H * 0.45], [1, 0]);
+  const sheetRef = useRef(null);
   const scrollRef = useRef(null);
 
-  // Dismiss: spring-accelerate to bottom then close
+  // Dismiss: spring-accelerate off-screen then call onClose
   const dismiss = useCallback((velocityY = 800) => {
-    animate(y, typeof window !== 'undefined' ? window.innerHeight : 800, {
+    animate(y, H, {
       type: 'spring',
       damping: 18,
       stiffness: 200,
@@ -147,32 +144,84 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
       restDelta: 1,
     });
     setTimeout(() => onClose(), 320);
-  }, [y, onClose]);
+  }, [y, H, onClose]);
 
-  // Close button
   const handleClose = useCallback(() => dismiss(400), [dismiss]);
 
-  // Snap back to 0 with overshoot spring
   const snapBack = useCallback(() => {
     animate(y, 0, { type: 'spring', damping: 30, stiffness: 400 });
   }, [y]);
 
-  const handleDragEnd = useCallback((_, info) => {
-    const shouldDismiss = info.velocity.y > 500 || info.offset.y > 150;
-    if (shouldDismiss) {
-      dismiss(info.velocity.y);
-    } else {
-      snapBack();
-    }
-  }, [dismiss, snapBack]);
+  // ── Native touch listeners (non-passive) on the sheet container ──
+  // This is the only reliable way on iOS to:
+  //   1. Respond to touch anywhere on the sheet (not just the grip handle)
+  //   2. Call e.preventDefault() to stop background scroll during the swipe
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
 
-  // Start drag from content when scroll is at top
-  const handleContentPointerDown = useCallback((e) => {
-    const scrollTop = scrollRef.current?.scrollTop ?? 0;
-    if (scrollTop <= 0) {
-      dragControls.start(e);
-    }
-  }, [dragControls]);
+    let startY = 0;
+    let startScrollTop = 0;
+    let lastY = 0;
+    let lastTime = 0;
+    let tracking = false;
+
+    const onTouchStart = (e) => {
+      startY = e.touches[0].clientY;
+      lastY  = startY;
+      lastTime = Date.now();
+      startScrollTop = scrollRef.current?.scrollTop ?? 0;
+      tracking = false;
+    };
+
+    const onTouchMove = (e) => {
+      const currentY = e.touches[0].clientY;
+      const deltaY   = currentY - startY;
+      lastY  = currentY;
+      lastTime = Date.now();
+
+      // Activate tracking only when: scrolled to top AND moving downward
+      if (!tracking) {
+        if (deltaY > 8 && startScrollTop <= 0) {
+          tracking = true;
+        } else {
+          return;
+        }
+      }
+
+      // Prevent the inner scroll container from scrolling while we drag the sheet
+      e.preventDefault();
+
+      if (deltaY > 0) y.set(deltaY);
+    };
+
+    const onTouchEnd = (e) => {
+      if (!tracking) return;
+      tracking = false;
+
+      const deltaY   = lastY - startY;
+      const elapsed  = Math.max(1, Date.now() - lastTime);
+      // Velocity in px/ms (use last segment for accuracy)
+      const velocity = (e.changedTouches[0].clientY - startY) /
+                       Math.max(1, Date.now() - (lastTime - 50));
+
+      if (velocity > 0.5 || deltaY > 120) {
+        dismiss(velocity * 1000); // framer wants px/s
+      } else {
+        snapBack();
+      }
+    };
+
+    sheet.addEventListener('touchstart', onTouchStart, { passive: true  });
+    sheet.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    sheet.addEventListener('touchend',   onTouchEnd,   { passive: true  });
+
+    return () => {
+      sheet.removeEventListener('touchstart', onTouchStart);
+      sheet.removeEventListener('touchmove',  onTouchMove);
+      sheet.removeEventListener('touchend',   onTouchEnd);
+    };
+  }, [y, dismiss, snapBack]);
 
   const primaryType = data?.types?.[0] || 'normal';
   const accentHex = TYPE_HEX[primaryType] || '#6390F0';
@@ -202,23 +251,14 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
       style={{ backgroundColor: 'rgba(0,0,0,0.5)', opacity: overlayOpacity }}
     >
       <motion.div
+        ref={sheetRef}
         className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}
         style={{ y }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', damping: 32, stiffness: 320 }}
-        drag="y"
-        dragControls={dragControls}
-        dragListener={false}
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ top: 0.05, bottom: 0.4 }}
-        onDragEnd={handleDragEnd}
       >
-        {/* ── Grip handle — absolu, flotte au-dessus de la cover ── */}
-        <div
-          className="absolute top-0 left-0 right-0 flex justify-center pt-3 z-10 cursor-grab active:cursor-grabbing"
-          style={{ touchAction: 'none' }}
-          onPointerDown={(e) => dragControls.start(e)}
-        >
+        {/* ── Grip handle — visuel seulement, le drag est capté sur toute la sheet ── */}
+        <div className="absolute top-0 left-0 right-0 flex justify-center pt-3 z-10 pointer-events-none">
           <div className="w-10 h-1 rounded-full bg-white/40" />
         </div>
 
@@ -249,7 +289,6 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
             ref={scrollRef}
             className="flex-1 overflow-y-auto"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}
-            onPointerDown={handleContentPointerDown}
           >
             {/* ── Hero ── */}
             <div
