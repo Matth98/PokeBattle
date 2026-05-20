@@ -136,11 +136,7 @@ function AppContent({ isDark, setIsDark }) {
   const [players, setPlayers] = useState([]);
   const [battles, setBattles] = useState([]);
   const [teams, setTeams] = useState([]);
-
-  useEffect(() => {
-    loadAllData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const loadAllData = async () => {
     const [p, b, t] = await Promise.all([
@@ -151,6 +147,12 @@ function AppContent({ isDark, setIsDark }) {
     if (p) setPlayers(p);
     if (b) setBattles(b);
     if (t) setTeams(t);
+    setInitialLoading(false);
+  };
+
+  const refreshPlayers = async () => {
+    const p = await fetchPlayers();
+    if (p) setPlayers(p);
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -243,7 +245,7 @@ function AppContent({ isDark, setIsDark }) {
     const newBattle = await createBattle(battleData);
     if (newBattle) {
       setBattles([...battles, newBattle]);
-      loadAllData();
+      refreshPlayers();
       toast.success('Combat enregistré');
     } else {
       toast.error('Erreur lors de la création');
@@ -255,6 +257,7 @@ function AppContent({ isDark, setIsDark }) {
     if (updated) {
       setBattles(battles.map(b => b._id === id ? updated : b));
       setSelectedBattle(updated);
+      refreshPlayers();
       toast.success('Combat mis à jour');
     } else {
       toast.error('Erreur lors de la mise à jour');
@@ -265,7 +268,7 @@ function AppContent({ isDark, setIsDark }) {
     const success = await deleteBattle(id);
     if (success) {
       setBattles(battles.filter(b => b._id !== id));
-      loadAllData();
+      refreshPlayers();
       toast.success('Combat supprimé');
     } else {
       toast.error('Erreur lors de la suppression');
@@ -277,11 +280,11 @@ function AppContent({ isDark, setIsDark }) {
       const success = await deleteBattle(id);
       if (success) setBattles((prev) => prev.filter((b) => b._id !== id));
     }
-    loadAllData();
+    refreshPlayers();
     toast.success(`${ids.length} combat${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`);
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <p className="text-xl font-black text-gray-900">Chargement...</p>

@@ -7,7 +7,6 @@ export const useAPI = () => {
   const [error, setError] = useState(null);
 
   const fetchPlayers = useCallback(async () => {
-    setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/players`);
       if (!res.ok) throw new Error('Erreur chargement joueurs');
@@ -15,13 +14,10 @@ export const useAPI = () => {
     } catch (err) {
       setError(err.message);
       return [];
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   const fetchBattles = useCallback(async () => {
-    setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/battles`);
       if (!res.ok) throw new Error('Erreur chargement combats');
@@ -29,13 +25,10 @@ export const useAPI = () => {
     } catch (err) {
       setError(err.message);
       return [];
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   const fetchTeams = useCallback(async () => {
-    setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/teams`);
       if (!res.ok) throw new Error('Erreur chargement équipes');
@@ -43,8 +36,6 @@ export const useAPI = () => {
     } catch (err) {
       setError(err.message);
       return [];
-    } finally {
-      setLoading(false);
     }
   }, []);
 
