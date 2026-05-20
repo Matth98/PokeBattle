@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -122,6 +122,47 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
   const { data, loading, error } = usePokemonDetail(pokeId);
 
+  // ── Swipe-down to close ──
+  // 'idle' | 'dragging' | 'snapping' | 'closing'
+  const [swipeState, setSwipeState] = useState('idle');
+  const [swipeDragY, setSwipeDragY] = useState(0);
+  const dragYRef = useRef(0);
+  const touchStartYRef = useRef(null);
+  const touchStartScrollTopRef = useRef(0);
+  const scrollRef = useRef(null);
+
+  const handleTouchStart = useCallback((e) => {
+    touchStartYRef.current = e.touches[0].clientY;
+    touchStartScrollTopRef.current = scrollRef.current?.scrollTop ?? 0;
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (touchStartYRef.current === null) return;
+    const deltaY = e.touches[0].clientY - touchStartYRef.current;
+    // Only drag-to-close when scrolled to top and moving down
+    if (deltaY > 0 && touchStartScrollTopRef.current <= 0) {
+      dragYRef.current = deltaY;
+      setSwipeState('dragging');
+      setSwipeDragY(deltaY);
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    touchStartYRef.current = null;
+    if (dragYRef.current > 80) {
+      // Swipe threshold reached: animate out and close
+      setSwipeState('closing');
+      setSwipeDragY(window.innerHeight);
+      setTimeout(() => onClose(), 290);
+    } else {
+      // Snap back
+      setSwipeState('snapping');
+      setSwipeDragY(0);
+      dragYRef.current = 0;
+      setTimeout(() => setSwipeState('idle'), 300);
+    }
+  }, [onClose]);
+
   const primaryType = data?.types?.[0] || 'normal';
   const accentHex = TYPE_HEX[primaryType] || '#6390F0';
 
@@ -144,10 +185,23 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
     { multVal: 2, label: 2 },
   ]);
 
+  // Swipe style — inline transform overrides CSS animation fill value
+  const swipeStyle = swipeState !== 'idle' ? {
+    transform: `translateY(${swipeDragY}px)`,
+    transition:
+      swipeState === 'dragging' ? 'none' :
+      swipeState === 'snapping' ? 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)' :
+      /* closing */               'transform 0.29s cubic-bezier(0.4, 0, 1, 1)',
+  } : {};
+
   return (
     <div className={`fixed inset-0 bg-black/50 ${isClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
       <div
-        className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
+        className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${swipeState === 'closing' ? '' : (isClosing ? 'anim-slide-down' : 'anim-slide-up')}`}
+        style={swipeStyle}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Bouton fermeture — absolu dans le div animé, ne scroll pas */}
         <button
@@ -171,7 +225,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
         )}
 
         {!loading && !error && data && (
-          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}>
+          <div ref={scrollRef} className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}>
             {/* ── Hero ── */}
             <div
               className="relative flex flex-col items-center pt-8 pb-0 overflow-hidden"
