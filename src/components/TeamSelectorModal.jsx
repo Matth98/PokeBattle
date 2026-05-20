@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 export const TeamSelectorModal = ({
   t,
@@ -14,6 +15,7 @@ export const TeamSelectorModal = ({
 }) => {
   const { getPokemonImageUrl } = usePokemon();
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
+  useBodyScrollLock();
   const filtered = teams.filter(
     (team) => team.ownerId === playerId && team.format === format
   );

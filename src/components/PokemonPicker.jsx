@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 /**
  * Modal de recherche/sélection d'un Pokémon. Full-screen sheet iOS.
@@ -28,6 +29,7 @@ export const PokemonPicker = ({
   const [searchTerm, setSearchTerm] = useState('');
   const { searchResults, searchLoading, error, searchPokemon, getPokemonImageUrl } = usePokemon();
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
+  useBodyScrollLock();
 
   const hasQuery = searchTerm.trim().length > 0;
   const rawDisplayed = hasQuery ? searchResults : (defaultResults || []);

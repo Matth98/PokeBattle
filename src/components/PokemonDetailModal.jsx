@@ -2,6 +2,7 @@ import React, { useRef, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, animate, useDragControls } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { TYPE_FR, TYPE_COLORS } from '../hooks/usePokemonTypes';
 
 const TYPE_HEX = {
@@ -121,6 +122,9 @@ function InfoRow({ label, value, accentColor, isDark }) {
 export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => {
   const { data, loading, error } = usePokemonDetail(pokeId);
 
+  // Prevent background scroll on iOS (position: fixed is the only reliable fix)
+  useBodyScrollLock();
+
   // ── Framer-motion spring bottom sheet ──
   // Start y at full screen height so sheet begins off-screen (no conflict with initial prop)
   const y = useMotionValue(typeof window !== 'undefined' ? window.innerHeight : 800);
@@ -209,13 +213,13 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
         dragElastic={{ top: 0.05, bottom: 0.4 }}
         onDragEnd={handleDragEnd}
       >
-        {/* ── Grip handle — zone de drag fixe, toujours visible ── */}
+        {/* ── Grip handle — absolu, flotte au-dessus de la cover ── */}
         <div
-          className="flex-shrink-0 flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing"
+          className="absolute top-0 left-0 right-0 flex justify-center pt-3 z-10 cursor-grab active:cursor-grabbing"
           style={{ touchAction: 'none' }}
           onPointerDown={(e) => dragControls.start(e)}
         >
-          <div className="w-10 h-1 rounded-full bg-black/20 dark:bg-white/30" />
+          <div className="w-10 h-1 rounded-full bg-white/40" />
         </div>
 
         {/* Bouton fermeture — absolu dans le div animé, ne scroll pas */}
