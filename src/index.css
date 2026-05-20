@@ -12,6 +12,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Safe area iOS (PWA installée, home bar) ── */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pb-safe {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+.min-h-screen-safe {
+  min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+}
+
 input[type="date"] {
     -webkit-appearance: none;
     appearance: none;
