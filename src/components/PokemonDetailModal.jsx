@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useRef, useCallback } from 'react';
+import { motion, useMotionValue, useTransform, animate, useDragControls } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
-import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { TYPE_FR, TYPE_COLORS } from '../hooks/usePokemonTypes';
 
 const TYPE_HEX = {
@@ -119,105 +119,56 @@ function InfoRow({ label, value, accentColor, isDark }) {
 }
 
 export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => {
-  const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
   const { data, loading, error } = usePokemonDetail(pokeId);
 
-  // ── Swipe-down to close — direct DOM manipulation for 60fps ──
-  const sheetRef  = useRef(null);
-  const overlayRef = useRef(null);
+  // ── Framer-motion spring bottom sheet ──
+  // Start y at full screen height so sheet begins off-screen (no conflict with initial prop)
+  const y = useMotionValue(typeof window !== 'undefined' ? window.innerHeight : 800);
+  // Overlay fades as sheet moves down: y=0 → opacity 1, y=45%H → opacity 0
+  const overlayOpacity = useTransform(
+    y,
+    [0, (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.45],
+    [1, 0],
+  );
+  const dragControls = useDragControls();
   const scrollRef = useRef(null);
-  const drag = useRef({ active: false, startY: 0, startTime: 0, startScrollTop: 0, lastY: 0 });
-  // Track whether we're mid-swipe-close to suppress CSS animation classes
-  const [swipeClosing, setSwipeClosing] = useState(false);
 
-  const setSheetY = (y) => {
-    if (!sheetRef.current) return;
-    sheetRef.current.style.transform = y > 0 ? `translateY(${y}px)` : '';
-    // Fade overlay proportionally (0px → opacity 1, 200px → opacity 0.3)
-    if (overlayRef.current) {
-      const opacity = Math.max(0.3, 1 - y / 300);
-      overlayRef.current.style.opacity = opacity;
-    }
-  };
+  // Dismiss: spring-accelerate to bottom then close
+  const dismiss = useCallback((velocityY = 800) => {
+    animate(y, typeof window !== 'undefined' ? window.innerHeight : 800, {
+      type: 'spring',
+      damping: 18,
+      stiffness: 200,
+      velocity: velocityY,
+      restDelta: 1,
+    });
+    setTimeout(() => onClose(), 320);
+  }, [y, onClose]);
 
-  const dismissSheet = useCallback((fromY) => {
-    setSwipeClosing(true);
-    const sheet = sheetRef.current;
-    if (sheet) {
-      sheet.style.transition = 'transform 0.28s cubic-bezier(0.4, 0, 1, 1)';
-      sheet.style.transform = `translateY(100vh)`;
-    }
-    if (overlayRef.current) {
-      overlayRef.current.style.transition = 'opacity 0.28s ease';
-      overlayRef.current.style.opacity = '0';
-    }
-    setTimeout(() => onClose(), 290);
-  }, [onClose]);
+  // Close button
+  const handleClose = useCallback(() => dismiss(400), [dismiss]);
 
+  // Snap back to 0 with overshoot spring
   const snapBack = useCallback(() => {
-    const sheet = sheetRef.current;
-    if (sheet) {
-      sheet.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      sheet.style.transform = '';
-    }
-    if (overlayRef.current) {
-      overlayRef.current.style.transition = 'opacity 0.35s ease';
-      overlayRef.current.style.opacity = '1';
-    }
-    setTimeout(() => {
-      if (sheetRef.current) sheetRef.current.style.transition = '';
-      if (overlayRef.current) overlayRef.current.style.transition = '';
-    }, 360);
-  }, []);
+    animate(y, 0, { type: 'spring', damping: 30, stiffness: 400 });
+  }, [y]);
 
-  const handleTouchStart = useCallback((e) => {
-    const scrollTop = scrollRef.current?.scrollTop ?? 0;
-    drag.current = {
-      active: false,
-      startY: e.touches[0].clientY,
-      startTime: Date.now(),
-      startScrollTop: scrollTop,
-      lastY: e.touches[0].clientY,
-    };
-  }, []);
-
-  const handleTouchMove = useCallback((e) => {
-    const d = drag.current;
-    const currentY = e.touches[0].clientY;
-    const deltaY = currentY - d.startY;
-    d.lastY = currentY;
-
-    // Activate drag only if: moving down AND scroll was at top when gesture started
-    if (!d.active) {
-      if (deltaY > 8 && d.startScrollTop <= 0) {
-        d.active = true;
-      } else {
-        return;
-      }
-    }
-
-    if (deltaY > 0) {
-      // Apply directly to DOM — no React re-render
-      setSheetY(deltaY);
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    const d = drag.current;
-    if (!d.active) return;
-
-    const deltaY = d.lastY - d.startY;
-    const elapsed = Math.max(1, Date.now() - d.startTime);
-    const velocity = deltaY / elapsed; // px/ms
-
-    // Close if fast flick (velocity > 0.5 px/ms) OR large drag (> 120px)
-    if (velocity > 0.5 || deltaY > 120) {
-      dismissSheet(deltaY);
+  const handleDragEnd = useCallback((_, info) => {
+    const shouldDismiss = info.velocity.y > 500 || info.offset.y > 150;
+    if (shouldDismiss) {
+      dismiss(info.velocity.y);
     } else {
       snapBack();
     }
-    d.active = false;
-  }, [dismissSheet, snapBack]);
+  }, [dismiss, snapBack]);
+
+  // Start drag from content when scroll is at top
+  const handleContentPointerDown = useCallback((e) => {
+    const scrollTop = scrollRef.current?.scrollTop ?? 0;
+    if (scrollTop <= 0) {
+      dragControls.start(e);
+    }
+  }, [dragControls]);
 
   const primaryType = data?.types?.[0] || 'normal';
   const accentHex = TYPE_HEX[primaryType] || '#6390F0';
@@ -242,25 +193,40 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
   ]);
 
   return (
-    <div
-      ref={overlayRef}
-      className={`fixed inset-0 bg-black/50 ${swipeClosing ? '' : (isClosing ? 'anim-fade-out' : 'anim-fade-in')} z-[9999] flex flex-col`}
+    <motion.div
+      className="fixed inset-0 z-[9999] flex flex-col"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)', opacity: overlayOpacity }}
     >
-      <div
-        ref={sheetRef}
-        className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${swipeClosing ? '' : (isClosing ? 'anim-slide-down' : 'anim-slide-up')}`}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+      <motion.div
+        className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl`}
+        style={{ y }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+        drag="y"
+        dragControls={dragControls}
+        dragListener={false}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0.05, bottom: 0.4 }}
+        onDragEnd={handleDragEnd}
       >
+        {/* ── Grip handle — zone de drag fixe, toujours visible ── */}
+        <div
+          className="flex-shrink-0 flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing"
+          style={{ touchAction: 'none' }}
+          onPointerDown={(e) => dragControls.start(e)}
+        >
+          <div className="w-10 h-1 rounded-full bg-black/20 dark:bg-white/30" />
+        </div>
+
         {/* Bouton fermeture — absolu dans le div animé, ne scroll pas */}
         <button
           onClick={handleClose}
-          className="absolute top-3 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-black/20 text-white backdrop-blur-sm z-10"
+          className="absolute top-2 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-black/20 text-white backdrop-blur-sm z-10"
           aria-label="Fermer"
         >
           <X size={16} />
         </button>
+
         {/* ── Contenu scrollable ── */}
         {loading && (
           <div className="flex-1 flex items-center justify-center">
@@ -275,14 +241,17 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
         )}
 
         {!loading && !error && data && (
-          <div ref={scrollRef} className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}>
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}
+            onPointerDown={handleContentPointerDown}
+          >
             {/* ── Hero ── */}
             <div
-              className="relative flex flex-col items-center pt-8 pb-0 overflow-hidden"
+              className="relative flex flex-col items-center pt-4 pb-0 overflow-hidden"
               style={{ background: `linear-gradient(160deg, ${accentHex}ee 0%, ${accentHex}77 60%, ${isDark ? '#1c1c1e' : 'white'} 100%)` }}
             >
-              {/* Grip handle */}
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-white/40" aria-hidden="true" />
               <img
                 src={data.officialArtwork || data.sprite}
                 alt={pokeName}
@@ -369,7 +338,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
