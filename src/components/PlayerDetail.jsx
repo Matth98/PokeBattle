@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import {
   AlertTriangle,
   Camera,
@@ -49,6 +50,8 @@ export const PlayerDetail = ({
   const [isSavingPlayer, setIsSavingPlayer] = useState(false);
   const [creatingTeam, setCreatingTeam] = useState(false);
   const [pickingTeamPokemon, setPickingTeamPokemon] = useState(false);
+  // Prevent background scroll on iOS when any sheet is open
+  useBodyScrollLock(editingPlayer || creatingTeam);
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, pokemon: false });
   const [newTeamData, setNewTeamData] = useState({ name: '', format: '1v1', pokemon: [] });
   const { getPokemonImageUrl } = usePokemon();

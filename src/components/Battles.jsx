@@ -4,6 +4,7 @@ import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { PokemonPicker } from './PokemonPicker';
 import { TeamSelectorModal } from './TeamSelectorModal';
 import { SwipeableRow } from './SwipeableRow';
@@ -63,6 +64,8 @@ export const Battles = ({
   const { getPokemonImageUrl } = usePokemon();
 
   const isEditing = Boolean(editingBattle && showForm);
+  // Prevent background scroll on iOS when the form is open
+  useBodyScrollLock(showForm);
 
   // Pré-remplit le formulaire quand on ouvre en mode édition
   useEffect(() => {

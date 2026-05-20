@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronRight, Plus, Trash2, X, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
 
@@ -36,6 +37,8 @@ export const Teams = ({
   const { getPokemonImageUrl } = usePokemon();
 
   const isEditing = Boolean(editingTeam && showForm);
+  // Prevent background scroll on iOS when the form is open
+  useBodyScrollLock(showForm);
 
   // Pré-remplit le formulaire en mode édition
   useEffect(() => {
