@@ -3,8 +3,9 @@ import { ChevronLeft, Pencil, Calendar, Trash2, FileText } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { PokemonDetailModal } from './PokemonDetailModal';
 
-const TeamSection = ({ title, isWinner, pokemon, getPokemonImageUrl, t }) => (
+const TeamSection = ({ title, isWinner, pokemon, getPokemonImageUrl, t, onPokemonClick }) => (
   <section>
     <div className="flex items-center gap-2 mb-2 px-1">
       <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>{title}</h2>
@@ -23,9 +24,10 @@ const TeamSection = ({ title, isWinner, pokemon, getPokemonImageUrl, t }) => (
         {pokemon.map((pk, idx) => {
           const isLast = idx === pokemon.length - 1;
           return (
-            <div
+            <button
               key={pk.id || idx}
-              className={`flex items-center gap-3 px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''}`}
+              onClick={() => onPokemonClick({ pokeId: pk.pokeId, name: pk.name })}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left ${!isLast ? `border-b ${t.divider}` : ''}`}
             >
               <img
                 src={getPokemonImageUrl(pk.pokeId)}
@@ -33,7 +35,7 @@ const TeamSection = ({ title, isWinner, pokemon, getPokemonImageUrl, t }) => (
                 className={`w-10 h-10 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
                 onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
               />
-              <p className={`flex-1 font-semibold truncate ${pk.eliminated ? `${t.textTertiary} line-through` : t.text}`}>
+              <p className={`flex-1 font-semibold truncate text-left ${pk.eliminated ? `${t.textTertiary} line-through` : t.text}`}>
                 {pk.name}
               </p>
               {pk.eliminated && (
@@ -41,7 +43,7 @@ const TeamSection = ({ title, isWinner, pokemon, getPokemonImageUrl, t }) => (
                   Éliminé
                 </span>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
@@ -61,6 +63,7 @@ export const BattleDetail = ({
 }) => {
   const { getPokemonImageUrl } = usePokemon();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [viewingPokemon, setViewingPokemon] = useState(null);
   const { isClosing: isConfirmClosing, handleClose: handleCancelDelete } = useAnimatedClose(
     () => setConfirmingDelete(false),
     180,
@@ -80,6 +83,7 @@ export const BattleDetail = ({
   };
 
   return (
+    <>
     <div className={`min-h-screen ${t.pageBg}`}>
       {/* ── En-tête sticky ── */}
       <div
@@ -139,6 +143,7 @@ export const BattleDetail = ({
           pokemon={battle.team1}
           getPokemonImageUrl={getPokemonImageUrl}
           t={t}
+          onPokemonClick={(p) => setViewingPokemon(p)}
         />
         <TeamSection
           title={p2?.name || 'Joueur 2'}
@@ -146,6 +151,7 @@ export const BattleDetail = ({
           pokemon={battle.team2}
           getPokemonImageUrl={getPokemonImageUrl}
           t={t}
+          onPokemonClick={(p) => setViewingPokemon(p)}
         />
 
         {/* ── Notes ── */}
@@ -195,5 +201,16 @@ export const BattleDetail = ({
         </div>
       )}
     </div>
+
+    {viewingPokemon && (
+      <PokemonDetailModal
+        pokeId={viewingPokemon.pokeId}
+        pokeName={viewingPokemon.name}
+        t={t}
+        isDark={isDark}
+        onClose={() => setViewingPokemon(null)}
+      />
+    )}
+    </>
   );
 };

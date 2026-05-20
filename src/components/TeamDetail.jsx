@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, Pencil, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS } from '../hooks/usePokemonTypes';
+import { PokemonDetailModal } from './PokemonDetailModal';
 
 export const TeamDetail = ({
   team,
@@ -14,12 +15,14 @@ export const TeamDetail = ({
   const { getPokemonImageUrl } = usePokemon();
   const rosterPokeIds = (team?.pokemon || []).map((p) => p.pokeId);
   const pokemonTypes = usePokemonTypes(rosterPokeIds);
+  const [viewingPokemon, setViewingPokemon] = useState(null);
 
   if (!team) return null;
 
   const thumbSlots = (team.pokemon || []).slice(0, 4);
 
   return (
+    <>
     <div className={`min-h-screen ${t.pageBg}`}>
       {/* ── En-tête sticky ── */}
       <div
@@ -96,9 +99,10 @@ export const TeamDetail = ({
                 const isLast = idx === team.pokemon.length - 1;
                 const types = pokemonTypes[p.pokeId] || [];
                 return (
-                  <div
+                  <button
                     key={p.id}
-                    className={`flex items-center gap-3 px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''}`}
+                    onClick={() => setViewingPokemon({ pokeId: p.pokeId, name: p.name })}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left ${!isLast ? `border-b ${t.divider}` : ''}`}
                   >
                     <img
                       src={getPokemonImageUrl(p.pokeId)}
@@ -125,7 +129,7 @@ export const TeamDetail = ({
                       )}
                     </div>
                     <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -133,5 +137,16 @@ export const TeamDetail = ({
         </section>
       </div>
     </div>
+
+    {viewingPokemon && (
+      <PokemonDetailModal
+        pokeId={viewingPokemon.pokeId}
+        pokeName={viewingPokemon.name}
+        t={t}
+        isDark={isDark}
+        onClose={() => setViewingPokemon(null)}
+      />
+    )}
+    </>
   );
 };
