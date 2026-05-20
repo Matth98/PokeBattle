@@ -19,6 +19,7 @@ export const theme = {
     // Surfaces
     pageBg: 'bg-gray-50',
     surface: 'bg-white',
+    surfaceModal: 'bg-gray-50',
     surfaceElevated: 'bg-white',
     surfaceMuted: 'bg-gray-100',
     surfaceBlur: 'bg-white/75 backdrop-blur-xl',
@@ -81,6 +82,7 @@ export const theme = {
     // ── Nouveau design system ──
     pageBg: 'bg-black',
     surface: 'bg-zinc-900',
+    surfaceModal: 'bg-zinc-900',
     surfaceElevated: 'bg-zinc-800',
     surfaceMuted: 'bg-zinc-800/60',
     surfaceBlur: 'bg-black/70 backdrop-blur-xl',

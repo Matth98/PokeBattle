@@ -767,8 +767,8 @@ export const PlayerDetail = ({
       {/* ── Modal Modifier joueur ── */}
       {editingPlayer && (
         <div className={`fixed inset-0 ${t.overlay} ${isEditPlayerClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
-          <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isEditPlayerClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
-            <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
+          <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isEditPlayerClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
+            <div className={`${t.surface} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
               <div className="flex-1">
                 <button
                   onClick={cancelEditPlayer}
@@ -848,8 +848,8 @@ export const PlayerDetail = ({
 
         return (
           <div className={`fixed inset-0 ${t.overlay} ${isCreateTeamClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
-            <div className={`${t.pageBg} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isCreateTeamClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
-              <div className={`${t.surfaceBlur} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
+            <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isCreateTeamClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
+              <div className={`${t.surface} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
                 <div className="flex-1">
                   <button
                     onClick={cancelCreateTeam}
@@ -944,21 +944,21 @@ export const PlayerDetail = ({
                   </div>
 
                   {newTeamData.pokemon.length === 0 ? (
-                    <div className={`${t.surface} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
+                    <div className={`${t.surfaceMuted} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
                       Aucun Pokémon sélectionné
                     </div>
                   ) : (
-                    <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+                    <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
                       {newTeamData.pokemon.map((p, idx) => {
                         const isLast = idx === newTeamData.pokemon.length - 1;
                         return (
                           <SwipeableRow
                             key={p.id}
                             onDelete={() => handleRemoveTeamPokemon(p.id)}
-                            surfaceClass={t.surface}
+                            surfaceClass={t.surfaceMuted}
                             className={!isLast ? `border-b ${t.divider}` : ''}
                           >
-                            <div className={`flex items-center gap-3 px-4 py-2.5 ${t.surface}`}>
+                            <div className="flex items-center gap-3 px-4 py-2.5">
                               <img
                                 src={getPokemonImageUrl(p.pokeId)}
                                 alt={p.name}
