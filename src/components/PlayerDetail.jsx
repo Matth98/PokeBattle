@@ -801,7 +801,7 @@ export const PlayerDetail = ({
                     size={104}
                     textSize="text-4xl"
                   />
-                  <div className={`absolute bottom-0 right-0 w-9 h-9 rounded-full ${t.accentBg} text-white flex items-center justify-center border-4 ${isDark ? 'border-black' : 'border-gray-50'}`}>
+                  <div className={`absolute bottom-0 right-0 w-9 h-9 rounded-full ${t.accentBg} text-white flex items-center justify-center border-4 ${isDark ? 'border-zinc-900' : 'border-gray-50'}`}>
                     <Camera size={16} />
                   </div>
                 </button>
