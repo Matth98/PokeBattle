@@ -606,6 +606,13 @@ function AppContent({ isDark, setIsDark }) {
 
 function App() {
   const [isDark, setIsDark] = useState(false);
+
+  // Synchronise la couleur de la barre de navigation du navigateur avec le thème
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', isDark ? '#000000' : '#ffffff');
+  }, [isDark]);
+
   return (
     <AuthProvider>
       <ToastProvider isDark={isDark}>
