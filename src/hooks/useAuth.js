@@ -4,7 +4,6 @@ import { auth } from '../firebase';
 import {
   onAuthStateChanged,
   GoogleAuthProvider,
-  OAuthProvider,
   signInWithPopup,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
@@ -54,13 +53,6 @@ export function AuthProvider({ children }) {
     return signInWithPopup(auth, provider);
   };
 
-  const signInWithApple = async () => {
-    const provider = new OAuthProvider('apple.com');
-    provider.addScope('email');
-    provider.addScope('name');
-    return signInWithPopup(auth, provider);
-  };
-
   const signOut = () => {
     setDbUser(null);
     return firebaseSignOut(auth);
@@ -77,7 +69,6 @@ export function AuthProvider({ children }) {
       isSuperAdmin,
       refetchDbUser,
       signInWithGoogle,
-      signInWithApple,
       signOut,
     }}>
       {children}

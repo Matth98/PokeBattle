@@ -37,7 +37,6 @@ function AppContent({ isDark, setIsDark }) {
     dbUserLoading,
     refetchDbUser,
     signInWithGoogle,
-    signInWithApple,
   } = useAuth();
   const toast = useToast();
   const t = isDark ? theme.dark : theme.light;
@@ -352,7 +351,6 @@ function AppContent({ isDark, setIsDark }) {
     return (
       <LoginScreen
         onSignInWithGoogle={signInWithGoogle}
-        onSignInWithApple={signInWithApple}
       />
     );
   }

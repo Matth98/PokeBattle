@@ -1,7 +1,7 @@
 // src/components/LoginScreen.jsx
 import React, { useState } from 'react';
 
-export function LoginScreen({ onSignInWithGoogle, onSignInWithApple }) {
+export function LoginScreen({ onSignInWithGoogle }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
@@ -49,16 +49,6 @@ export function LoginScreen({ onSignInWithGoogle, onSignInWithApple }) {
           Continuer avec Google
         </button>
 
-        <button
-          onClick={handle(onSignInWithApple)}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-3 bg-white text-gray-900
-                     font-semibold py-3.5 rounded-xl shadow disabled:opacity-50 active:scale-95
-                     transition-transform"
-        >
-          <i className="fab fa-apple text-xl leading-none" />
-          Continuer avec Apple
-        </button>
       </div>
 
       {/* États */}
