@@ -1,0 +1,120 @@
+<h2>Zone de swipe pour revenir en arrière</h2>
+<p class="subtitle">Où l'utilisateur doit-il démarrer son swipe ?</p>
+
+<style>
+  .demo-box {
+    position: relative; width: 160px; height: 260px;
+    border-radius: 16px; overflow: hidden;
+    background: #f8f8ff; flex-shrink: 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  }
+  .screen-header {
+    height: 44px; display: flex; align-items: center;
+    padding: 0 12px; font-size: 13px; font-weight: 600;
+    background: #fff; color: #7c3aed;
+    border-bottom: 1px solid #e5e5f0;
+  }
+  .back-icon { margin-right: 4px; font-size: 16px; }
+  .screen-body { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .mock-row { height: 28px; border-radius: 6px; }
+  .detail-title { height: 36px; background: #e0d5f5; border-radius: 8px; }
+  .detail-block { height: 60px; background: #f0ebff; border-radius: 8px; }
+  .detail-row { height: 20px; background: #e8e0f8; border-radius: 4px; }
+
+  /* Zone de swipe — bord gauche */
+  .edge-zone {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 24px;
+    background: linear-gradient(90deg, rgba(124,58,237,0.35), transparent);
+    border-radius: 16px 0 0 16px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 5;
+  }
+  .edge-arrow {
+    font-size: 18px; color: #7c3aed; font-weight: 900;
+    text-shadow: 0 0 6px rgba(124,58,237,0.6);
+  }
+
+  /* Zone de swipe — plein écran */
+  .full-zone {
+    position: absolute; inset: 0;
+    background: rgba(124,58,237,0.08);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 5;
+  }
+  .full-arrow {
+    font-size: 28px; color: #7c3aed; font-weight: 900; opacity: 0.7;
+    text-shadow: 0 0 10px rgba(124,58,237,0.5);
+  }
+
+  .split { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; margin-top: 20px; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .col-label { font-size: 12px; color: #aaa; text-align: center; max-width: 170px; line-height: 1.4; }
+  .badge {
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .badge-ios { background: #d1fae5; color: #065f46; }
+  .badge-easy { background: #fef3c7; color: #92400e; }
+</style>
+
+<div class="options">
+
+  <div class="option" data-choice="edge" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Bord gauche uniquement <span class="badge badge-ios">iOS natif</span></h3>
+      <p>Le swipe ne démarre que dans une zone de ~20 px sur le bord gauche de l'écran.</p>
+      <div class="split">
+        <div class="col">
+          <div class="demo-box">
+            <div class="screen-header"><span class="back-icon">‹</span> Détail joueur</div>
+            <div class="screen-body">
+              <div class="mock-row detail-title"></div>
+              <div class="mock-row detail-block"></div>
+              <div class="mock-row detail-row"></div>
+              <div class="mock-row detail-row"></div>
+            </div>
+            <div class="edge-zone"><div class="edge-arrow">›</div></div>
+          </div>
+          <div class="col-label">Zone violette = zone active</div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pour</h4><ul><li>Identique à iOS</li><li>N'interfère pas avec le scroll</li></ul></div>
+        <div class="cons"><h4>Contre</h4><ul><li>Zone petite, moins facile</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="full" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Plein écran <span class="badge badge-easy">Plus accessible</span></h3>
+      <p>Un swipe depuis n'importe où sur la page déclenche le retour.</p>
+      <div class="split">
+        <div class="col">
+          <div class="demo-box">
+            <div class="screen-header"><span class="back-icon">‹</span> Détail joueur</div>
+            <div class="screen-body">
+              <div class="mock-row detail-title"></div>
+              <div class="mock-row detail-block"></div>
+              <div class="mock-row detail-row"></div>
+              <div class="mock-row detail-row"></div>
+            </div>
+            <div class="full-zone"><div class="full-arrow">→</div></div>
+          </div>
+          <div class="col-label">Toute la page est swipeable</div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pour</h4><ul><li>Très facile à déclencher</li><li>Confortable à une main</li></ul></div>
+        <div class="cons"><h4>Contre</h4><ul><li>Conflit possible avec listes/sliders horizontaux</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">Note : dans les deux cas, le swipe n'est actif que sur les <strong>pages de niveau 2</strong> (détail joueur, détail combat, etc.) — jamais sur les onglets.</p>

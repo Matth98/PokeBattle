@@ -1,0 +1,145 @@
+<h2>Où est l'ombre dans l'option C ?</h2>
+<p class="subtitle">L'ombre se trouve sur le <strong>bord gauche de la page de détail</strong>, comme si c'était une feuille posée par-dessus. La page liste en dessous est légèrement assombrie.</p>
+
+<style>
+  .demo-box {
+    position: relative; width: 160px; height: 260px;
+    border-radius: 16px; overflow: hidden;
+    background: #f0ebff; flex-shrink: 0;
+    border: 2px solid #7c3aed33;
+  }
+  .screen {
+    position: absolute; inset: 0;
+    border-radius: 16px; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .screen-header {
+    height: 44px; display: flex; align-items: center;
+    padding: 0 12px; font-size: 13px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .screen-body { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .mock-row { height: 28px; border-radius: 6px; }
+  .back-icon { margin-right: 4px; font-size: 16px; }
+
+  .screen-list { background: #0f0f1a; z-index: 1; }
+  .screen-list .screen-header { background: #1a1a2e; color: #a78bfa; border-bottom: 1px solid #2d2d4e; }
+  .row-a { background: #2d2d4e; }
+  .row-b { background: #3d3d5e; }
+  .row-highlight { background: linear-gradient(90deg,#7c3aed44,#a78bfa44); border:1px solid #7c3aed55; }
+
+  .screen-detail { background: #f8f8ff; z-index: 2; }
+  .screen-detail .screen-header { background: #fff; color: #7c3aed; border-bottom: 1px solid #e5e5f0; }
+  .detail-title { height: 36px; background: #e0d5f5; border-radius: 8px; }
+  .detail-block { height: 60px; background: #f0ebff; border-radius: 8px; }
+  .detail-row { height: 20px; background: #e8e0f8; border-radius: 4px; }
+
+  /* ── Démonstration statique : page de détail à mi-chemin ── */
+  .mid-state .screen-list { transform: translateX(-28px); filter: brightness(0.75); }
+  .mid-state .screen-detail {
+    transform: translateX(50px);
+    /* L'ombre est ici : bord gauche de la page qui arrive */
+    box-shadow: -6px 0 18px rgba(0,0,0,0.35);
+  }
+
+  .annotation {
+    position: absolute;
+    font-size: 10px; font-weight: 700;
+    background: #f59e0b; color: #000;
+    padding: 2px 6px; border-radius: 4px;
+    white-space: nowrap; z-index: 10;
+  }
+  .arrow-shadow { top: 80px; left: 36px; }
+  .arrow-list { top: 160px; left: 4px; }
+
+  .split { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; margin-top: 16px; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .col-label { font-size: 12px; color: #aaa; text-align: center; max-width: 180px; line-height: 1.4; }
+
+  /* ── Animation en boucle (version C) ── */
+  .animated .screen-list {
+    animation: listBack 2.4s cubic-bezier(0.25,0.46,0.45,0.94) infinite;
+    animation-delay: 0.4s;
+  }
+  .animated .screen-detail {
+    animation: detailIn 2.4s cubic-bezier(0.25,0.46,0.45,0.94) infinite;
+    animation-delay: 0.4s;
+    box-shadow: -6px 0 18px rgba(0,0,0,0.35);
+  }
+  @keyframes listBack {
+    0%,12%  { transform: translateX(0); filter: brightness(1); }
+    28%,62% { transform: translateX(-40px); filter: brightness(0.72); }
+    78%,84% { transform: translateX(-40px); filter: brightness(0.72); }
+    100%    { transform: translateX(0); filter: brightness(1); }
+  }
+  @keyframes detailIn {
+    0%,12%  { transform: translateX(160px); }
+    28%,62% { transform: translateX(0); }
+    78%,84% { transform: translateX(0); }
+    100%    { transform: translateX(160px); }
+  }
+</style>
+
+<div class="split">
+
+  <!-- Statique : mi-chemin pour bien voir l'ombre -->
+  <div class="col">
+    <div class="demo-box mid-state">
+      <div class="screen screen-list">
+        <div class="screen-header">Joueurs</div>
+        <div class="screen-body">
+          <div class="mock-row row-a"></div>
+          <div class="mock-row row-highlight"></div>
+          <div class="mock-row row-a"></div>
+          <div class="mock-row row-b"></div>
+        </div>
+      </div>
+      <div class="screen screen-detail">
+        <div class="screen-header"><span class="back-icon">‹</span> Détail</div>
+        <div class="screen-body">
+          <div class="mock-row detail-title"></div>
+          <div class="mock-row detail-block"></div>
+          <div class="mock-row detail-row"></div>
+        </div>
+      </div>
+      <!-- annotations -->
+      <div class="annotation arrow-shadow">👈 ombre ici</div>
+      <div class="annotation arrow-list">liste assombrie</div>
+    </div>
+    <div class="col-label">Pause à mi-transition<br/><em>(pour voir l'ombre)</em></div>
+  </div>
+
+  <!-- Animé en boucle -->
+  <div class="col">
+    <div class="demo-box animated">
+      <div class="screen screen-list">
+        <div class="screen-header">Joueurs</div>
+        <div class="screen-body">
+          <div class="mock-row row-a"></div>
+          <div class="mock-row row-highlight"></div>
+          <div class="mock-row row-a"></div>
+          <div class="mock-row row-b"></div>
+        </div>
+      </div>
+      <div class="screen screen-detail">
+        <div class="screen-header"><span class="back-icon">‹</span> Détail</div>
+        <div class="screen-body">
+          <div class="mock-row detail-title"></div>
+          <div class="mock-row detail-block"></div>
+          <div class="mock-row detail-row"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-label">Version animée en boucle</div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>En résumé</h3>
+  <ul>
+    <li><strong>Ombre</strong> = <code>box-shadow</code> sur le bord gauche de la page de détail → elle glisse avec elle</li>
+    <li><strong>Liste assombrie</strong> = la page liste recule légèrement ET un filtre <code>brightness</code> la rend plus sombre</li>
+    <li>Effet total : la page de détail semble un <em>calque flottant</em> posé par-dessus</li>
+  </ul>
+</div>
