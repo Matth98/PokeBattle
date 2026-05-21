@@ -70,7 +70,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
             </svg>
           </span>
           <span className="text-xs tracking-wide font-bold">
-            Combat
+            Match
           </span>
         </button>
         {TABS.slice(2).map(({ id, label, Icon }) => {
