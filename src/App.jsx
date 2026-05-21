@@ -50,6 +50,7 @@ function AppContent({ isDark, setIsDark }) {
   const [selectedPokemon, setSelectedPokemon] = useState(null); // { pokeId, name }
   const [playerDetailTab, setPlayerDetailTab] = useState('pokemon');
   const [backLabel, setBackLabel] = useState('');
+  const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
 
   // ── Mémoire de scroll par onglet ──
   const scrollMemoryRef = useRef(new Map());
@@ -65,6 +66,7 @@ function AppContent({ isDark, setIsDark }) {
 
   // Navigation principale (onglets) — réinitialise la pile
   const setCurrentTab = useCallback((newTab) => {
+    setNavDirection(null);
     navStack.current = [];
     setBackLabel('');
     scrollMemoryRef.current.set(currentTab, window.scrollY);
@@ -74,6 +76,7 @@ function AppContent({ isDark, setIsDark }) {
 
   // Navigation en profondeur — empile l'état courant
   const navigateTo = useCallback((newTab, extra = {}) => {
+    setNavDirection('push');
     const label = getTabLabel(currentTab);
     navStack.current.push({ tab: currentTab, extra, label });
     setBackLabel(label);
@@ -86,6 +89,7 @@ function AppContent({ isDark, setIsDark }) {
 
   // Retour — dépile et restaure. Fallback si le stack est vide.
   const navigateBack = useCallback(() => {
+    setNavDirection('pop');
     const prev = navStack.current.pop();
     const target = prev ?? { tab: DETAIL_FALLBACKS[currentTab] ?? 'home', extra: {}, label: '' };
     if (target.extra?.playerDetailTab !== undefined) {
