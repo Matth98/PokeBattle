@@ -34,6 +34,7 @@ export const PlayerDetail = ({
   battles = [],
   t,
   onBack,
+  backLabel = 'Joueurs',
   onUpdate,
   onAddTeam,
   onUpdateTeam,
@@ -456,7 +457,7 @@ export const PlayerDetail = ({
             aria-label="Retour"
           >
             <ChevronLeft size={22} />
-            <span className="text-base">Joueurs</span>
+            <span className="text-base">{backLabel}</span>
           </button>
           {canEdit && (
             <button

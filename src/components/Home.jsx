@@ -14,7 +14,7 @@ const StatTile = ({ Icon, value, label, tile, t }) => (
   </div>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer }) => {
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
   const groupedRecentBattles = groupBattlesByDate(recentBattles);
   const { getPokemonImageUrl } = usePokemon();
@@ -203,8 +203,11 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                 );
               }
               return (
-                <div className={`${t.surface} rounded-2xl p-4 flex items-center gap-3`}>
-                  <div className={`w-12 h-12 rounded-2xl ${t.iconTileAmber} flex items-center justify-center`}>
+                <button
+                  onClick={() => onSelectPlayer?.(top)}
+                  className={`w-full ${t.surface} rounded-2xl p-4 flex items-center gap-3 text-left`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl ${t.iconTileAmber} flex items-center justify-center flex-shrink-0`}>
                     <Trophy size={20} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -213,7 +216,8 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                       {top.stats?.wins || 0} victoire{(top.stats?.wins || 0) > 1 ? 's' : ''} sur {top.total} combat{top.total > 1 ? 's' : ''}
                     </p>
                   </div>
-                </div>
+                  <ChevronRight size={18} className={t.textTertiary} />
+                </button>
               );
             })()}
           </section>
