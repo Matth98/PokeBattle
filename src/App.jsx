@@ -15,6 +15,8 @@ import { LoginScreen } from './components/LoginScreen';
 import { ClaimPlayerScreen } from './components/ClaimPlayerScreen';
 import { PokemonSearchPage } from './components/PokemonSearchPage';
 import { PokemonDetailPage } from './components/PokemonDetailPage';
+import { PageTransition } from './components/PageTransition';
+import { useSwipeBack } from './hooks/useSwipeBack';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -58,6 +60,7 @@ function AppContent({ isDark, setIsDark }) {
   // ── Pile de navigation pour le bouton précédent ──
   // Chaque entrée : { tab, extra?, label }
   const navStack = useRef([]);
+  const pageRef = useRef(null);
 
   const TAB_LABELS = { home: 'Accueil', battles: 'Combats', teams: 'Équipes', players: 'Joueurs', pokemonSearch: 'Recherche' };
   const getTabLabel = useCallback((tab) =>
@@ -87,6 +90,9 @@ function AppContent({ isDark, setIsDark }) {
 
   const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players', pokemonDetail: 'pokemonSearch', pokemonSearch: 'home' };
 
+  const LEVEL2_TABS = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
+  const isLevel2Tab = (tab) => LEVEL2_TABS.includes(tab);
+
   // Retour — dépile et restaure. Fallback si le stack est vide.
   const navigateBack = useCallback(() => {
     setNavDirection('pop');
@@ -102,6 +108,12 @@ function AppContent({ isDark, setIsDark }) {
     shouldRestoreRef.current = !!prev;
     _setCurrentTabState(target.tab);
   }, [currentTab]);
+
+  const { swipeHandlers } = useSwipeBack({
+    onBack: navigateBack,
+    enabled: isLevel2Tab(currentTab),
+    elementRef: pageRef,
+  });
 
   useLayoutEffect(() => {
     if (shouldRestoreRef.current) {
@@ -425,28 +437,104 @@ function AppContent({ isDark, setIsDark }) {
         />
       )}
 
-      {currentTab === 'playerDetail' && (
-        <PlayerDetail
-          player={selectedPlayer}
-          teams={teams}
-          battles={battles}
-          t={t}
-          isDark={isDark}
-          initialActiveTab={playerDetailTab}
-          backLabel={backLabel}
-          onBack={() => {
-            setSelectedPlayer(null);
-            navigateBack();
-          }}
-          onUpdate={handleUpdatePlayer}
-          onAddTeam={handleAddTeam}
-          onUpdateTeam={handleUpdateTeam}
-          onDeleteTeam={handleDeleteTeam}
-          onSelectTeam={(team, activeTab) => {
-            setSelectedTeam(team);
-            navigateTo('teamDetail', { playerDetailTab: activeTab });
-          }}
-        />
+      {isLevel2Tab(currentTab) && (
+        <PageTransition
+          pageKey={currentTab}
+          direction={navDirection}
+          backgroundColor={isDark ? '#000000' : '#ffffff'}
+        >
+          <div
+            ref={pageRef}
+            {...swipeHandlers}
+            style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}
+          >
+            {currentTab === 'playerDetail' && (
+              <PlayerDetail
+                player={selectedPlayer}
+                teams={teams}
+                battles={battles}
+                t={t}
+                isDark={isDark}
+                initialActiveTab={playerDetailTab}
+                backLabel={backLabel}
+                onBack={() => {
+                  setSelectedPlayer(null);
+                  navigateBack();
+                }}
+                onUpdate={handleUpdatePlayer}
+                onAddTeam={handleAddTeam}
+                onUpdateTeam={handleUpdateTeam}
+                onDeleteTeam={handleDeleteTeam}
+                onSelectTeam={(team, activeTab) => {
+                  setSelectedTeam(team);
+                  navigateTo('teamDetail', { playerDetailTab: activeTab });
+                }}
+              />
+            )}
+            {currentTab === 'teamDetail' && (
+              <TeamDetail
+                team={selectedTeam}
+                t={t}
+                isDark={isDark}
+                backLabel={backLabel}
+                onBack={() => {
+                  setSelectedTeam(null);
+                  navigateBack();
+                }}
+                onEdit={(team) => {
+                  setSelectedTeam(team);
+                  setTeamEditOrigin('detail');
+                  setShowNewTeamForm(true);
+                }}
+                onUpdate={handleUpdateTeam}
+              />
+            )}
+            {currentTab === 'battleDetail' && (
+              <BattleDetail
+                battle={selectedBattle}
+                players={players}
+                t={t}
+                isDark={isDark}
+                backLabel={backLabel}
+                onBack={() => {
+                  setSelectedBattle(null);
+                  navigateBack();
+                }}
+                onEdit={(b) => {
+                  setSelectedBattle(b);
+                  setBattleEditOrigin('detail');
+                  setShowNewBattleForm(true);
+                }}
+                onDelete={handleDeleteBattle}
+              />
+            )}
+            {currentTab === 'pokemonSearch' && (
+              <PokemonSearchPage
+                t={t}
+                isDark={isDark}
+                backLabel={backLabel}
+                onBack={navigateBack}
+                onSelectPokemon={(pokemon) => {
+                  setSelectedPokemon(pokemon);
+                  navigateTo('pokemonDetail');
+                }}
+              />
+            )}
+            {currentTab === 'pokemonDetail' && (
+              <PokemonDetailPage
+                pokeId={selectedPokemon?.pokeId}
+                pokeName={selectedPokemon?.name}
+                t={t}
+                isDark={isDark}
+                backLabel={backLabel}
+                onBack={() => {
+                  setSelectedPokemon(null);
+                  navigateBack();
+                }}
+              />
+            )}
+          </div>
+        </PageTransition>
       )}
 
       {currentTab === 'teams' && (
@@ -506,24 +594,6 @@ function AppContent({ isDark, setIsDark }) {
         />
       )}
 
-      {currentTab === 'teamDetail' && (
-        <TeamDetail
-          team={selectedTeam}
-          t={t}
-          isDark={isDark}
-          backLabel={backLabel}
-          onBack={() => {
-            setSelectedTeam(null);
-            navigateBack();
-          }}
-          onEdit={(team) => {
-            setSelectedTeam(team);
-            setTeamEditOrigin('detail');
-            setShowNewTeamForm(true);
-          }}
-          onUpdate={handleUpdateTeam}
-        />
-      )}
 
       {currentTab === 'battles' && (
         <Battles
@@ -557,25 +627,6 @@ function AppContent({ isDark, setIsDark }) {
         />
       )}
 
-      {currentTab === 'battleDetail' && (
-        <BattleDetail
-          battle={selectedBattle}
-          players={players}
-          t={t}
-          isDark={isDark}
-          backLabel={backLabel}
-          onBack={() => {
-            setSelectedBattle(null);
-            navigateBack();
-          }}
-          onEdit={(b) => {
-            setSelectedBattle(b);
-            setBattleEditOrigin('detail');
-            setShowNewBattleForm(true);
-          }}
-          onDelete={handleDeleteBattle}
-        />
-      )}
 
       {currentTab !== 'battles' && showNewBattleForm && (
         <Battles
@@ -604,34 +655,6 @@ function AppContent({ isDark, setIsDark }) {
         />
       )}
 
-      {(currentTab === 'pokemonSearch' || currentTab === 'pokemonDetail') && (
-        <div className={currentTab !== 'pokemonSearch' ? 'hidden' : ''}>
-          <PokemonSearchPage
-            t={t}
-            isDark={isDark}
-            backLabel={backLabel}
-            onBack={navigateBack}
-            onSelectPokemon={(pokemon) => {
-              setSelectedPokemon(pokemon);
-              navigateTo('pokemonDetail');
-            }}
-          />
-        </div>
-      )}
-
-      {currentTab === 'pokemonDetail' && (
-        <PokemonDetailPage
-          pokeId={selectedPokemon?.pokeId}
-          pokeName={selectedPokemon?.name}
-          t={t}
-          isDark={isDark}
-          backLabel={backLabel}
-          onBack={() => {
-            setSelectedPokemon(null);
-            navigateBack();
-          }}
-        />
-      )}
 
       {!['pokemonSearch', 'pokemonDetail'].includes(currentTab) && (
         <Navigation
