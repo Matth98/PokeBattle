@@ -600,17 +600,19 @@ function AppContent({ isDark, setIsDark }) {
         />
       )}
 
-      {currentTab === 'pokemonSearch' && (
-        <PokemonSearchPage
-          t={t}
-          isDark={isDark}
-          backLabel={backLabel}
-          onBack={navigateBack}
-          onSelectPokemon={(pokemon) => {
-            setSelectedPokemon(pokemon);
-            navigateTo('pokemonDetail');
-          }}
-        />
+      {(currentTab === 'pokemonSearch' || currentTab === 'pokemonDetail') && (
+        <div className={currentTab !== 'pokemonSearch' ? 'hidden' : ''}>
+          <PokemonSearchPage
+            t={t}
+            isDark={isDark}
+            backLabel={backLabel}
+            onBack={navigateBack}
+            onSelectPokemon={(pokemon) => {
+              setSelectedPokemon(pokemon);
+              navigateTo('pokemonDetail');
+            }}
+          />
+        </div>
       )}
 
       {currentTab === 'pokemonDetail' && (
