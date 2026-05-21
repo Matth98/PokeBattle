@@ -72,7 +72,7 @@ function AppContent({ isDark, setIsDark }) {
     setNavDirection(null);
     navStack.current = [];
     setBackLabel('');
-    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    scrollMemoryRef.current.set(currentTab, pageRef.current?.scrollTop ?? 0);
     shouldRestoreRef.current = false;
     _setCurrentTabState(newTab);
   }, [currentTab]);
@@ -83,7 +83,7 @@ function AppContent({ isDark, setIsDark }) {
     const label = getTabLabel(currentTab);
     navStack.current.push({ tab: currentTab, extra, label });
     setBackLabel(label);
-    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    scrollMemoryRef.current.set(currentTab, pageRef.current?.scrollTop ?? 0);
     shouldRestoreRef.current = false;
     _setCurrentTabState(newTab);
   }, [currentTab, getTabLabel]);
@@ -104,7 +104,7 @@ function AppContent({ isDark, setIsDark }) {
     // Le nouveau label "retour" est l'entrée en dessous dans le stack (si elle existe)
     const newTop = navStack.current[navStack.current.length - 1];
     setBackLabel(newTop?.label || '');
-    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    scrollMemoryRef.current.set(currentTab, pageRef.current?.scrollTop ?? 0);
     shouldRestoreRef.current = !!prev;
     _setCurrentTabState(target.tab);
   }, [currentTab]);
@@ -118,10 +118,10 @@ function AppContent({ isDark, setIsDark }) {
   useLayoutEffect(() => {
     if (shouldRestoreRef.current) {
       const saved = scrollMemoryRef.current.get(currentTab) || 0;
-      window.scrollTo({ top: saved, behavior: 'auto' });
+      if (pageRef.current) pageRef.current.scrollTop = saved;
       shouldRestoreRef.current = false;
     } else {
-      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (pageRef.current) pageRef.current.scrollTop = 0;
     }
   }, [currentTab]);
 
@@ -396,177 +396,207 @@ function AppContent({ isDark, setIsDark }) {
 
   return (
     <div className={isDark ? 'dark' : ''}>
-      {currentTab === 'home' && (
-        <Home
-          players={players}
-          battles={battles}
-          teams={teams}
-          isDark={isDark}
-          setIsDark={setIsDark}
-          t={t}
-          setCurrentTab={navigateTo}
-          setSelectedBattle={setSelectedBattle}
-          onSelectPlayer={(p) => {
-            setSelectedPlayer(p);
-            setPlayerDetailTab('pokemon');
-            navigateTo('playerDetail');
-          }}
-          onSearchPokemon={() => navigateTo('pokemonSearch')}
-        />
-      )}
-
-      {currentTab === 'players' && (
-        <Players
-          players={players}
-          t={t}
-          isDark={isDark}
-          onSelectPlayer={(p) => {
-            setSelectedPlayer(p);
-            setPlayerDetailTab('pokemon');
-            navigateTo('playerDetail');
-          }}
-          onAddPlayer={handleAddPlayer}
-          onDeletePlayer={handleDeletePlayer}
-          onDeleteMultiple={handleDeleteMultiplePlayers}
-          selectionMode={selectionMode}
-          setSelectionMode={setSelectionMode}
-          selectedItems={selectedItems}
-          setSelectedItems={setSelectedItems}
-          showForm={showNewPlayerForm}
-          setShowForm={setShowNewPlayerForm}
-        />
-      )}
-
-      {isLevel2Tab(currentTab) && (
-        <PageTransition
-          pageKey={currentTab}
-          direction={navDirection}
-          backgroundColor={isDark ? '#000000' : '#ffffff'}
+      <PageTransition
+        pageKey={currentTab}
+        direction={navDirection}
+        backgroundColor={isDark ? '#000000' : '#ffffff'}
+      >
+        <div
+          ref={pageRef}
+          {...swipeHandlers}
+          style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}
         >
-          <div
-            ref={pageRef}
-            {...swipeHandlers}
-            style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}
-          >
-            {currentTab === 'playerDetail' && (
-              <PlayerDetail
-                player={selectedPlayer}
-                teams={teams}
-                battles={battles}
-                t={t}
-                isDark={isDark}
-                initialActiveTab={playerDetailTab}
-                backLabel={backLabel}
-                onBack={() => {
-                  setSelectedPlayer(null);
-                  navigateBack();
-                }}
-                onUpdate={handleUpdatePlayer}
-                onAddTeam={handleAddTeam}
-                onUpdateTeam={handleUpdateTeam}
-                onDeleteTeam={handleDeleteTeam}
-                onSelectTeam={(team, activeTab) => {
-                  setSelectedTeam(team);
-                  navigateTo('teamDetail', { playerDetailTab: activeTab });
-                }}
-              />
-            )}
-            {currentTab === 'teamDetail' && (
-              <TeamDetail
-                team={selectedTeam}
-                t={t}
-                isDark={isDark}
-                backLabel={backLabel}
-                onBack={() => {
-                  setSelectedTeam(null);
-                  navigateBack();
-                }}
-                onEdit={(team) => {
-                  setSelectedTeam(team);
-                  setTeamEditOrigin('detail');
-                  setShowNewTeamForm(true);
-                }}
-                onUpdate={handleUpdateTeam}
-              />
-            )}
-            {currentTab === 'battleDetail' && (
-              <BattleDetail
-                battle={selectedBattle}
-                players={players}
-                t={t}
-                isDark={isDark}
-                backLabel={backLabel}
-                onBack={() => {
-                  setSelectedBattle(null);
-                  navigateBack();
-                }}
-                onEdit={(b) => {
-                  setSelectedBattle(b);
-                  setBattleEditOrigin('detail');
-                  setShowNewBattleForm(true);
-                }}
-                onDelete={handleDeleteBattle}
-              />
-            )}
-            {currentTab === 'pokemonSearch' && (
-              <PokemonSearchPage
-                t={t}
-                isDark={isDark}
-                backLabel={backLabel}
-                onBack={navigateBack}
-                onSelectPokemon={(pokemon) => {
-                  setSelectedPokemon(pokemon);
-                  navigateTo('pokemonDetail');
-                }}
-              />
-            )}
-            {currentTab === 'pokemonDetail' && (
-              <PokemonDetailPage
-                pokeId={selectedPokemon?.pokeId}
-                pokeName={selectedPokemon?.name}
-                t={t}
-                isDark={isDark}
-                backLabel={backLabel}
-                onBack={() => {
-                  setSelectedPokemon(null);
-                  navigateBack();
-                }}
-              />
-            )}
-          </div>
-        </PageTransition>
-      )}
+          {currentTab === 'home' && (
+            <Home
+              players={players}
+              battles={battles}
+              teams={teams}
+              isDark={isDark}
+              setIsDark={setIsDark}
+              t={t}
+              setCurrentTab={navigateTo}
+              setSelectedBattle={setSelectedBattle}
+              onSelectPlayer={(p) => {
+                setSelectedPlayer(p);
+                setPlayerDetailTab('pokemon');
+                navigateTo('playerDetail');
+              }}
+              onSearchPokemon={() => navigateTo('pokemonSearch')}
+            />
+          )}
 
-      {currentTab === 'teams' && (
-        <Teams
-          teams={teams}
-          players={players}
-          t={t}
-          isDark={isDark}
-          onSelectTeam={(team) => {
-            setSelectedTeam(team);
-            navigateTo('teamDetail');
-          }}
-          onAddTeam={handleAddTeam}
-          onUpdateTeam={handleUpdateTeam}
-          onUpdatePlayer={handleUpdatePlayer}
-          onDeleteTeam={handleDeleteTeam}
-          onDeleteMultiple={handleDeleteMultipleTeams}
-          selectionMode={selectionMode}
-          setSelectionMode={setSelectionMode}
-          selectedItems={selectedItems}
-          setSelectedItems={setSelectedItems}
-          showForm={showNewTeamForm}
-          setShowForm={setShowTeamForm}
-          editingTeam={selectedTeam}
-          clearEditingTeam={() => {
-            // Si on revient sur la fiche détail, on garde selectedTeam pour que la page se rende
-            if (teamEditOrigin !== 'detail') {
-              setSelectedTeam(null);
-            }
-          }}
-        />
-      )}
+          {currentTab === 'players' && (
+            <Players
+              players={players}
+              t={t}
+              isDark={isDark}
+              onSelectPlayer={(p) => {
+                setSelectedPlayer(p);
+                setPlayerDetailTab('pokemon');
+                navigateTo('playerDetail');
+              }}
+              onAddPlayer={handleAddPlayer}
+              onDeletePlayer={handleDeletePlayer}
+              onDeleteMultiple={handleDeleteMultiplePlayers}
+              selectionMode={selectionMode}
+              setSelectionMode={setSelectionMode}
+              selectedItems={selectedItems}
+              setSelectedItems={setSelectedItems}
+              showForm={showNewPlayerForm}
+              setShowForm={setShowNewPlayerForm}
+            />
+          )}
+
+          {currentTab === 'teams' && (
+            <Teams
+              teams={teams}
+              players={players}
+              t={t}
+              isDark={isDark}
+              onSelectTeam={(team) => {
+                setSelectedTeam(team);
+                navigateTo('teamDetail');
+              }}
+              onAddTeam={handleAddTeam}
+              onUpdateTeam={handleUpdateTeam}
+              onUpdatePlayer={handleUpdatePlayer}
+              onDeleteTeam={handleDeleteTeam}
+              onDeleteMultiple={handleDeleteMultipleTeams}
+              selectionMode={selectionMode}
+              setSelectionMode={setSelectionMode}
+              selectedItems={selectedItems}
+              setSelectedItems={setSelectedItems}
+              showForm={showNewTeamForm}
+              setShowForm={setShowTeamForm}
+              editingTeam={selectedTeam}
+              clearEditingTeam={() => {
+                // Si on revient sur la fiche détail, on garde selectedTeam pour que la page se rende
+                if (teamEditOrigin !== 'detail') {
+                  setSelectedTeam(null);
+                }
+              }}
+            />
+          )}
+
+          {currentTab === 'battles' && (
+            <Battles
+              battles={battles}
+              players={players}
+              teams={teams}
+              t={t}
+              isDark={isDark}
+              onSelectBattle={(b) => {
+                setSelectedBattle(b);
+                navigateTo('battleDetail');
+              }}
+              onAddBattle={handleAddBattle}
+              onUpdateBattle={handleUpdateBattle}
+              onUpdatePlayer={handleUpdatePlayer}
+              onDeleteBattle={handleDeleteBattle}
+              onDeleteMultiple={handleDeleteMultipleBattles}
+              selectionMode={selectionMode}
+              setSelectionMode={setSelectionMode}
+              selectedItems={selectedItems}
+              setSelectedItems={setSelectedItems}
+              showForm={showNewBattleForm}
+              setShowForm={setShowBattleForm}
+              editingBattle={selectedBattle}
+              clearEditingBattle={() => {
+                // Si on revient sur la fiche détail, on garde selectedBattle pour que la page se rende
+                if (battleEditOrigin !== 'detail') {
+                  setSelectedBattle(null);
+                }
+              }}
+            />
+          )}
+
+          {currentTab === 'playerDetail' && (
+            <PlayerDetail
+              player={selectedPlayer}
+              teams={teams}
+              battles={battles}
+              t={t}
+              isDark={isDark}
+              initialActiveTab={playerDetailTab}
+              backLabel={backLabel}
+              onBack={() => {
+                setSelectedPlayer(null);
+                navigateBack();
+              }}
+              onUpdate={handleUpdatePlayer}
+              onAddTeam={handleAddTeam}
+              onUpdateTeam={handleUpdateTeam}
+              onDeleteTeam={handleDeleteTeam}
+              onSelectTeam={(team, activeTab) => {
+                setSelectedTeam(team);
+                navigateTo('teamDetail', { playerDetailTab: activeTab });
+              }}
+            />
+          )}
+          {currentTab === 'teamDetail' && (
+            <TeamDetail
+              team={selectedTeam}
+              t={t}
+              isDark={isDark}
+              backLabel={backLabel}
+              onBack={() => {
+                setSelectedTeam(null);
+                navigateBack();
+              }}
+              onEdit={(team) => {
+                setSelectedTeam(team);
+                setTeamEditOrigin('detail');
+                setShowNewTeamForm(true);
+              }}
+              onUpdate={handleUpdateTeam}
+            />
+          )}
+          {currentTab === 'battleDetail' && (
+            <BattleDetail
+              battle={selectedBattle}
+              players={players}
+              t={t}
+              isDark={isDark}
+              backLabel={backLabel}
+              onBack={() => {
+                setSelectedBattle(null);
+                navigateBack();
+              }}
+              onEdit={(b) => {
+                setSelectedBattle(b);
+                setBattleEditOrigin('detail');
+                setShowNewBattleForm(true);
+              }}
+              onDelete={handleDeleteBattle}
+            />
+          )}
+          {currentTab === 'pokemonSearch' && (
+            <PokemonSearchPage
+              t={t}
+              isDark={isDark}
+              backLabel={backLabel}
+              onBack={navigateBack}
+              onSelectPokemon={(pokemon) => {
+                setSelectedPokemon(pokemon);
+                navigateTo('pokemonDetail');
+              }}
+            />
+          )}
+          {currentTab === 'pokemonDetail' && (
+            <PokemonDetailPage
+              pokeId={selectedPokemon?.pokeId}
+              pokeName={selectedPokemon?.name}
+              t={t}
+              isDark={isDark}
+              backLabel={backLabel}
+              onBack={() => {
+                setSelectedPokemon(null);
+                navigateBack();
+              }}
+            />
+          )}
+        </div>
+      </PageTransition>
 
       {currentTab !== 'teams' && showNewTeamForm && (
         <Teams
@@ -591,39 +621,6 @@ function AppContent({ isDark, setIsDark }) {
           setShowForm={setShowTeamForm}
           editingTeam={teamEditOrigin === 'detail' ? selectedTeam : null}
           renderPage={false}
-        />
-      )}
-
-
-      {currentTab === 'battles' && (
-        <Battles
-          battles={battles}
-          players={players}
-          teams={teams}
-          t={t}
-          isDark={isDark}
-          onSelectBattle={(b) => {
-            setSelectedBattle(b);
-            navigateTo('battleDetail');
-          }}
-          onAddBattle={handleAddBattle}
-          onUpdateBattle={handleUpdateBattle}
-          onUpdatePlayer={handleUpdatePlayer}
-          onDeleteBattle={handleDeleteBattle}
-          onDeleteMultiple={handleDeleteMultipleBattles}
-          selectionMode={selectionMode}
-          setSelectionMode={setSelectionMode}
-          selectedItems={selectedItems}
-          setSelectedItems={setSelectedItems}
-          showForm={showNewBattleForm}
-          setShowForm={setShowBattleForm}
-          editingBattle={selectedBattle}
-          clearEditingBattle={() => {
-            // Si on revient sur la fiche détail, on garde selectedBattle pour que la page se rende
-            if (battleEditOrigin !== 'detail') {
-              setSelectedBattle(null);
-            }
-          }}
         />
       )}
 
