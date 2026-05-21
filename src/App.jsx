@@ -13,6 +13,8 @@ import { ToastProvider, useToast } from './components/Toast';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { LoginScreen } from './components/LoginScreen';
 import { ClaimPlayerScreen } from './components/ClaimPlayerScreen';
+import { PokemonSearchPage } from './components/PokemonSearchPage';
+import { PokemonDetailPage } from './components/PokemonDetailPage';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -45,6 +47,7 @@ function AppContent({ isDark, setIsDark }) {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedPokemon, setSelectedPokemon] = useState(null); // { pokeId, name }
   const [playerDetailTab, setPlayerDetailTab] = useState('pokemon');
   const [backLabel, setBackLabel] = useState('');
 
@@ -55,7 +58,7 @@ function AppContent({ isDark, setIsDark }) {
   // Chaque entrée : { tab, extra?, label }
   const navStack = useRef([]);
 
-  const TAB_LABELS = { home: 'Accueil', battles: 'Combats', teams: 'Équipes', players: 'Joueurs' };
+  const TAB_LABELS = { home: 'Accueil', battles: 'Combats', teams: 'Équipes', players: 'Joueurs', pokemonSearch: 'Recherche' };
   const getTabLabel = useCallback((tab) =>
     tab === 'playerDetail' ? (selectedPlayer?.name || 'Joueur') : (TAB_LABELS[tab] || ''),
   [selectedPlayer]);
@@ -79,7 +82,7 @@ function AppContent({ isDark, setIsDark }) {
     _setCurrentTabState(newTab);
   }, [currentTab, getTabLabel]);
 
-  const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players' };
+  const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players', pokemonDetail: 'pokemonSearch', pokemonSearch: 'home' };
 
   // Retour — dépile et restaure. Fallback si le stack est vide.
   const navigateBack = useCallback(() => {
@@ -392,6 +395,7 @@ function AppContent({ isDark, setIsDark }) {
             setPlayerDetailTab('pokemon');
             navigateTo('playerDetail');
           }}
+          onSearchPokemon={() => navigateTo('pokemonSearch')}
         />
       )}
 
@@ -596,16 +600,45 @@ function AppContent({ isDark, setIsDark }) {
         />
       )}
 
-      <Navigation
-        currentTab={currentTab}
-        setCurrentTab={setCurrentTab}
-        isDark={isDark}
-        t={t}
-        onCreateBattle={() => {
-          setBattleEditOrigin(null);
-          setShowNewBattleForm(true);
-        }}
-      />
+      {currentTab === 'pokemonSearch' && (
+        <PokemonSearchPage
+          t={t}
+          isDark={isDark}
+          backLabel={backLabel}
+          onBack={navigateBack}
+          onSelectPokemon={(pokemon) => {
+            setSelectedPokemon(pokemon);
+            navigateTo('pokemonDetail');
+          }}
+        />
+      )}
+
+      {currentTab === 'pokemonDetail' && (
+        <PokemonDetailPage
+          pokeId={selectedPokemon?.pokeId}
+          pokeName={selectedPokemon?.name}
+          t={t}
+          isDark={isDark}
+          backLabel={backLabel}
+          onBack={() => {
+            setSelectedPokemon(null);
+            navigateBack();
+          }}
+        />
+      )}
+
+      {!['pokemonSearch', 'pokemonDetail'].includes(currentTab) && (
+        <Navigation
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
+          isDark={isDark}
+          t={t}
+          onCreateBattle={() => {
+            setBattleEditOrigin(null);
+            setShowNewBattleForm(true);
+          }}
+        />
+      )}
     </div>
   );
 }

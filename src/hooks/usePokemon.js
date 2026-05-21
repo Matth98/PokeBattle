@@ -7,6 +7,23 @@ import pokemonFormsFr from '../data/pokemon-forms-fr.json';
 const BASE_LIST = pokemonFr.map((name, idx) => ({ pokeId: idx + 1, name }));
 const POKEMON_LIST = [...BASE_LIST, ...pokemonFormsFr];
 
+const GENERATION_RANGES = [
+  { label: 'Génération 1', min: 1,   max: 151  },
+  { label: 'Génération 2', min: 152,  max: 251  },
+  { label: 'Génération 3', min: 252,  max: 386  },
+  { label: 'Génération 4', min: 387,  max: 493  },
+  { label: 'Génération 5', min: 494,  max: 649  },
+  { label: 'Génération 6', min: 650,  max: 721  },
+  { label: 'Génération 7', min: 722,  max: 809  },
+  { label: 'Génération 8', min: 810,  max: 905  },
+  { label: 'Génération 9', min: 906,  max: 1025 },
+];
+
+export const POKEMON_BY_GENERATION = GENERATION_RANGES.map(({ label, min, max }) => ({
+  label,
+  pokemon: BASE_LIST.filter(p => p.pokeId >= min && p.pokeId <= max),
+}));
+
 // Recherche insensible aux accents (Bulbi vs bulbi, etc.)
 const normalize = (str = '') =>
   str

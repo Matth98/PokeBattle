@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Users, Shield, Zap, ChevronRight, ChevronUp, ChevronDown, Trophy, Calendar } from 'lucide-react';
+import { Moon, Sun, Search, Users, Shield, Zap, ChevronRight, ChevronUp, ChevronDown, Trophy, Calendar } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
@@ -14,7 +14,7 @@ const StatTile = ({ Icon, value, label, tile, t }) => (
   </div>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon }) => {
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
   const groupedRecentBattles = groupBattlesByDate(recentBattles);
   const { getPokemonImageUrl } = usePokemon();
@@ -41,13 +41,22 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>PokéScores</h1>
             <p className={`${t.textSecondary} text-sm mt-0.5`}>Tes combats, tes équipes, tes stats.</p>
           </div>
-          <button
-            onClick={() => setIsDark(!isDark)}
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
-            aria-label={isDark ? 'Mode clair' : 'Mode sombre'}
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onSearchPokemon}
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
+              aria-label="Rechercher un Pokémon"
+            >
+              <Search size={18} />
+            </button>
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
+              aria-label={isDark ? 'Mode clair' : 'Mode sombre'}
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          </div>
         </div>
       </div>
 
