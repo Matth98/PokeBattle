@@ -43,6 +43,7 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
               placeholder="Nom du Pokémon…"
               autoFocus
               className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
+              style={{ fontSize: '16px' }}
             />
             {searchTerm && (
               <button onClick={clear} className={t.textTertiary} aria-label="Effacer">
