@@ -20,7 +20,11 @@ const variants = {
     boxShadow: 'none',
   }),
   exit: (direction) => {
-    if (!direction || direction === 'push') return {};
+    if (!direction) return {};
+    if (direction === 'push') return {
+      opacity: 1,
+      transition: { delay: 0.32, duration: 0 },
+    };
     return {
       x: '100%',
       filter: 'brightness(1)',
