@@ -20,7 +20,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)]`}
+      className={`fixed bottom-0 left-0 right-0 z-20 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)]`}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="grid grid-cols-5 items-end px-3 pt-2 pb-2">
