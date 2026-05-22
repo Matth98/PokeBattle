@@ -122,7 +122,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
     { multVal: 0, label: '0' }, { multVal: 0.25, label: '¼' }, { multVal: 0.5, label: '½' },
   ]);
   const weaknessGroups = groupByMult([
-    { multVal: 4, label: 4 }, { multVal: 2, label: 2 },
+    { multVal: 2, label: 2 }, { multVal: 4, label: 4 },
   ]);
 
   return (
