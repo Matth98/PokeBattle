@@ -6,32 +6,26 @@ const EASE = [0.25, 0.46, 0.45, 0.94];
 
 // direction-aware variants — receives `custom` prop from AnimatePresence
 const variants = {
-  initial: (direction) => {
-    if (!direction) return {};
-    return {
-      x: direction === 'pop' ? '-30%' : '100%',
-      filter: direction === 'pop' ? 'brightness(0.7)' : 'brightness(1)',
-      boxShadow: direction === 'pop' ? 'none' : '-8px 0 20px rgba(0,0,0,0.3)',
-    };
-  },
-  animate: () => ({
+  initial: (direction) => ({
+    x: direction === 'pop' ? '-30%' : '100%',
+    filter: direction === 'pop' ? 'brightness(0.7)' : 'brightness(1)',
+    boxShadow: direction === 'pop' ? 'none' : '-8px 0 20px rgba(0,0,0,0.3)',
+  }),
+  animate: (direction) => ({
     x: 0,
     filter: 'brightness(1)',
     boxShadow: 'none',
   }),
-  exit: (direction) => {
-    if (!direction) return {};
-    return {
-      x: direction === 'pop' ? '100%' : '-30%',
-      filter: direction === 'pop' ? 'brightness(1)' : 'brightness(0.7)',
-      boxShadow: direction === 'pop' ? '-8px 0 20px rgba(0,0,0,0.3)' : 'none',
-    };
-  },
+  exit: (direction) => ({
+    x: direction === 'pop' ? '100%' : '-30%',
+    filter: direction === 'pop' ? 'brightness(1)' : 'brightness(0.7)',
+    boxShadow: direction === 'pop' ? '-8px 0 20px rgba(0,0,0,0.3)' : 'none',
+  }),
 };
 
 export function PageTransition({ pageKey, direction, children, backgroundColor = '#ffffff' }) {
   const shouldReduceMotion = useReducedMotion();
-  const duration = (!direction || shouldReduceMotion) ? 0 : 0.32;
+  const duration = shouldReduceMotion ? 0 : 0.32;
   const transition = { type: 'tween', ease: EASE, duration };
 
   return (
