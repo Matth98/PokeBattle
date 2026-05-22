@@ -20,11 +20,11 @@ const variants = {
     boxShadow: 'none',
   }),
   exit: (direction) => {
-    if (!direction || direction === 'push') return {};
+    if (!direction) return {};
     return {
-      x: '100%',
-      filter: 'brightness(1)',
-      boxShadow: '-8px 0 20px rgba(0,0,0,0.3)',
+      x: direction === 'pop' ? '100%' : '-30%',
+      filter: direction === 'pop' ? 'brightness(1)' : 'brightness(0.7)',
+      boxShadow: direction === 'pop' ? '-8px 0 20px rgba(0,0,0,0.3)' : 'none',
     };
   },
 };
