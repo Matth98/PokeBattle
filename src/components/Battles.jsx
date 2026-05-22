@@ -120,6 +120,7 @@ export const Battles = ({
   // Fermeture animée du formulaire (Cancel ou après sauvegarde)
   const [isFormClosing, setIsFormClosing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [openPlayerDropdown, setOpenPlayerDropdown] = useState(null);
   const closeFormWithAnimation = useCallback(() => {
     setIsFormClosing(true);
     setTimeout(() => {
@@ -638,16 +639,38 @@ export const Battles = ({
                     <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} ml-1 block`}>
                       Joueur {idx + 1}
                     </label>
-                    <select
-                      value={playerId || ''}
-                      onChange={(e) => handleChangePlayer(slot, e.target.value)}
-                      className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
-                    >
-                      <option value="">Sélectionner un joueur</option>
-                      {selectablePlayers.map((p) => (
-                        <option key={p._id} value={p._id}>{p.name}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setOpenPlayerDropdown(openPlayerDropdown === slot ? null : slot)}
+                        className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3 text-left`}
+                      >
+                        {playerId ? (
+                          <>
+                            <PlayerAvatar player={players.find((p) => p._id === playerId)} size={32} textSize="text-xs" className="flex-shrink-0" />
+                            <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === playerId)?.name}</span>
+                          </>
+                        ) : (
+                          <span className={`flex-1 ${t.textSecondary}`}>Sélectionner un joueur</span>
+                        )}
+                        <ChevronDown size={16} className={t.textSecondary} />
+                      </button>
+                      {openPlayerDropdown === slot && (
+                        <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
+                          {selectablePlayers.map((p) => (
+                            <button
+                              key={p._id}
+                              type="button"
+                              onClick={() => { handleChangePlayer(slot, p._id); setOpenPlayerDropdown(null); }}
+                              className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
+                            >
+                              <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
+                              <span className={`font-medium ${t.text}`}>{p.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
                     {playerId && (
                       <>
