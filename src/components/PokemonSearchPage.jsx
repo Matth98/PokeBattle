@@ -8,7 +8,7 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (isActive) inputRef.current?.focus();
+    if (isActive) inputRef.current?.focus({ preventScroll: true });
   }, [isActive]);
 
   const handleChange = (e) => {
@@ -19,7 +19,7 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
   const clear = () => {
     setSearchTerm('');
     searchPokemon('');
-    inputRef.current?.focus();
+    inputRef.current?.focus({ preventScroll: true });
   };
 
   const hasQuery = searchTerm.trim().length > 0;

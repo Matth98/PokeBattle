@@ -158,16 +158,17 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
         <div style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}>
           {/* Hero — remonte jusqu'en haut de l'écran */}
           <div
-            className="flex flex-col items-center pb-0 overflow-hidden"
+            className="flex items-center justify-center overflow-hidden"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 4rem)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 3.5rem)',
+              paddingBottom: '1.5rem',
               background: `linear-gradient(160deg, ${accentHex}ee 0%, ${accentHex}77 60%, ${isDark ? '#1c1c1e' : 'white'} 100%)`,
             }}
           >
             <img
               src={data.officialArtwork || data.sprite}
               alt={pokeName}
-              className="w-52 h-52 object-contain drop-shadow-xl"
+              className="w-56 h-56 object-contain object-center drop-shadow-xl"
               onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
             />
           </div>
