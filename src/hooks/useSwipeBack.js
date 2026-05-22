@@ -10,8 +10,6 @@ export function useSwipeBack({ onBack, enabled, elementRef }) {
   const startYRef      = useRef(null);
   const lastXRef       = useRef(null);
   const lastTimeRef    = useRef(null);
-  const prevXRef       = useRef(null);
-  const prevTimeRef    = useRef(null);
   const lockedAxisRef  = useRef(null); // 'x' | 'y' | null
   const isDraggingRef  = useRef(false);
 
@@ -20,8 +18,6 @@ export function useSwipeBack({ onBack, enabled, elementRef }) {
     startYRef.current     = null;
     lastXRef.current      = null;
     lastTimeRef.current   = null;
-    prevXRef.current      = null;
-    prevTimeRef.current   = null;
     lockedAxisRef.current = null;
     isDraggingRef.current = false;
   }, []);
@@ -53,8 +49,6 @@ export function useSwipeBack({ onBack, enabled, elementRef }) {
     if (dx < 0) return; // only right swipe for back
 
     isDraggingRef.current = true;
-    prevXRef.current      = lastXRef.current;
-    prevTimeRef.current   = lastTimeRef.current;
     lastXRef.current      = x;
     lastTimeRef.current   = Date.now();
 
@@ -64,14 +58,6 @@ export function useSwipeBack({ onBack, enabled, elementRef }) {
     }
   }, [enabled, elementRef]);
 
-  const onTouchCancel = useCallback(() => {
-    if (elementRef?.current) {
-      elementRef.current.style.transition = 'transform 0.3s ease-out';
-      elementRef.current.style.transform  = 'translateX(0)';
-    }
-    resetState();
-  }, [elementRef, resetState]);
-
   const onTouchEnd = useCallback(() => {
     if (!enabled || !isDraggingRef.current) {
       resetState();
@@ -79,9 +65,8 @@ export function useSwipeBack({ onBack, enabled, elementRef }) {
     }
 
     const dx       = (lastXRef.current ?? 0) - (startXRef.current ?? 0);
-    const recentDx = (lastXRef.current ?? 0) - (prevXRef.current ?? lastXRef.current ?? 0);
-    const recentDt = (lastTimeRef.current ?? 0) - (prevTimeRef.current ?? lastTimeRef.current ?? 0);
-    const velocity = recentDt > 0 ? (recentDx / recentDt) * 1000 : 0;
+    const dt       = Date.now() - (lastTimeRef.current ?? Date.now());
+    const velocity = dt > 0 ? (dx / dt) * 1000 : 0;
 
     if (dx > HORIZONTAL_THRESHOLD || velocity > VELOCITY_THRESHOLD) {
       // Snap forward then navigate — AnimatePresence takes over
@@ -89,7 +74,7 @@ export function useSwipeBack({ onBack, enabled, elementRef }) {
         elementRef.current.style.transition = 'transform 0.15s ease-out';
         elementRef.current.style.transform  = `translateX(100%)`;
       }
-      setTimeout(() => onBack?.(), 150);
+      setTimeout(() => onBack(), 150);
     } else {
       // Snap back
       if (elementRef?.current) {
@@ -101,5 +86,5 @@ export function useSwipeBack({ onBack, enabled, elementRef }) {
     resetState();
   }, [enabled, elementRef, onBack, resetState]);
 
-  return { swipeHandlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel } };
+  return { swipeHandlers: { onTouchStart, onTouchMove, onTouchEnd } };
 }
