@@ -9,7 +9,12 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
 
   useEffect(() => {
     if (!isActive) return;
-    const t = setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
+    const t = setTimeout(() => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.focus({ preventScroll: true });
+      el.setSelectionRange(el.value.length, el.value.length);
+    }, 100);
     return () => clearTimeout(t);
   }, [isActive]);
 
