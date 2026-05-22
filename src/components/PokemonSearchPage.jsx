@@ -8,7 +8,12 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
   const inputRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
-    focus: () => inputRef.current?.focus({ preventScroll: true }),
+    focus: () => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.focus({ preventScroll: true });
+      requestAnimationFrame(() => el.focus({ preventScroll: true }));
+    },
   }));
 
   const handleChange = (e) => {
