@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Moon, Sun, Search, Users, Shield, Zap, ChevronRight, ChevronUp, ChevronDown, Trophy, Calendar } from 'lucide-react';
+import React from 'react';
+import { Moon, Sun, Search, Users, Shield, Zap, ChevronRight } from 'lucide-react';
 import { formatDate } from '../utils/dates';
-import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
+import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
+import { PlayerAvatar } from './PlayerAvatar';
 
 const StatTile = ({ Icon, value, label, tile, t }) => (
   <div className={`${t.surface} rounded-2xl p-4 flex flex-col gap-2`}>
@@ -16,18 +17,7 @@ const StatTile = ({ Icon, value, label, tile, t }) => (
 
 export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon }) => {
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
-  const groupedRecentBattles = groupBattlesByDate(recentBattles);
   const { getPokemonImageUrl } = usePokemon();
-  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
-
-  const toggleGroup = (date) => {
-    setCollapsedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(date)) next.delete(date);
-      else next.add(date);
-      return next;
-    });
-  };
 
   return (
     <div className={`min-h-screen ${t.pageBg}`}>
@@ -38,8 +28,12 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       >
         <div className="flex justify-between items-center">
           <div>
-            <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>PokéScores</h1>
-            <p className={`${t.textSecondary} text-sm mt-0.5`}>Tes combats, tes équipes, tes stats.</p>
+            <img
+              src={`${process.env.PUBLIC_URL}/${isDark ? 'Logo-title-dark.svg' : 'Logo-title.svg'}`}
+              alt="PokéScores"
+              className="h-7"
+            />
+            <p className={`${t.textSecondary} text-sm mt-1.5`}>Tes combats, tes équipes, tes stats.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -95,94 +89,80 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               <p className={`${t.textSecondary} text-sm`}>Enregistre ton premier combat depuis l'onglet Combats.</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {groupedRecentBattles.map((group) => {
-                const isCollapsed = collapsedGroups.has(group.date);
+            <div className="space-y-3">
+              {recentBattles.map((b) => {
+                const p1 = players.find(p => p._id === b.player1);
+                const p2 = players.find(p => p._id === b.player2);
+                const p1Elim = (b.team1 || []).filter(p => p.eliminated).length;
+                const p2Elim = (b.team2 || []).filter(p => p.eliminated).length;
                 return (
-                  <div key={group.date} className={`${t.surface} rounded-2xl overflow-hidden`}>
-                    <button
-                      onClick={() => toggleGroup(group.date)}
-                      className={`no-press-fx w-full flex items-center justify-between gap-2 px-4 py-3 ${t.surfaceMuted} active:opacity-80`}
-                    >
-                      <span className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${t.textSecondary}`}>
-                        <Calendar size={13} />
-                        {formatDate(group.date)}
+                  <button
+                    key={b._id}
+                    onClick={() => {
+                      setSelectedBattle(b);
+                      setCurrentTab('battleDetail');
+                    }}
+                    className={`w-full ${t.surface} rounded-2xl px-4 py-3 flex items-center gap-3 text-left`}
+                  >
+                    {/* Joueur 1 — avatar + nom + Pokémon */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <PlayerAvatar player={p1} size={40} textSize="text-sm" className="flex-shrink-0" />
+                        <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
+                          {p1?.name || '—'}
+                        </p>
+                      </div>
+                      {(b.team1 || []).length > 0 && (
+                        <div className="flex gap-0.5">
+                          {b.team1.map((pk, i) => (
+                            <img
+                              key={pk.id || i}
+                              src={getPokemonImageUrl(pk.pokeId)}
+                              alt={pk.name}
+                              className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
+                              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Format + score centré */}
+                    <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+                        {b.format}
                       </span>
-                      {isCollapsed
-                        ? <ChevronDown size={16} className={t.textSecondary} />
-                        : <ChevronUp size={16} className={t.textSecondary} />}
-                    </button>
+                      <p className={`font-black text-2xl ${t.text} whitespace-nowrap leading-none`}>
+                        {p2Elim}–{p1Elim}
+                      </p>
+                      {b.date && (
+                        <p className={`text-[10px] ${t.textTertiary}`}>{formatDate(b.date)}</p>
+                      )}
+                    </div>
 
-                    {!isCollapsed && group.battles.map((b, idx) => {
-                      const p1 = players.find(p => p._id === b.player1);
-                      const p2 = players.find(p => p._id === b.player2);
-                      const p1Elim = (b.team1 || []).filter(p => p.eliminated).length;
-                      const p2Elim = (b.team2 || []).filter(p => p.eliminated).length;
-                      const isLast = idx === group.battles.length - 1;
-                      return (
-                        <button
-                          key={b._id}
-                          onClick={() => {
-                            setSelectedBattle(b);
-                            setCurrentTab('battleDetail');
-                          }}
-                          className={`w-full flex items-center gap-3 px-4 py-3 ${
-                            !isLast ? `border-b ${t.divider}` : ''
-                          } text-left`}
-                        >
-                          {/* Joueur 1 — nom + Pokémon ferré gauche */}
-                          <div className="flex-1 min-w-0">
-                            <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
-                              {p1?.name || '—'}
-                            </p>
-                            {(b.team1 || []).length > 0 && (
-                              <div className="flex gap-0.5 mt-1">
-                                {b.team1.map((pk, i) => (
-                                  <img
-                                    key={pk.id || i}
-                                    src={getPokemonImageUrl(pk.pokeId)}
-                                    alt={pk.name}
-                                    className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
-                                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Format + score centré */}
-                          <div className="flex-shrink-0 flex flex-col items-center gap-2">
-                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
-                              {b.format}
-                            </span>
-                            <p className={`font-black text-xl ${t.text} whitespace-nowrap leading-none`}>
-                              {p2Elim}–{p1Elim}
-                            </p>
-                          </div>
-
-                          {/* Joueur 2 — nom + Pokémon ferré droite */}
-                          <div className="flex-1 min-w-0">
-                            <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
-                              {p2?.name || '—'}
-                            </p>
-                            {(b.team2 || []).length > 0 && (
-                              <div className="flex gap-0.5 mt-1 justify-end">
-                                {b.team2.map((pk, i) => (
-                                  <img
-                                    key={pk.id || i}
-                                    src={getPokemonImageUrl(pk.pokeId)}
-                                    alt={pk.name}
-                                    className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
-                                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                    {/* Joueur 2 — Pokémon + nom + avatar */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-end gap-2 mb-1.5">
+                        <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
+                          {p2?.name || '—'}
+                        </p>
+                        <PlayerAvatar player={p2} size={40} textSize="text-sm" className="flex-shrink-0" />
+                      </div>
+                      {(b.team2 || []).length > 0 && (
+                        <div className="flex gap-0.5 justify-end">
+                          {b.team2.map((pk, i) => (
+                            <img
+                              key={pk.id || i}
+                              src={getPokemonImageUrl(pk.pokeId)}
+                              alt={pk.name}
+                              className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
+                              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </button>
                 );
               })}
             </div>
@@ -216,9 +196,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   onClick={() => onSelectPlayer?.(top)}
                   className={`w-full ${t.surface} rounded-2xl p-4 flex items-center gap-3 text-left`}
                 >
-                  <div className={`w-12 h-12 rounded-2xl ${t.iconTileAmber} flex items-center justify-center flex-shrink-0`}>
-                    <Trophy size={20} />
-                  </div>
+                  <PlayerAvatar player={top} size={48} textSize="text-lg" className="flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className={`font-black ${t.text} truncate`}>{top.name}</p>
                     <p className={`${t.textSecondary} text-sm`}>
