@@ -121,6 +121,7 @@ export const Battles = ({
   const [isFormClosing, setIsFormClosing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [openPlayerDropdown, setOpenPlayerDropdown] = useState(null);
+  const [openWinnerDropdown, setOpenWinnerDropdown] = useState(false);
   const closeFormWithAnimation = useCallback(() => {
     setIsFormClosing(true);
     setTimeout(() => {
@@ -790,19 +791,56 @@ export const Battles = ({
                       <label className={`block text-xs font-semibold ${t.textSecondary} mb-1`}>
                         Gagnant
                       </label>
-                      <select
-                        value={newBattleData.winner || ''}
-                        onChange={(e) => handleWinnerChange(e.target.value)}
-                        className={`w-full ${t.inputSoft} rounded-lg px-3 py-2 outline-none focus:ring-2 ${t.accentRing}`}
-                      >
-                        <option value="">À déterminer (égalité)</option>
-                        {newBattleData.player1 && (
-                          <option value="player1">{players.find((p) => p._id === newBattleData.player1)?.name}</option>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setOpenWinnerDropdown(!openWinnerDropdown)}
+                          className={`w-full ${t.inputSoft} rounded-lg px-3 py-2 flex items-center gap-3 text-left`}
+                        >
+                          {newBattleData.winner ? (
+                            <>
+                              <PlayerAvatar player={players.find((p) => p._id === newBattleData[newBattleData.winner])} size={28} textSize="text-xs" className="flex-shrink-0" />
+                              <span className={`flex-1 font-medium ${t.text}`}>
+                                {players.find((p) => p._id === newBattleData[newBattleData.winner])?.name}
+                              </span>
+                            </>
+                          ) : (
+                            <span className={`flex-1 ${t.textSecondary}`}>À déterminer (égalité)</span>
+                          )}
+                          <ChevronDown size={16} className={t.textSecondary} />
+                        </button>
+                        {openWinnerDropdown && (
+                          <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
+                            <button
+                              type="button"
+                              onClick={() => { handleWinnerChange(''); setOpenWinnerDropdown(false); }}
+                              className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
+                            >
+                              <span className={`font-medium ${t.textSecondary}`}>À déterminer (égalité)</span>
+                            </button>
+                            {newBattleData.player1 && (
+                              <button
+                                type="button"
+                                onClick={() => { handleWinnerChange('player1'); setOpenWinnerDropdown(false); }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
+                              >
+                                <PlayerAvatar player={players.find((p) => p._id === newBattleData.player1)} size={28} textSize="text-xs" className="flex-shrink-0" />
+                                <span className={`font-medium ${t.text}`}>{players.find((p) => p._id === newBattleData.player1)?.name}</span>
+                              </button>
+                            )}
+                            {newBattleData.player2 && (
+                              <button
+                                type="button"
+                                onClick={() => { handleWinnerChange('player2'); setOpenWinnerDropdown(false); }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
+                              >
+                                <PlayerAvatar player={players.find((p) => p._id === newBattleData.player2)} size={28} textSize="text-xs" className="flex-shrink-0" />
+                                <span className={`font-medium ${t.text}`}>{players.find((p) => p._id === newBattleData.player2)?.name}</span>
+                              </button>
+                            )}
+                          </div>
                         )}
-                        {newBattleData.player2 && (
-                          <option value="player2">{players.find((p) => p._id === newBattleData.player2)?.name}</option>
-                        )}
-                      </select>
+                      </div>
                     </div>
                   </div>
                 </div>

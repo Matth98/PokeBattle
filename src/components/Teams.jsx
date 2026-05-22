@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronRight, Plus, Trash2, X, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, Trash2, X, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
+import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -72,6 +73,7 @@ export const Teams = ({
   // Fermeture animée du formulaire (Cancel ou après sauvegarde)
   const [isFormClosing, setIsFormClosing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [openPlayerDropdown, setOpenPlayerDropdown] = useState(false);
   const closeFormWithAnimation = useCallback(() => {
     setIsFormClosing(true);
     setTimeout(() => {
@@ -452,16 +454,38 @@ export const Teams = ({
                 <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                   Propriétaire
                 </label>
-                <select
-                  value={newTeamData.owner || ''}
-                  onChange={(e) => setNewTeamData({ ...newTeamData, owner: e.target.value })}
-                  className={`w-full ${t.inputSoft} ${teamFormErrors.owner ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
-                >
-                  <option value="">Sélectionner un joueur</option>
-                  {players.map(p => (
-                    <option key={p._id} value={p._id}>{p.name}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setOpenPlayerDropdown(!openPlayerDropdown)}
+                    className={`w-full ${t.inputSoft} ${teamFormErrors.owner ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 flex items-center gap-3 text-left`}
+                  >
+                    {newTeamData.owner ? (
+                      <>
+                        <PlayerAvatar player={players.find((p) => p._id === newTeamData.owner)} size={32} textSize="text-xs" className="flex-shrink-0" />
+                        <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === newTeamData.owner)?.name}</span>
+                      </>
+                    ) : (
+                      <span className={`flex-1 ${t.textSecondary}`}>Sélectionner un joueur</span>
+                    )}
+                    <ChevronDown size={16} className={t.textSecondary} />
+                  </button>
+                  {openPlayerDropdown && (
+                    <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
+                      {players.map((p) => (
+                        <button
+                          key={p._id}
+                          type="button"
+                          onClick={() => { setNewTeamData({ ...newTeamData, owner: p._id }); setOpenPlayerDropdown(false); }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
+                        >
+                          <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
+                          <span className={`font-medium ${t.text}`}>{p.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {teamFormErrors.owner && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>Ce champ est requis</p>}
               </div>
 
