@@ -14,7 +14,11 @@ self.addEventListener('activate', (event) => {
             .map((name) => caches.delete(name))
         )
       ),
-    ])
+    ]).then(() =>
+      clients.matchAll({ type: 'window' }).then((windowClients) =>
+        Promise.all(windowClients.map((client) => client.navigate(client.url)))
+      )
+    )
   );
 });
 
