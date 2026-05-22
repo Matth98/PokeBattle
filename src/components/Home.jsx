@@ -28,12 +28,8 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       >
         <div className="flex justify-between items-center">
           <div>
-            <img
-              src={`${process.env.PUBLIC_URL}/${isDark ? 'Logo-title-dark.svg' : 'Logo-title.svg'}`}
-              alt="PokéScores"
-              className="h-7"
-            />
-            <p className={`${t.textSecondary} text-sm mt-1.5`}>Tes combats, tes équipes, tes stats.</p>
+            <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>PokéScores</h1>
+            <p className={`${t.textSecondary} text-sm mt-0.5`}>Tes combats, tes équipes, tes stats.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
