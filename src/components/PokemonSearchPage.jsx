@@ -1,17 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useImperativeHandle } from 'react';
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 
-export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon, isActive = true }) => {
+export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon }, ref) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { searchResults, searchLoading, searchPokemon, getPokemonImageUrl } = usePokemon();
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    if (!isActive) return;
-    const t = setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 150);
-    return () => clearTimeout(t);
-  }, [isActive]);
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus({ preventScroll: true }),
+  }));
 
   const handleChange = (e) => {
     setSearchTerm(e.target.value);
@@ -140,4 +138,4 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
       </div>
     </div>
   );
-};
+});

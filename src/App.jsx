@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import { theme } from './utils/theme';
 import { useAPI } from './hooks/useAPI';
 import { Home } from './components/Home';
@@ -55,9 +56,8 @@ function AppContent({ isDark, setIsDark }) {
   // ── Mémoire de scroll par onglet ──
   const scrollMemoryRef = useRef(new Map());
   const shouldRestoreRef = useRef(false);
-  // ── Pile de navigation pour le bouton précédent ──
-  // Chaque entrée : { tab, extra?, label }
   const navStack = useRef([]);
+  const searchPageRef = useRef(null);
 
   const TAB_LABELS = { home: 'Accueil', battles: 'Combats', teams: 'Équipes', players: 'Joueurs', pokemonSearch: 'Recherche' };
   const getTabLabel = useCallback((tab) =>
@@ -399,7 +399,10 @@ function AppContent({ isDark, setIsDark }) {
             setPlayerDetailTab('pokemon');
             navigateTo('playerDetail');
           }}
-          onSearchPokemon={() => navigateTo('pokemonSearch')}
+          onSearchPokemon={() => {
+            flushSync(() => navigateTo('pokemonSearch'));
+            searchPageRef.current?.focus();
+          }}
         />
       )}
 
@@ -607,11 +610,11 @@ function AppContent({ isDark, setIsDark }) {
       {(currentTab === 'pokemonSearch' || currentTab === 'pokemonDetail') && (
         <div className={currentTab !== 'pokemonSearch' ? 'hidden' : ''}>
           <PokemonSearchPage
+            ref={searchPageRef}
             t={t}
             isDark={isDark}
             backLabel={backLabel}
             onBack={navigateBack}
-            isActive={currentTab === 'pokemonSearch'}
             onSelectPokemon={(pokemon) => {
               setSelectedPokemon(pokemon);
               navigateTo('pokemonDetail');
@@ -629,7 +632,8 @@ function AppContent({ isDark, setIsDark }) {
           backLabel={backLabel}
           onBack={() => {
             setSelectedPokemon(null);
-            navigateBack();
+            flushSync(() => navigateBack());
+            searchPageRef.current?.focus();
           }}
         />
       )}
