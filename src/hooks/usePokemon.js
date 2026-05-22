@@ -4,7 +4,8 @@ import pokemonFormsFr from '../data/pokemon-forms-fr.json';
 
 // Données bundlées dans l'app : zéro dépendance réseau pour les noms.
 // L'index dans le tableau = pokeId - 1 (Bulbizarre = index 0 → pokeId 1).
-const BASE_LIST = pokemonFr.map((name, idx) => ({ pokeId: idx + 1, name }));
+const toTextGlyph = (s) => s.replace(/[♂♀]/g, '$&︎');
+const BASE_LIST = pokemonFr.map((name, idx) => ({ pokeId: idx + 1, name: toTextGlyph(name) }));
 const POKEMON_LIST = [...BASE_LIST, ...pokemonFormsFr];
 
 const GENERATION_RANGES = [

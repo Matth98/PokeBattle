@@ -134,7 +134,7 @@ export function usePokemonDetail(pokeId) {
           genderText = 'Asexué';
         } else {
           const femalePercent = (speciesData.gender_rate / 8) * 100;
-          genderText = `${100 - femalePercent}% ♂  -  ${femalePercent}% ♀`;
+          genderText = `${100 - femalePercent}% ♂︎  -  ${femalePercent}% ♀︎`;
         }
 
         if (cancelled) return;

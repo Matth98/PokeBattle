@@ -401,9 +401,7 @@ function AppContent({ isDark, setIsDark }) {
           }}
           onSearchPokemon={() => {
             flushSync(() => navigateTo('pokemonSearch'));
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => searchPageRef.current?.focus());
-            });
+            searchPageRef.current?.focus();
           }}
         />
       )}
