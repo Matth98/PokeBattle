@@ -5,16 +5,20 @@ import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { PokemonDetailModal } from './PokemonDetailModal';
 import { useAuth } from '../hooks/useAuth';
+import { PlayerAvatar } from './PlayerAvatar';
 
-const TeamSection = ({ title, isWinner, pokemon, getPokemonImageUrl, t, onPokemonClick }) => (
+const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, onPokemonClick }) => (
   <section>
-    <div className="flex items-center gap-2 mb-2 px-1">
-      <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>{title}</h2>
-      {isWinner && (
-        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${t.successSoftBg} ${t.successSoftText}`}>
-          Vainqueur
-        </span>
-      )}
+    <div className="flex items-center gap-3 mb-3 px-1">
+      <PlayerAvatar player={player} size={32} textSize="text-xs" className="flex-shrink-0" />
+      <div className="flex items-center gap-2 min-w-0">
+        <h2 className={`font-black truncate ${t.text}`}>{player?.name || '—'}</h2>
+        {isWinner && (
+          <span className={`inline-flex flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${t.successSoftBg} ${t.successSoftText}`}>
+            Vainqueur
+          </span>
+        )}
+      </div>
     </div>
     {!pokemon || pokemon.length === 0 ? (
       <div className={`${t.surface} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
@@ -123,32 +127,39 @@ export const BattleDetail = ({
 
       <div className="px-5 mt-6 pb-32 space-y-6">
         {/* ── Hero score ── */}
-        <div className="flex flex-col items-center text-center">
-          <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${t.accentSoftBg} ${t.accentSoftText} mb-4`}>
-            {battle.format}
-          </span>
-
-          <div className="flex items-center gap-3 w-full max-w-md">
-            <p className={`flex-1 min-w-0 truncate text-left font-black text-lg ${battle.winner === 'player1' ? t.accent : t.text}`}>
+        <div className="flex items-center gap-3 w-full max-w-md mx-auto pb-4">
+          {/* Joueur 1 */}
+          <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
+            <PlayerAvatar player={p1} size={60} textSize="text-xl" className="flex-shrink-0" />
+            <p className={`w-full truncate text-center font-black text-lg ${battle.winner === 'player1' ? t.accent : t.text}`}>
               {p1?.name || '—'}
             </p>
-            <p className={`font-black text-4xl ${t.text} whitespace-nowrap`}>
+          </div>
+          {/* Format + Score + Date */}
+          <div className="flex-shrink-0 flex flex-col items-center gap-1">
+            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+              {battle.format}
+            </span>
+            <p className={`font-black text-4xl ${t.text} whitespace-nowrap leading-none`}>
               {p2Elim}–{p1Elim}
             </p>
-            <p className={`flex-1 min-w-0 truncate text-right font-black text-lg ${battle.winner === 'player2' ? t.accent : t.text}`}>
+            <div className={`flex items-center gap-1.5 ${t.textSecondary} text-sm`}>
+              <Calendar size={13} />
+              <span>{formatDate(battle.date)}</span>
+            </div>
+          </div>
+          {/* Joueur 2 */}
+          <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
+            <PlayerAvatar player={p2} size={60} textSize="text-xl" className="flex-shrink-0" />
+            <p className={`w-full truncate text-center font-black text-lg ${battle.winner === 'player2' ? t.accent : t.text}`}>
               {p2?.name || '—'}
             </p>
-          </div>
-
-          <div className={`flex items-center gap-1.5 mt-3 ${t.textSecondary} text-sm`}>
-            <Calendar size={13} />
-            <span>{formatDate(battle.date)}</span>
           </div>
         </div>
 
         {/* ── Équipes ── */}
         <TeamSection
-          title={p1?.name || 'Joueur 1'}
+          player={p1}
           isWinner={battle.winner === 'player1'}
           pokemon={battle.team1}
           getPokemonImageUrl={getPokemonImageUrl}
@@ -156,7 +167,7 @@ export const BattleDetail = ({
           onPokemonClick={(p) => setViewingPokemon(p)}
         />
         <TeamSection
-          title={p2?.name || 'Joueur 2'}
+          player={p2}
           isWinner={battle.winner === 'player2'}
           pokemon={battle.team2}
           getPokemonImageUrl={getPokemonImageUrl}

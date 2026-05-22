@@ -3,6 +3,7 @@ import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronD
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
+import { PlayerAvatar } from './PlayerAvatar';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { PokemonPicker } from './PokemonPicker';
@@ -437,13 +438,16 @@ export const Battles = ({
                             </span>
                           )}
 
-                          {/* Joueur 1 — nom + Pokémon ferré gauche */}
+                          {/* Joueur 1 — avatar + nom + Pokémon ferré gauche */}
                           <div className="flex-1 min-w-0">
-                            <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
-                              {p1?.name || '—'}
-                            </p>
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <PlayerAvatar player={p1} size={40} textSize="text-sm" className="flex-shrink-0" />
+                              <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
+                                {p1?.name || '—'}
+                              </p>
+                            </div>
                             {(b.team1 || []).length > 0 && (
-                              <div className="flex gap-0.5 mt-1">
+                              <div className="flex gap-0.5">
                                 {b.team1.map((pk, i) => (
                                   <img
                                     key={pk.id || i}
@@ -462,18 +466,21 @@ export const Battles = ({
                             <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
                               {b.format}
                             </span>
-                            <p className={`font-black text-xl ${t.text} whitespace-nowrap leading-none`}>
+                            <p className={`font-black text-2xl ${t.text} whitespace-nowrap leading-none`}>
                               {p2Elim}–{p1Elim}
                             </p>
                           </div>
 
-                          {/* Joueur 2 — nom + Pokémon ferré droite */}
+                          {/* Joueur 2 — Pokémon + nom + avatar ferré droite */}
                           <div className="flex-1 min-w-0">
-                            <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
-                              {p2?.name || '—'}
-                            </p>
+                            <div className="flex items-center justify-end gap-2 mb-1.5">
+                              <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
+                                {p2?.name || '—'}
+                              </p>
+                              <PlayerAvatar player={p2} size={40} textSize="text-sm" className="flex-shrink-0" />
+                            </div>
                             {(b.team2 || []).length > 0 && (
-                              <div className="flex gap-0.5 mt-1 justify-end">
+                              <div className="flex gap-0.5 justify-end">
                                 {b.team2.map((pk, i) => (
                                   <img
                                     key={pk.id || i}
