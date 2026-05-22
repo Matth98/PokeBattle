@@ -399,10 +399,7 @@ function AppContent({ isDark, setIsDark }) {
             setPlayerDetailTab('pokemon');
             navigateTo('playerDetail');
           }}
-          onSearchPokemon={() => {
-            flushSync(() => navigateTo('pokemonSearch'));
-            searchPageRef.current?.focus();
-          }}
+          onSearchPokemon={() => navigateTo('pokemonSearch')}
         />
       )}
 
