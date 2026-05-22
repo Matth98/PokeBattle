@@ -282,7 +282,7 @@ export const Players = ({
       {/* ── Modale Nouveau joueur (full-height sheet iOS) ── */}
       {showForm && (
         <div className={`fixed inset-0 ${t.overlay} ${isFormClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
-          <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col mt-12 sm:mt-20 rounded-t-3xl ${isFormClosing ? 'anim-slide-down' : 'anim-slide-up'}`}>
+          <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isFormClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
             {/* Barre supérieure */}
             <div className={`${t.surface} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
               <div className="flex-1">

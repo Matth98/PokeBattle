@@ -253,7 +253,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
       <motion.div
         ref={sheetRef}
         className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col rounded-t-3xl`}
-        style={{ y, marginTop: 'calc(env(safe-area-inset-top) + 3rem)' }}
+        style={{ y, marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', damping: 32, stiffness: 320 }}
       >

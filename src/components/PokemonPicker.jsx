@@ -38,7 +38,7 @@ export const PokemonPicker = ({
 
   return (
     <div className={`fixed inset-0 ${t.overlay} ${isClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
-      <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 3rem)' }}>
+      <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
         {/* Grip + Header */}
         <div
           className={`${t.surface} px-5 pt-3 pb-3 border-b ${t.divider}`}
