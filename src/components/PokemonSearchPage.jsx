@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 
-export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon }) => {
+export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon, isActive = true }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { searchResults, searchLoading, searchPokemon, getPokemonImageUrl } = usePokemon();
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isActive) inputRef.current?.focus();
+  }, [isActive]);
 
   const handleChange = (e) => {
     setSearchTerm(e.target.value);
@@ -14,6 +19,7 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
   const clear = () => {
     setSearchTerm('');
     searchPokemon('');
+    inputRef.current?.focus();
   };
 
   const hasQuery = searchTerm.trim().length > 0;
@@ -37,11 +43,11 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
           <div className={`flex-1 flex items-center gap-2 ${t.surfaceMuted} rounded-xl px-3 py-2`}>
             <Search size={15} className={t.textTertiary} aria-hidden="true" />
             <input
+              ref={inputRef}
               type="text"
               value={searchTerm}
               onChange={handleChange}
               placeholder="Nom du Pokémon…"
-              autoFocus
               className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
               style={{ fontSize: '16px' }}
             />

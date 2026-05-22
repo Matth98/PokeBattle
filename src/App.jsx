@@ -611,6 +611,7 @@ function AppContent({ isDark, setIsDark }) {
             isDark={isDark}
             backLabel={backLabel}
             onBack={navigateBack}
+            isActive={currentTab === 'pokemonSearch'}
             onSelectPokemon={(pokemon) => {
               setSelectedPokemon(pokemon);
               navigateTo('pokemonDetail');
