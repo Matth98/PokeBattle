@@ -25,10 +25,10 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
   const hasQuery = searchTerm.trim().length > 0;
 
   return (
-    <div className={`min-h-screen ${t.pageBg}`}>
+    <div className={`flex flex-col ${t.pageBg}`} style={{ height: '100dvh' }}>
       {/* ── Header ── */}
       <div
-        className={`${t.surfaceBlur} sticky top-0 z-10 px-4 border-b ${t.divider}`}
+        className={`${t.surfaceBlur} flex-shrink-0 px-4 border-b ${t.divider} z-10`}
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
       >
         <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export const PokemonSearchPage = ({ t, isDark, onBack, backLabel = 'Accueil', on
 
       {/* ── Résultats ── */}
       <div
-        className="px-5 pt-4"
+        className="flex-1 overflow-y-auto px-5 pt-4"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
       >
         {!hasQuery && (
