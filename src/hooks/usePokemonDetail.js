@@ -45,7 +45,7 @@ async function fetchAbility(abilityName) {
   const nameFr = data.names?.find(n => n.language.name === 'fr')?.name || abilityName;
   const descFr = data.flavor_text_entries
     ?.filter(e => e.language.name === 'fr')
-    ?.pop()?.flavor_text?.replace(/[\n\f]/g, ' ') || '';
+    ?.pop()?.flavor_text?.replace(/\\n|\\f|[\n\f\r]/g, ' ') || '';
   const result = { nameFr, descFr };
   abilityCache.set(abilityName, result);
   return result;
