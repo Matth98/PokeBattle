@@ -14,7 +14,7 @@ const StatTile = ({ Icon, value, label, tile, t }) => (
   </div>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, onSelectBattle, onSelectPlayer, onSearchPokemon }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon }) => {
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
   const groupedRecentBattles = groupBattlesByDate(recentBattles);
   const { getPokemonImageUrl } = usePokemon();
@@ -122,7 +122,10 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                       return (
                         <button
                           key={b._id}
-                          onClick={() => onSelectBattle?.(b)}
+                          onClick={() => {
+                            setSelectedBattle(b);
+                            setCurrentTab('battleDetail');
+                          }}
                           className={`w-full flex items-center gap-3 px-4 py-3 ${
                             !isLast ? `border-b ${t.divider}` : ''
                           } text-left`}

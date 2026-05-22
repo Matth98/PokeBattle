@@ -414,11 +414,8 @@ function AppContent({ isDark, setIsDark }) {
               isDark={isDark}
               setIsDark={setIsDark}
               t={t}
-              setCurrentTab={setCurrentTab}
-              onSelectBattle={(b) => {
-                setSelectedBattle(b);
-                navigateTo('battleDetail');
-              }}
+              setCurrentTab={navigateTo}
+              setSelectedBattle={setSelectedBattle}
               onSelectPlayer={(p) => {
                 setSelectedPlayer(p);
                 setPlayerDetailTab('pokemon');
