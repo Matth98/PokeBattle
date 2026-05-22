@@ -48,6 +48,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
               value={searchTerm}
               onChange={handleChange}
               placeholder="Nom du Pokémon…"
+              autoFocus
               className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
               style={{ fontSize: '16px' }}
             />
