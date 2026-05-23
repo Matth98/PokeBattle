@@ -106,7 +106,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                         <div className="relative flex-shrink-0">
                           <PlayerAvatar player={p1} size={40} textSize="text-sm" />
                           {b.winner === 'player1' && (
-                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
                               <Trophy size={8} strokeWidth={2.5} className="text-white" />
                             </span>
                           )}
@@ -152,7 +152,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                         <div className="relative flex-shrink-0">
                           <PlayerAvatar player={p2} size={40} textSize="text-sm" />
                           {b.winner === 'player2' && (
-                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
                               <Trophy size={8} strokeWidth={2.5} className="text-white" />
                             </span>
                           )}
