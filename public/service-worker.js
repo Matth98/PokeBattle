@@ -1,5 +1,5 @@
 // public/service-worker.js
-const CACHE_NAME = 'pokescores-v2';
+const CACHE_NAME = 'pokescores-v3';
 
 self.addEventListener('install', () => self.skipWaiting());
 
