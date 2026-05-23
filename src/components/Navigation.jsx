@@ -56,7 +56,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
         >
           <span className="w-[60px] h-[60px] active:scale-95 transition flex items-center justify-center">
             <img
-              src={`${process.env.PUBLIC_URL}/Match-button.svg`}
+              src={`${process.env.PUBLIC_URL}/pokeball-button.png`}
               alt=""
               className="w-[60px] h-[60px]"
               aria-hidden="true"
