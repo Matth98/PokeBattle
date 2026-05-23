@@ -100,7 +100,7 @@ function InfoRow({ label, value, accentColor, isDark }) {
       )}
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentColor }}>{label}</p>
-        <p className={`text-sm mt-0.5 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>{value}</p>
+        <p className={`text-base mt-0.5 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>{value}</p>
       </div>
     </div>
   );
@@ -187,7 +187,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             </div>
 
             {data.flavorText && (
-              <p className={`text-sm leading-relaxed mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              <p className={`text-base leading-relaxed mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 {data.flavorText}
               </p>
             )}
@@ -237,7 +237,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                           </span>
                         )}
                       </p>
-                      {descFr && <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{descFr}</p>}
+                      {descFr && <p className={`text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{descFr}</p>}
                     </div>
                   ))}
                 </div>

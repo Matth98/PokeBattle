@@ -115,7 +115,7 @@ function InfoRow({ label, value, accentColor, isDark }) {
       )}
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentColor }}>{label}</p>
-        <p className={`text-sm mt-0.5 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>{value}</p>
+        <p className={`text-base mt-0.5 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>{value}</p>
       </div>
     </div>
   );
@@ -315,7 +315,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
               </div>
 
               {data.flavorText && (
-                <p className={`text-sm leading-relaxed mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{data.flavorText}</p>
+                <p className={`text-base leading-relaxed mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{data.flavorText}</p>
               )}
 
               {/* ── Stats ── */}
@@ -359,7 +359,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
                           {nameFr}
                           {isHidden && <span className={`ml-2 text-[10px] font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>(Caché)</span>}
                         </p>
-                        {descFr && <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{descFr}</p>}
+                        {descFr && <p className={`text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{descFr}</p>}
                       </div>
                     ))}
                   </div>
