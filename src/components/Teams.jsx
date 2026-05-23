@@ -323,16 +323,14 @@ export const Teams = ({
 
                     <div className="flex-1 min-w-0">
                       <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
-                      <p className={`${t.textSecondary} text-xs mt-0.5 flex items-center gap-1.5`}>
-                        <span className="truncate">
-                          {team.owner} · {(team.pokemon || []).length} Pokémon
-                        </span>
-                        <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
-                          {team.format}
-                        </span>
+                      <p className={`${t.textSecondary} text-xs mt-0.5 truncate`}>
+                        {team.owner} · {(team.pokemon || []).length} Pokémon
                       </p>
                     </div>
 
+                    <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+                      {team.format}
+                    </span>
                     {!inSelection && <ChevronRight size={18} className={t.textTertiary} />}
                   </button>
                 </SwipeableRow>
