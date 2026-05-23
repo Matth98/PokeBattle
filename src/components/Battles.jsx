@@ -472,7 +472,7 @@ export const Battles = ({
 
                           {/* Format + score centré */}
                           <div className="flex-shrink-0 flex flex-col items-center gap-2">
-                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-pink-500/15 text-pink-300' : 'bg-pink-50 text-pink-600') : `${t.accentSoftBg} ${t.accentSoftText}`}`}>
                               {b.format}
                             </span>
                             <p className={`font-black text-2xl ${t.text} whitespace-nowrap leading-none`}>

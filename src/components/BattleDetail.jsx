@@ -144,7 +144,7 @@ export const BattleDetail = ({
           </div>
           {/* Format + Score + Date */}
           <div className="flex-shrink-0 flex flex-col items-center gap-1">
-            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${battle.format === '1v1' ? (isDark ? 'bg-pink-500/15 text-pink-300' : 'bg-pink-50 text-pink-600') : `${t.accentSoftBg} ${t.accentSoftText}`}`}>
               {battle.format}
             </span>
             <p className={`font-black text-4xl ${t.text} whitespace-nowrap leading-none`}>

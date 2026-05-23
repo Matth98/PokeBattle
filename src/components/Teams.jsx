@@ -328,7 +328,7 @@ export const Teams = ({
                       </p>
                     </div>
 
-                    <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+                    <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-500/15 text-pink-300' : 'bg-pink-50 text-pink-600') : `${t.accentSoftBg} ${t.accentSoftText}`}`}>
                       {team.format}
                     </span>
                     {!inSelection && <ChevronRight size={18} className={t.textTertiary} />}
