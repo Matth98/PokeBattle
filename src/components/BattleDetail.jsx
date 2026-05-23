@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Pencil, Calendar, Trash2, FileText } from 'lucide-react';
+import { ChevronLeft, Pencil, Calendar, Trash2, FileText, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -130,7 +130,14 @@ export const BattleDetail = ({
         <div className="flex items-center gap-3 w-full max-w-md mx-auto pb-4">
           {/* Joueur 1 */}
           <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
-            <PlayerAvatar player={p1} size={60} textSize="text-xl" className="flex-shrink-0" />
+            <div className="relative flex-shrink-0">
+              <PlayerAvatar player={p1} size={60} textSize="text-xl" />
+              {battle.winner === 'player1' && (
+                <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                  <Trophy size={10} strokeWidth={2.5} className="text-white" />
+                </span>
+              )}
+            </div>
             <p className={`w-full truncate text-center font-black text-lg ${battle.winner === 'player1' ? t.accent : t.text}`}>
               {p1?.name || '—'}
             </p>
@@ -150,7 +157,14 @@ export const BattleDetail = ({
           </div>
           {/* Joueur 2 */}
           <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
-            <PlayerAvatar player={p2} size={60} textSize="text-xl" className="flex-shrink-0" />
+            <div className="relative flex-shrink-0">
+              <PlayerAvatar player={p2} size={60} textSize="text-xl" />
+              {battle.winner === 'player2' && (
+                <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                  <Trophy size={10} strokeWidth={2.5} className="text-white" />
+                </span>
+              )}
+            </div>
             <p className={`w-full truncate text-center font-black text-lg ${battle.winner === 'player2' ? t.accent : t.text}`}>
               {p2?.name || '—'}
             </p>
