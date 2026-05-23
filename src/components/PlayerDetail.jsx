@@ -654,9 +654,12 @@ export const PlayerDetail = ({
                       <div className="flex-1 min-w-0">
                         <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
                         <p className={`${t.textSecondary} text-xs mt-0.5`}>
-                          {team.format} · {(team.pokemon || []).length} Pokémon
+                          {(team.pokemon || []).length} Pokémon
                         </p>
                       </div>
+                      <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${t.accentSoftBg} ${t.accentSoftText}`}>
+                        {team.format}
+                      </span>
                       {onSelectTeam ? <ChevronRight size={18} className={t.textTertiary} /> : null}
                     </>
                   );
