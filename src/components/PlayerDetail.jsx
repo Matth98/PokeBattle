@@ -901,8 +901,9 @@ export const PlayerDetail = ({
                   <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                     Propriétaire
                   </label>
-                  <div className={`${t.inputSoft} rounded-xl px-4 py-3 font-semibold ${t.text}`}>
-                    {player.name}
+                  <div className={`${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3`}>
+                    <PlayerAvatar player={player} size={32} textSize="text-xs" className="flex-shrink-0" />
+                    <span className={`font-semibold ${t.text}`}>{player.name}</span>
                   </div>
                 </div>
 

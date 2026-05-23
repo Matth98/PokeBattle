@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2 } from 'lucide-react';
+import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
@@ -443,7 +443,14 @@ export const Battles = ({
                           {/* Joueur 1 — avatar + nom + Pokémon ferré gauche */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1.5">
-                              <PlayerAvatar player={p1} size={40} textSize="text-sm" className="flex-shrink-0" />
+                              <div className="relative flex-shrink-0">
+                                <PlayerAvatar player={p1} size={40} textSize="text-sm" />
+                                {b.winner === 'player1' && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                                    <Trophy size={8} strokeWidth={2.5} className="text-white" />
+                                  </span>
+                                )}
+                              </div>
                               <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
                                 {p1?.name || '—'}
                               </p>
@@ -479,7 +486,14 @@ export const Battles = ({
                               <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
                                 {p2?.name || '—'}
                               </p>
-                              <PlayerAvatar player={p2} size={40} textSize="text-sm" className="flex-shrink-0" />
+                              <div className="relative flex-shrink-0">
+                                <PlayerAvatar player={p2} size={40} textSize="text-sm" />
+                                {b.winner === 'player2' && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                                    <Trophy size={8} strokeWidth={2.5} className="text-white" />
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             {(b.team2 || []).length > 0 && (
                               <div className="flex gap-0.5 justify-end">
@@ -628,6 +642,10 @@ export const Battles = ({
                   ))}
                 </div>
               </div>
+
+              {/* Overlays fermeture dropdowns */}
+              {openPlayerDropdown && <div className="fixed inset-0 z-40" onClick={() => setOpenPlayerDropdown(null)} />}
+              {openWinnerDropdown && <div className="fixed inset-0 z-40" onClick={() => setOpenWinnerDropdown(false)} />}
 
               {/* Sections joueurs */}
               {['player1', 'player2'].map((slot, idx) => {

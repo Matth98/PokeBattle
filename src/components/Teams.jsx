@@ -449,6 +449,9 @@ export const Teams = ({
                 {teamFormErrors.name && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>Ce champ est requis</p>}
               </div>
 
+              {/* Overlay fermeture dropdown */}
+              {openPlayerDropdown && <div className="fixed inset-0 z-40" onClick={() => setOpenPlayerDropdown(false)} />}
+
               {/* Propriétaire */}
               <div>
                 <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>

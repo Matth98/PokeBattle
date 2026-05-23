@@ -365,7 +365,12 @@ function AppContent({ isDark, setIsDark }) {
   if (initialLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <p className="text-xl font-black text-gray-900">Chargement...</p>
+        <img
+          src={`${process.env.PUBLIC_URL}/Match-button.svg`}
+          alt="Chargement"
+          className="w-20 h-20 animate-spin"
+          style={{ animationDuration: '1.2s', animationTimingFunction: 'linear' }}
+        />
       </div>
     );
   }

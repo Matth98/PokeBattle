@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Search, Users, Shield, Zap, ChevronRight } from 'lucide-react';
+import { Moon, Sun, Search, Users, Shield, Zap, ChevronRight, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
@@ -54,7 +54,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">
-            <StatTile Icon={Users} value={players.length} label="Joueurs" tile={t.iconTileBlue} t={t} />
+            <StatTile Icon={Users} value={players.length} label="Joueurs" tile={t.iconTileEmerald} t={t} />
             <StatTile Icon={Shield} value={teams.length} label="Équipes" tile={t.iconTileIndigo} t={t} />
             <StatTile Icon={Zap} value={battles.length} label="Combats" tile={t.iconTileAmber} t={t} />
           </div>
@@ -103,7 +103,14 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                     {/* Joueur 1 — avatar + nom + Pokémon */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <PlayerAvatar player={p1} size={40} textSize="text-sm" className="flex-shrink-0" />
+                        <div className="relative flex-shrink-0">
+                          <PlayerAvatar player={p1} size={40} textSize="text-sm" />
+                          {b.winner === 'player1' && (
+                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                              <Trophy size={8} strokeWidth={2.5} className="text-white" />
+                            </span>
+                          )}
+                        </div>
                         <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
                           {p1?.name || '—'}
                         </p>
@@ -142,7 +149,14 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                         <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
                           {p2?.name || '—'}
                         </p>
-                        <PlayerAvatar player={p2} size={40} textSize="text-sm" className="flex-shrink-0" />
+                        <div className="relative flex-shrink-0">
+                          <PlayerAvatar player={p2} size={40} textSize="text-sm" />
+                          {b.winner === 'player2' && (
+                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                              <Trophy size={8} strokeWidth={2.5} className="text-white" />
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {(b.team2 || []).length > 0 && (
                         <div className="flex gap-0.5 justify-end">
