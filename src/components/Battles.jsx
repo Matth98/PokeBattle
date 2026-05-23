@@ -446,12 +446,12 @@ export const Battles = ({
                               <div className="relative flex-shrink-0">
                                 <PlayerAvatar player={p1} size={40} textSize="text-sm" />
                                 {b.winner === 'player1' && (
-                                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
                                     <Trophy size={8} strokeWidth={2.5} className="text-white" />
                                   </span>
                                 )}
                               </div>
-                              <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
+                              <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.success : t.text}`}>
                                 {p1?.name || '—'}
                               </p>
                             </div>
@@ -483,13 +483,13 @@ export const Battles = ({
                           {/* Joueur 2 — Pokémon + nom + avatar ferré droite */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-end gap-2 mb-1.5">
-                              <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
+                              <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.success : t.text}`}>
                                 {p2?.name || '—'}
                               </p>
                               <div className="relative flex-shrink-0">
                                 <PlayerAvatar player={p2} size={40} textSize="text-sm" />
                                 {b.winner === 'player2' && (
-                                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
                                     <Trophy size={8} strokeWidth={2.5} className="text-white" />
                                   </span>
                                 )}
