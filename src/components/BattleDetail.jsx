@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ChevronLeft, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -505,6 +505,7 @@ export const BattleDetail = ({
                       ))}
                     </div>
                   </div>
+                  <ChevronRight size={18} className={`flex-shrink-0 ${t.textTertiary}`} />
                 </button>
 
                 {/* Séparateur */}
