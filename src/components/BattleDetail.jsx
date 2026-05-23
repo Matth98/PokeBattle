@@ -217,18 +217,15 @@ export const BattleDetail = ({
   const advColor = (n) => n > 0 ? 'text-emerald-500' : n < 0 ? 'text-red-500' : '';
   const TypeBadge = ({ type }) => (
     <span
-      className="pl-0.5 inline-flex items-stretch rounded-full overflow-hidden flex-shrink-0"
+      className="inline-block rounded-full overflow-hidden flex-shrink-0"
       style={{ backgroundColor: TYPE_HEX[type] || '#828282' }}
     >
       <img
         src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${type}.svg`}
-        alt=""
-        className="w-4 h-4 object-contain flex-shrink-0"
+        alt={TYPE_FR[type] || type}
+        className="w-5 h-5 object-contain block"
         onError={(e) => { e.currentTarget.style.display = 'none'; }}
       />
-      <span className="self-center pr-1.5 text-[9px] font-bold text-white uppercase leading-none">
-        {TYPE_FR[type] || type}
-      </span>
     </span>
   );
 
