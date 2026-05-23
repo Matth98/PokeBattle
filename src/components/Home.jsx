@@ -111,7 +111,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                             </span>
                           )}
                         </div>
-                        <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.accent : t.text}`}>
+                        <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.success : t.text}`}>
                           {p1?.name || '—'}
                         </p>
                       </div>
@@ -146,7 +146,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                     {/* Joueur 2 — Pokémon + nom + avatar */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-end gap-2 mb-1.5">
-                        <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.accent : t.text}`}>
+                        <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.success : t.text}`}>
                           {p2?.name || '—'}
                         </p>
                         <div className="relative flex-shrink-0">
