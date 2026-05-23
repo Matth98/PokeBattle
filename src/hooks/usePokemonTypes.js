@@ -27,6 +27,17 @@ export const TYPE_FR = {
   fairy: 'Fée',
 };
 
+// Couleurs hex canoniques (pour inline styles)
+// Couleurs extraites directement depuis les SVG du CDN partywhale/pokemon-type-icons
+export const TYPE_HEX = {
+  normal:   '#828282', fire:     '#e4613e', water:    '#3099e1',
+  grass:    '#439837', electric: '#dfbc28', ice:      '#47c8c8',
+  fighting: '#e49021', poison:   '#9354cb', ground:   '#a4733c',
+  flying:   '#74aad0', psychic:  '#e96c8c', bug:      '#9f9f28',
+  rock:     '#a9a481', ghost:    '#6f4570', dragon:   '#576fbc',
+  dark:     '#4f4747', steel:    '#74b0cb', fairy:    '#e18ce1',
+};
+
 // Couleurs canoniques pour les badges (Tailwind arbitrary values pour pile la teinte)
 // - bg / text : version "pleine" (badge solide, texte blanc)
 // - softBg / softText : version "tuile pastel" (fond très transparent, texte coloré),

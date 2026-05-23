@@ -20,7 +20,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
-import { usePokemonTypes, TYPE_FR, TYPE_COLORS } from '../hooks/usePokemonTypes';
+import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { PokemonPicker } from './PokemonPicker';
 import { PokemonDetailModal } from './PokemonDetailModal';
 import { SwipeableRow } from './SwipeableRow';
@@ -580,17 +580,23 @@ export const PlayerDetail = ({
                             if (types.length === 0) return null;
                             return (
                               <div className="flex gap-1 mt-1 flex-wrap">
-                                {types.map((tname) => {
-                                  const colors = TYPE_COLORS[tname] || { bg: 'bg-gray-400', text: 'text-white' };
-                                  return (
-                                    <span
-                                      key={tname}
-                                      className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}
-                                    >
+                                {types.map((tname) => (
+                                  <span
+                                    key={tname}
+                                    className="pl-1 inline-flex items-stretch rounded-full overflow-hidden"
+                                    style={{ backgroundColor: TYPE_HEX[tname] || '#828282' }}
+                                  >
+                                    <img
+                                      src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${tname}.svg`}
+                                      alt=""
+                                      className="w-5 h-5 object-contain flex-shrink-0"
+                                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
+                                    <span className="self-center pr-2 text-[10px] font-bold text-white uppercase leading-none">
                                       {TYPE_FR[tname] || tname}
                                     </span>
-                                  );
-                                })}
+                                  </span>
+                                ))}
                               </div>
                             );
                           })()}

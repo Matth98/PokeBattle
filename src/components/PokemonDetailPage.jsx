@@ -1,15 +1,7 @@
 import React from 'react';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
-import { TYPE_FR, TYPE_COLORS } from '../hooks/usePokemonTypes';
-
-const TYPE_HEX = {
-  normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', grass: '#7AC74C',
-  electric: '#F7D02C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1',
-  ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A',
-  rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746',
-  steel: '#B7B7CE', fairy: '#D685AD',
-};
+import { TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 
 const ALL_TYPES = Object.keys(TYPE_HEX);
 
@@ -17,10 +9,20 @@ const statColor = (v) =>
   v >= 150 ? '#22c55e' : v >= 100 ? '#84cc16' : v >= 70 ? '#eab308' : v >= 50 ? '#f97316' : '#ef4444';
 
 function TypeBadge({ typeName }) {
-  const c = TYPE_COLORS[typeName] || { bg: 'bg-gray-400', text: 'text-white' };
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${c.bg} ${c.text}`}>
-      {TYPE_FR[typeName] || typeName}
+    <span
+      className="pl-1 inline-flex items-stretch rounded-full overflow-hidden"
+      style={{ backgroundColor: TYPE_HEX[typeName] || '#828282' }}
+    >
+      <img
+        src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${typeName}.svg`}
+        alt=""
+        className="w-6 h-6 object-contain flex-shrink-0"
+        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+      />
+      <span className="self-center pr-3 text-xs font-bold text-white uppercase leading-none">
+        {TYPE_FR[typeName] || typeName}
+      </span>
     </span>
   );
 }
