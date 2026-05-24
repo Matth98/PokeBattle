@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Users, Camera } from 'lucide-react';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -34,6 +34,13 @@ export const Players = ({
   const fileInputRef = useRef(null);
 
   const inSelection = selectionMode === 'players';
+
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const resetForm = () => {
     setNewPlayerName('');
@@ -96,10 +103,33 @@ export const Players = ({
   };
 
   return (
-    <div className={`min-h-screen ${t.pageBg}`}>
+    <div
+      className="relative min-h-screen"
+      style={{
+        background: isDark
+          ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.06) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.05) 0%, rgba(239,186,37,0) 100%), #09090b'
+          : 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.35) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.28) 0%, rgba(239,186,37,0) 100%), #EFF6F9',
+      }}
+    >
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {[300, 420, 540, 660].map((px) => {
+          const vw = `${(px / 390 * 100).toFixed(1)}vw`;
+          return (
+            <div
+              key={px}
+              className={`absolute rounded-full border ${isDark ? 'border-white/5' : 'border-black/[0.06]'}`}
+              style={{ width: vw, height: vw, top: `calc(${vw} / -2)`, left: `calc(${vw} / -2)` }}
+            />
+          );
+        })}
+      </div>
       {/* ── En-tête sticky ── */}
       <div
-        className={`${t.surfaceBlur} sticky top-0 z-10 px-5 pt-12 pb-3 border-b ${t.divider}`}
+        className={`sticky top-0 z-10 px-5 pb-3 transition-all duration-200 ${
+          scrolled
+            ? `${t.surfaceBlur} border-b ${t.divider}`
+            : 'bg-transparent border-b border-transparent'
+        }`}
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)' }}
       >
         <div className="flex justify-between items-center">
@@ -116,7 +146,7 @@ export const Players = ({
                 <button
                   onClick={() => setDeletingSelected(true)}
                   disabled={selectedItems.length === 0}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center ${t.dangerBg} text-white ${selectedItems.length === 0 ? 'opacity-40' : ''}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${t.dangerBg} text-white ${selectedItems.length === 0 ? 'opacity-40' : ''}`}
                   aria-label="Supprimer la sélection"
                 >
                   <Trash2 size={18} />
@@ -126,7 +156,7 @@ export const Players = ({
                     setSelectionMode(null);
                     setSelectedItems([]);
                   }}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
                   aria-label="Annuler"
                 >
                   <X size={18} />
@@ -137,14 +167,14 @@ export const Players = ({
                 <button
                   onClick={() => setSelectionMode('players')}
                   disabled={players.length === 0}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text} ${players.length === 0 ? 'opacity-40' : ''}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text} ${players.length === 0 ? 'opacity-40' : ''}`}
                   aria-label="Sélectionner"
                 >
                   <CheckSquare size={18} />
                 </button>
                 <button
                   onClick={() => setShowForm(true)}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center ${t.accentBg} text-white`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${t.accentBg} text-white`}
                   aria-label="Nouveau joueur"
                 >
                   <Plus size={20} />
@@ -155,7 +185,7 @@ export const Players = ({
         </div>
       </div>
 
-      <div className="px-5 mt-5 pb-32">
+      <div className="relative z-[1] px-5 mt-5 pb-32">
         {players.length === 0 ? (
           <div className={`${t.surface} rounded-2xl p-10 text-center mt-12`}>
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-4`}>
