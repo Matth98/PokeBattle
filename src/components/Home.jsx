@@ -31,7 +31,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       className="relative min-h-screen"
       style={{
         background: isDark
-          ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.12) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.10) 0%, rgba(239,186,37,0) 100%), #09090b'
+          ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.06) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.05) 0%, rgba(239,186,37,0) 100%), #09090b'
           : 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.35) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.28) 0%, rgba(239,186,37,0) 100%), #EFF6F9',
       }}
     >
