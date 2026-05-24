@@ -31,8 +31,8 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       className="relative min-h-screen"
       style={{
         background: isDark
-          ? 'radial-gradient(ellipse 70% 55% at 0% 0%, rgba(0,255,150,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 100% 0%, rgba(239,186,37,0.10) 0%, transparent 60%), #09090b'
-          : 'radial-gradient(ellipse 70% 55% at 0% 0%, rgba(0,255,150,0.35) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 100% 0%, rgba(239,186,37,0.28) 0%, transparent 60%), #EFF6F9',
+          ? 'radial-gradient(ellipse 90% 65% at 0% 0%, rgba(0,255,150,0.12) 0%, rgba(0,255,150,0) 70%), radial-gradient(ellipse 80% 60% at 100% 0%, rgba(239,186,37,0.10) 0%, rgba(239,186,37,0) 70%), #09090b'
+          : 'radial-gradient(ellipse 90% 65% at 0% 0%, rgba(0,255,150,0.35) 0%, rgba(0,255,150,0) 70%), radial-gradient(ellipse 80% 60% at 100% 0%, rgba(239,186,37,0.28) 0%, rgba(239,186,37,0) 70%), #EFF6F9',
       }}
     >
       {/* Decorative circles */}
