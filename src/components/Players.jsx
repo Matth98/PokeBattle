@@ -109,8 +109,8 @@ export const Players = ({
         className="fixed inset-0 -z-10"
         style={{
           background: isDark
-            ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.06) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.05) 0%, rgba(239,186,37,0) 100%), #09090b'
-            : 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.35) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.28) 0%, rgba(239,186,37,0) 100%), #EFF6F9',
+            ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,203,255,0.06) 0%, rgba(0,203,255,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(199,255,231,0.05) 0%, rgba(199,255,231,0) 100%), #09090b'
+            : 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,203,255,0.35) 0%, rgba(0,203,255,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(199,255,231,0.28) 0%, rgba(199,255,231,0) 100%), #EFF6F9',
         }}
       />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
@@ -141,7 +141,7 @@ export const Players = ({
               <>
                 <button
                   onClick={() => setSelectedItems(players.map((p) => p._id))}
-                  className={`px-3 h-9 rounded-full ${t.surfaceMuted} ${t.text} text-sm font-semibold`}
+                  className={`px-3 h-9 rounded-full transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/15 text-white' : 'bg-white text-gray-900')} text-sm font-semibold`}
                 >
                   Tout
                 </button>
@@ -158,7 +158,7 @@ export const Players = ({
                     setSelectionMode(null);
                     setSelectedItems([]);
                   }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/15 text-white' : 'bg-white text-gray-900')}`}
                   aria-label="Annuler"
                 >
                   <X size={18} />
@@ -169,7 +169,7 @@ export const Players = ({
                 <button
                   onClick={() => setSelectionMode('players')}
                   disabled={players.length === 0}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text} ${players.length === 0 ? 'opacity-40' : ''}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/15 text-white' : 'bg-white text-gray-900')} ${players.length === 0 ? 'opacity-40' : ''}`}
                   aria-label="Sélectionner"
                 >
                   <CheckSquare size={18} />

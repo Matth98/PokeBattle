@@ -64,7 +64,6 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         <div className="flex justify-between items-center">
           <div>
             <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>PokéScores</h1>
-            <p className={`${t.textSecondary} text-sm mt-0.5`}>Tes combats, tes équipes, tes stats.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -175,7 +174,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
 
                     {/* Format + score centré */}
                     <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-pink-500/15 text-pink-300' : 'bg-pink-50 text-pink-600') : `${t.accentSoftBg} ${t.accentSoftText}`}`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
                         {b.format}
                       </span>
                       <p className={`font-black text-2xl ${t.text} whitespace-nowrap leading-none`}>

@@ -35,41 +35,40 @@ export const TeamDetail = ({
         className="fixed inset-0 -z-10"
         style={{
           background: isDark
-            ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.06) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.05) 0%, rgba(239,186,37,0) 100%), #09090b'
-            : 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.35) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.28) 0%, rgba(239,186,37,0) 100%), #EFF6F9',
+            ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(72,0,255,0.06) 0%, rgba(72,0,255,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(125,252,116,0.05) 0%, rgba(125,252,116,0) 100%), #09090b'
+            : 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(72,0,255,0.35) 0%, rgba(72,0,255,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(125,252,116,0.28) 0%, rgba(125,252,116,0) 100%), #EFF6F9',
         }}
       />
       {/* ── En-tête sticky ── */}
       <div
-        className={`${t.surfaceBlur} sticky top-0 z-10 px-4 border-b ${t.divider}`}
+        className="sticky top-0 z-10 px-4"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
       >
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className={`flex items-center gap-1 -ml-1 ${t.accent} font-semibold`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm ${isDark ? 'bg-white/15 text-white' : 'bg-white/80 text-gray-900'}`}
             aria-label="Retour"
           >
             <ChevronLeft size={22} />
-            <span className="text-base">{backLabel}</span>
           </button>
           {canEdit && onEdit && (
             <button
               onClick={() => onEdit(team)}
-              className={`flex items-center gap-1 ${t.accent} font-semibold`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm ${isDark ? 'bg-white/15 text-white' : 'bg-white/80 text-gray-900'}`}
+              aria-label="Modifier"
             >
-              <Pencil size={16} />
-              <span className="text-base">Modifier</span>
+              <Pencil size={18} />
             </button>
           )}
         </div>
       </div>
 
-      <div className="px-5 mt-6 pb-32 space-y-6">
+      <div className="px-5 mt-1 pb-32 space-y-6">
         {/* ── Hero ── */}
         <div className="flex flex-col items-center text-center">
           {/* Grosse miniature 2x2 */}
-          <div className={`w-28 h-28 rounded-3xl ${t.surfaceMuted} p-2 grid grid-cols-2 grid-rows-2 gap-1 mb-4`}>
+          <div className={`w-28 h-28 rounded-3xl ${isDark ? 'bg-white/[0.05]' : 'bg-white/30'} p-2 grid grid-cols-2 grid-rows-2 gap-1 mb-4`}>
             {[0, 1, 2, 3].map((i) => {
               const p = thumbSlots[i];
               return (
@@ -89,8 +88,8 @@ export const TeamDetail = ({
           <h1 className={`text-2xl font-black tracking-tight ${t.text}`}>{team.name}</h1>
           <div className="flex items-center gap-2 mt-2">
             <p className={`${t.textSecondary} text-sm`}>{team.owner}</p>
-            <span className="text-xs opacity-30">•</span>
-            <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-500/15 text-pink-300' : 'bg-pink-50 text-pink-600') : `${t.accentSoftBg} ${t.accentSoftText}`}`}>
+            <span className={`${t.textSecondary} text-sm`}>·</span>
+            <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
               {team.format}
             </span>
           </div>
