@@ -54,7 +54,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
           className="relative -mt-5 mx-auto flex flex-col items-center justify-end gap-1"
           aria-label="Créer un combat"
         >
-          <span className="w-[60px] h-[60px] rounded-full ring-[3px] ring-white/90 flex items-center justify-center active:scale-95 transition">
+          <span className="w-[60px] h-[60px] rounded-full ring-[4px] ring-white flex items-center justify-center active:scale-95 transition">
             <img
               src={`${process.env.PUBLIC_URL}/pokeball-button.png`}
               alt=""
