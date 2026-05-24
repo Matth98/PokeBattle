@@ -27,7 +27,29 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   }, []);
 
   return (
-    <div className={`min-h-screen ${t.pageBg}`}>
+    <div className={`relative min-h-screen overflow-hidden ${t.pageBg}`}>
+      {/* Colored glows */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      >
+        {/* Blob 1 — teal, top-left */}
+        <div
+          className={`absolute -top-16 -left-10 w-72 h-72 rounded-full ${isDark ? 'opacity-25' : 'opacity-40'}`}
+          style={{ background: 'radial-gradient(circle, #34d399, #0d9488)', filter: 'blur(80px)' }}
+        />
+        {/* Blob 2 — purple/indigo, top-right */}
+        <div
+          className={`absolute -top-10 -right-16 w-56 h-56 rounded-full ${isDark ? 'opacity-20' : 'opacity-30'}`}
+          style={{ background: 'radial-gradient(circle, #a78bfa, #6366f1)', filter: 'blur(70px)' }}
+        />
+        {/* Blob 3 — amber, mid-right */}
+        <div
+          className={`absolute top-[40%] -right-12 w-48 h-48 rounded-full ${isDark ? 'opacity-15' : 'opacity-20'}`}
+          style={{ background: 'radial-gradient(circle, #fbbf24, #f59e0b)', filter: 'blur(60px)' }}
+        />
+      </div>
+
       {/* ── En-tête ── */}
       <div
         className={`sticky top-0 z-10 px-5 pb-3 transition-all duration-200 ${
@@ -69,7 +91,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         </div>
       </div>
 
-      <div className="px-5 mt-5 pb-32 space-y-7">
+      <div className="relative z-10 px-5 mt-5 pb-32 space-y-7">
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">
