@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Search, Users, Shield, Zap, ChevronRight, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
@@ -18,6 +18,13 @@ const StatTile = ({ Icon, value, label, tile, t }) => (
 export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon }) => {
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
   const { getPokemonImageUrl } = usePokemon();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
     <div className={`min-h-screen ${t.pageBg}`}>
