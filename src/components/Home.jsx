@@ -30,7 +30,11 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
     <div className={`min-h-screen ${t.pageBg}`}>
       {/* ── En-tête ── */}
       <div
-        className={`${t.surfaceBlur} sticky top-0 z-10 px-5 pt-12 pb-3 border-b ${t.divider}`}
+        className={`sticky top-0 z-10 px-5 pb-3 transition-all duration-200 ${
+          scrolled
+            ? `${t.surfaceBlur} border-b ${t.divider}`
+            : 'bg-transparent border-b border-transparent'
+        }`}
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)' }}
       >
         <div className="flex justify-between items-center">
@@ -41,14 +45,22 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           <div className="flex items-center gap-2">
             <button
               onClick={onSearchPokemon}
-              className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                scrolled
+                  ? `${t.surfaceMuted} ${t.text}`
+                  : (isDark ? 'bg-white/15 text-white' : 'bg-white text-gray-900')
+              }`}
               aria-label="Rechercher un Pokémon"
             >
               <Search size={18} />
             </button>
             <button
               onClick={() => setIsDark(!isDark)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center ${t.surfaceMuted} ${t.text}`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                scrolled
+                  ? `${t.surfaceMuted} ${t.text}`
+                  : (isDark ? 'bg-white/15 text-white' : 'bg-white text-gray-900')
+              }`}
               aria-label={isDark ? 'Mode clair' : 'Mode sombre'}
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
