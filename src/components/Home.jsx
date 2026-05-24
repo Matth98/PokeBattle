@@ -27,7 +27,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   }, []);
 
   return (
-    <div className={`relative min-h-screen overflow-hidden ${t.pageBg}`}>
+    <div className={`relative min-h-screen ${t.pageBg}`}>
       {/* Colored glows */}
       <div
         aria-hidden="true"
@@ -95,7 +95,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         </div>
       </div>
 
-      <div className="relative z-10 px-5 mt-5 pb-32 space-y-7">
+      <div className="px-5 mt-5 pb-32 space-y-7">
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">
