@@ -37,7 +37,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
     >
       {/* Decorative circles — centered at top-left corner */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        {[300, 500, 700, 900, 1100].map((d) => (
+        {[165, 330, 495, 660].map((d) => (
           <div
             key={d}
             className={`absolute rounded-full border ${isDark ? 'border-white/5' : 'border-black/[0.06]'}`}
