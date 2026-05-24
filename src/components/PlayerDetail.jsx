@@ -459,7 +459,6 @@ export const PlayerDetail = ({
       value: `${perfectWins}`,
       detail: 'Sans Pokémon éliminé',
       tile: t.iconTileEmerald,
-      valueClass: t.success,
     },
     {
       Icon: Target,
