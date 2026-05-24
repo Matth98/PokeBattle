@@ -48,6 +48,10 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           className={`absolute top-[40%] -right-12 w-48 h-48 rounded-full ${isDark ? 'opacity-15' : 'opacity-20'}`}
           style={{ background: 'radial-gradient(circle, #fbbf24, #f59e0b)', filter: 'blur(60px)' }}
         />
+        {/* Decorative circles — top-left */}
+        <div className={`absolute -top-16 -left-16 w-[200px] h-[200px] rounded-full border ${isDark ? 'border-white/5' : 'border-black/5'}`} />
+        <div className={`absolute -top-16 -left-16 w-[320px] h-[320px] rounded-full border ${isDark ? 'border-white/5' : 'border-black/5'}`} />
+        <div className={`absolute -top-16 -left-16 w-[440px] h-[440px] rounded-full border ${isDark ? 'border-white/5' : 'border-black/5'}`} />
       </div>
 
       {/* ── En-tête ── */}
