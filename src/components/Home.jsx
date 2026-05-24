@@ -37,13 +37,16 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
     >
       {/* Decorative circles — centered at top-left corner */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        {[300, 420, 540, 660].map((d) => (
-          <div
-            key={d}
-            className={`absolute rounded-full border ${isDark ? 'border-white/5' : 'border-black/[0.06]'}`}
-            style={{ width: d, height: d, top: -d / 2, left: -d / 2 }}
-          />
-        ))}
+        {[300, 420, 540, 660].map((px) => {
+          const vw = `${(px / 390 * 100).toFixed(1)}vw`;
+          return (
+            <div
+              key={px}
+              className={`absolute rounded-full border ${isDark ? 'border-white/5' : 'border-black/[0.06]'}`}
+              style={{ width: vw, height: vw, top: `calc(${vw} / -2)`, left: `calc(${vw} / -2)` }}
+            />
+          );
+        })}
       </div>
 
       {/* ── En-tête ── */}
