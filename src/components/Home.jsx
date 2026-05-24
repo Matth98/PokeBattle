@@ -27,31 +27,23 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   }, []);
 
   return (
-    <div className={`relative min-h-screen ${t.pageBg}`}>
-      {/* Colored glows */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
-      >
-        {/* Blob 1 — teal, top-left */}
-        <div
-          className={`absolute -top-16 -left-10 w-72 h-72 rounded-full ${isDark ? 'opacity-25' : 'opacity-40'}`}
-          style={{ background: 'radial-gradient(circle, #34d399, #0d9488)', filter: 'blur(80px)' }}
-        />
-        {/* Blob 2 — purple/indigo, top-right */}
-        <div
-          className={`absolute -top-10 -right-16 w-56 h-56 rounded-full ${isDark ? 'opacity-20' : 'opacity-30'}`}
-          style={{ background: 'radial-gradient(circle, #a78bfa, #6366f1)', filter: 'blur(70px)' }}
-        />
-        {/* Blob 3 — amber, mid-right */}
-        <div
-          className={`absolute top-[40%] -right-12 w-48 h-48 rounded-full ${isDark ? 'opacity-15' : 'opacity-20'}`}
-          style={{ background: 'radial-gradient(circle, #fbbf24, #f59e0b)', filter: 'blur(60px)' }}
-        />
-        {/* Decorative circles — top-left */}
-        <div className={`absolute -top-16 -left-16 w-[200px] h-[200px] rounded-full border ${isDark ? 'border-white/5' : 'border-black/5'}`} />
-        <div className={`absolute -top-16 -left-16 w-[320px] h-[320px] rounded-full border ${isDark ? 'border-white/5' : 'border-black/5'}`} />
-        <div className={`absolute -top-16 -left-16 w-[440px] h-[440px] rounded-full border ${isDark ? 'border-white/5' : 'border-black/5'}`} />
+    <div
+      className="relative min-h-screen"
+      style={{
+        background: isDark
+          ? 'radial-gradient(ellipse 80% 55% at -5% -5%, rgba(52,211,153,0.13) 0%, transparent 60%), radial-gradient(ellipse 65% 45% at 105% -5%, rgba(132,204,22,0.08) 0%, transparent 60%), #09090b'
+          : 'radial-gradient(ellipse 80% 55% at -5% -5%, rgba(110,231,183,0.60) 0%, transparent 60%), radial-gradient(ellipse 65% 45% at 105% -5%, rgba(187,247,139,0.50) 0%, transparent 60%), linear-gradient(180deg, #f0f8f4 0%, #f2f5f8 55%, #edeef8 100%)',
+      }}
+    >
+      {/* Decorative circles — centered at top-left corner */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {[300, 500, 700, 900, 1100].map((d) => (
+          <div
+            key={d}
+            className={`absolute rounded-full border ${isDark ? 'border-white/5' : 'border-black/[0.06]'}`}
+            style={{ width: d, height: d, top: -d / 2, left: -d / 2 }}
+          />
+        ))}
       </div>
 
       {/* ── En-tête ── */}
