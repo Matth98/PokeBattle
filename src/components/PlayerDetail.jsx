@@ -28,6 +28,16 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAuth } from '../hooks/useAuth';
 
+const TYPE_SUPER_EFFECTIVE = {
+  normal:[], fire:['grass','ice','bug','steel'], water:['fire','ground','rock'],
+  electric:['water','flying'], grass:['water','ground','rock'], ice:['grass','ground','flying','dragon'],
+  fighting:['normal','ice','rock','dark','steel'], poison:['grass','fairy'],
+  ground:['fire','electric','poison','rock','steel'], flying:['grass','fighting','bug'],
+  psychic:['fighting','poison'], bug:['grass','psychic','dark'], rock:['fire','ice','flying','bug'],
+  ghost:['psychic','ghost'], dragon:['dragon'], dark:['psychic','ghost'],
+  steel:['ice','rock','fairy'], fairy:['fighting','dragon','dark'],
+};
+
 export const PlayerDetail = ({
   player,
   teams = [],
@@ -68,8 +78,7 @@ export const PlayerDetail = ({
     const ids = new Set((player.pokemon || []).map((p) => p.pokeId));
     (battles || []).forEach((b) => {
       if (b.player1 !== player._id && b.player2 !== player._id) return;
-      const myTeam = b.player1 === player._id ? (b.team1 || []) : (b.team2 || []);
-      myTeam.forEach((p) => { if (p?.pokeId) ids.add(p.pokeId); });
+      [...(b.team1 || []), ...(b.team2 || [])].forEach((p) => { if (p?.pokeId) ids.add(p.pokeId); });
     });
     return [...ids];
   }, [player, battles]);
@@ -295,6 +304,35 @@ export const PlayerDetail = ({
     return ranked[0] || null;
   };
 
+  // MVP principal : Pokémon du joueur ayant remporté le plus souvent le titre de MVP
+  const mvpPrincipal = (() => {
+    const counts = new Map();
+    playerBattles.forEach((battle) => {
+      const isP1 = battle.player1 === player._id;
+      const myTeam  = (isP1 ? battle.team1 : battle.team2) || [];
+      const oppTeam = (isP1 ? battle.team2 : battle.team1) || [];
+      const survivors = myTeam.filter((p) => !p.eliminated);
+      if (survivors.length === 0) return;
+      const calcAdv = (pok) => {
+        let score = 0;
+        for (const mt of (pokemonTypes[pok.pokeId] || [])) {
+          for (const opp of oppTeam) {
+            for (const ot of (pokemonTypes[opp.pokeId] || [])) {
+              if ((TYPE_SUPER_EFFECTIVE[mt] || []).includes(ot)) score++;
+            }
+          }
+        }
+        return score;
+      };
+      const mvp = survivors.reduce((best, cur) => calcAdv(cur) > calcAdv(best) ? cur : best);
+      const key = `${mvp.pokeId}:${mvp.name}`;
+      const prev = counts.get(key) || { pokeId: mvp.pokeId, name: mvp.name, count: 0 };
+      counts.set(key, { ...prev, count: prev.count + 1 });
+    });
+    if (counts.size === 0) return null;
+    return [...counts.values()].reduce((best, cur) => cur.count > best.count ? cur : best);
+  })();
+
   const playerBattlePokemon = playerBattles.flatMap((battle) =>
     battle.player1 === player._id ? battle.team1 || [] : battle.team2 || []
   );
@@ -420,7 +458,8 @@ export const PlayerDetail = ({
       label: 'Victoires parfaites',
       value: `${perfectWins}`,
       detail: 'Sans Pokémon éliminé',
-      tile: isDark ? 'bg-lime-500/15 text-lime-300' : 'bg-lime-50 text-lime-700',
+      tile: t.iconTileEmerald,
+      valueClass: t.success,
     },
     {
       Icon: Target,
@@ -718,7 +757,30 @@ export const PlayerDetail = ({
               </span>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {funFacts.map(({ Icon, label, value, detail, tile, visual }) => (
+              {/* ── MVP principal ── */}
+              {mvpPrincipal && (
+                <div className={`col-span-2 ${t.surface} rounded-2xl p-4 flex items-center gap-4 overflow-hidden`}>
+                  <div className="w-16 h-16 rounded-2xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+                    <img
+                      src={getPokemonImageUrl(mvpPrincipal.pokeId)}
+                      alt={mvpPrincipal.name}
+                      className="w-14 h-14 object-contain"
+                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide`}>MVP principal</p>
+                    <p className={`font-black ${t.text} truncate mt-0.5`}>{mvpPrincipal.name}</p>
+                    <p className={`text-xs font-semibold mt-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                      ★ MVP {mvpPrincipal.count} fois
+                    </p>
+                  </div>
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ${isDark ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                    ★ MVP
+                  </span>
+                </div>
+              )}
+              {funFacts.map(({ Icon, label, value, detail, tile, visual, valueClass }) => (
                 <div key={label} className={`${t.surface} rounded-2xl p-4 min-h-[146px] flex flex-col overflow-hidden`}>
                   {visual?.type === 'pokemon' ? (
                     <div className={`w-12 h-12 rounded-2xl ${tile} flex items-center justify-center mb-3`}>
@@ -762,7 +824,7 @@ export const PlayerDetail = ({
                     </div>
                   )}
                   <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>{label}</p>
-                  <p className={`font-black ${t.text} truncate mt-1`}>{value}</p>
+                  <p className={`font-black truncate mt-1 ${valueClass || t.text}`}>{value}</p>
                   <p className={`${t.textSecondary} text-xs font-semibold mt-auto pt-2 leading-snug`}>
                     {detail}
                   </p>

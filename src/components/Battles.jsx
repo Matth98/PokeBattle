@@ -795,13 +795,13 @@ export const Battles = ({
                   </label>
                   <div className={`${t.surfaceInset} rounded-2xl p-4 space-y-3`}>
                     <div className="flex items-center gap-3">
-                      <p className={`flex-1 min-w-0 truncate text-left font-black text-base ${newBattleData.winner === 'player1' ? t.accent : t.text}`}>
+                      <p className={`flex-1 min-w-0 truncate text-left font-black text-base ${newBattleData.winner === 'player1' ? t.success : t.text}`}>
                         {players.find((p) => p._id === newBattleData.player1)?.name || 'Joueur 1'}
                       </p>
                       <p className={`font-black text-3xl ${t.text} whitespace-nowrap`}>
                         {p1Score}–{p2Score}
                       </p>
-                      <p className={`flex-1 min-w-0 truncate text-right font-black text-base ${newBattleData.winner === 'player2' ? t.accent : t.text}`}>
+                      <p className={`flex-1 min-w-0 truncate text-right font-black text-base ${newBattleData.winner === 'player2' ? t.success : t.text}`}>
                         {players.find((p) => p._id === newBattleData.player2)?.name || 'Joueur 2'}
                       </p>
                     </div>
