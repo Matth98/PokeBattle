@@ -255,7 +255,7 @@ export const BattleDetail = ({
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm ${isDark ? 'bg-white/15 text-white' : 'bg-white/80 text-gray-900'}`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/30 text-gray-900'}`}
             aria-label="Retour"
           >
             <ChevronLeft size={22} />
@@ -263,7 +263,7 @@ export const BattleDetail = ({
           {canEdit && onEdit && (
             <button
               onClick={() => onEdit(battle)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm ${isDark ? 'bg-white/15 text-white' : 'bg-white/80 text-gray-900'}`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/30 text-gray-900'}`}
               aria-label="Modifier"
             >
               <Pencil size={18} />
