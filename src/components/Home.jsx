@@ -40,7 +40,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           left: '-38.5vw', top: '-38.5vw',
           background: '#00FF96',
           borderRadius: '50%',
-          filter: 'blur(600px)',
+          filter: 'blur(300px)',
           opacity: isDark ? 0.12 : 1,
         }} />
         {/* Glow 2 — #EFBA25, top-right */}
@@ -50,7 +50,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           left: '61.5vw', top: '-38.5vw',
           background: '#EFBA25',
           borderRadius: '50%',
-          filter: 'blur(600px)',
+          filter: 'blur(300px)',
           opacity: isDark ? 0.10 : 1,
         }} />
         {/* Decorative circles — centered at top-left corner */}
