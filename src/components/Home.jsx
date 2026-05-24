@@ -29,14 +29,31 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   return (
     <div
       className="relative min-h-screen"
-      style={{
-        background: isDark
-          ? 'radial-gradient(ellipse 80% 55% at -5% -5%, rgba(52,211,153,0.13) 0%, transparent 60%), radial-gradient(ellipse 65% 45% at 105% -5%, rgba(132,204,22,0.08) 0%, transparent 60%), #09090b'
-          : 'radial-gradient(ellipse 80% 55% at -5% -5%, rgba(110,231,183,0.60) 0%, transparent 60%), radial-gradient(ellipse 65% 45% at 105% -5%, rgba(187,247,139,0.50) 0%, transparent 60%), linear-gradient(180deg, #f0f8f4 0%, #f2f5f8 55%, #edeef8 100%)',
-      }}
+      style={{ backgroundColor: isDark ? '#09090b' : '#EFF6F9' }}
     >
-      {/* Decorative circles — centered at top-left corner */}
+      {/* Background glows + decorative circles */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {/* Glow 1 — #00FF96, top-left */}
+        <div style={{
+          position: 'absolute',
+          width: '76.9vw', height: '76.9vw',
+          left: '-38.5vw', top: '-38.5vw',
+          background: '#00FF96',
+          borderRadius: '50%',
+          filter: 'blur(150px)',
+          opacity: isDark ? 0.12 : 1,
+        }} />
+        {/* Glow 2 — #EFBA25, top-right */}
+        <div style={{
+          position: 'absolute',
+          width: '76.9vw', height: '76.9vw',
+          left: '61.5vw', top: '-38.5vw',
+          background: '#EFBA25',
+          borderRadius: '50%',
+          filter: 'blur(150px)',
+          opacity: isDark ? 0.10 : 1,
+        }} />
+        {/* Decorative circles — centered at top-left corner */}
         {[300, 420, 540, 660].map((px) => {
           const vw = `${(px / 390 * 100).toFixed(1)}vw`;
           return (
