@@ -552,7 +552,7 @@ export const Teams = ({
               </div>
 
               {/* Pokémon */}
-              <div>
+              {newTeamData.owner && <div>
                 <div className="flex justify-between items-center mb-2">
                   <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} ml-1`}>
                     Pokémon (
@@ -608,7 +608,7 @@ export const Teams = ({
                       : `Trop de Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`}
                   </p>
                 )}
-              </div>
+              </div>}
             </div>
           </div>
         </div>
