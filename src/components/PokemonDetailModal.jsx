@@ -271,7 +271,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
           style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
           aria-label="Fermer"
         >
-          <X size={18} />
+          <X size={22} />
         </button>
 
         {/* ── Contenu scrollable ── */}
@@ -316,12 +316,12 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
               </div>
 
               {data.flavorText && (
-                <p className={`text-base leading-relaxed mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{data.flavorText}</p>
+                <p className={`text-base leading-relaxed mb-10 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{data.flavorText}</p>
               )}
 
               {/* ── Stats ── */}
               <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>Stats</h2>
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2 mb-10">
                 {data.stats.map(({ name, value }) => (
                   <div key={name} className="flex items-center gap-3">
                     <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{name}</span>
@@ -334,7 +334,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
                     </div>
                   </div>
                 ))}
-                <div className={`flex items-center gap-3 pt-1 border-t ${isDark ? 'border-gray-800' : 'border-gray-100'}`}>
+                <div className="flex items-center gap-3">
                   <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>BASE</span>
                   <span className={`w-8 text-base font-black text-right tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{data.total}</span>
                   <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} overflow-hidden`}>
@@ -344,14 +344,14 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
               </div>
 
               {/* ── Résistances / Faiblesses ── */}
-              <div className="space-y-6 mb-6">
+              <div className="space-y-6 mb-10">
                 <EffectivenessSection label="Résistances" grouped={resistanceGroups} isDark={isDark} />
                 <EffectivenessSection label="Faiblesses"  grouped={weaknessGroups}  isDark={isDark} />
               </div>
 
               {/* ── Talents ── */}
               {data.abilities.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-10">
                   <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>Talents</h2>
                   <div className="space-y-3">
                     {data.abilities.map(({ nameFr, descFr, isHidden }, i) => (
@@ -369,7 +369,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
 
               {/* ── Caractéristiques ── */}
               <h2 className={`text-xl font-black mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>Caractéristiques</h2>
-              <div className={`divide-y ${isDark ? 'divide-gray-800' : 'divide-gray-100'}`}>
+              <div>
                 <InfoRow label="Poids"                    value={`${data.weight} kg  —  ${(data.weight * 2.205).toFixed(1)} lbs.`} accentColor={accentHex} isDark={isDark} />
                 <InfoRow label="Taille"                   value={`${data.height} m  —  ${Math.floor(data.height * 3.281)}'${String(Math.round((data.height * 3.281 % 1) * 12)).padStart(2, '0')}'`} accentColor={accentHex} isDark={isDark} />
                 <InfoRow label="Taux de capture"          value={String(data.captureRate)}  accentColor={accentHex} isDark={isDark} />
