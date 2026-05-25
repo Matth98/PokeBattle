@@ -291,6 +291,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto"
+            data-scroll-lock-ignore
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}
           >
             {/* ── Hero ── */}
