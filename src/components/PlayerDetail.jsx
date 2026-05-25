@@ -16,6 +16,7 @@ import {
   Sparkles,
   Swords,
   Target,
+  TrendingUp,
   Trophy,
   Zap,
 } from 'lucide-react';
@@ -341,6 +342,24 @@ export const PlayerDetail = ({
   );
   const mostUsedPokemon = topPokemon(playerBattlePokemon);
   const mostFacedPokemon = topPokemon(opponentBattlePokemon);
+
+  // Pokémon adverse le plus redoutable : présent dans le plus de défaites du joueur
+  const mostDangerousOpponent = (() => {
+    const counts = new Map();
+    playerBattles.forEach((battle) => {
+      const isP1 = battle.player1 === player._id;
+      const playerWon = (isP1 && battle.winner === 'player1') || (!isP1 && battle.winner === 'player2');
+      if (playerWon) return;
+      const oppTeam = (isP1 ? battle.team2 : battle.team1) || [];
+      oppTeam.forEach((p) => {
+        if (!p?.pokeId) return;
+        const prev = counts.get(p.pokeId) || { pokeId: p.pokeId, name: p.name, count: 0 };
+        counts.set(p.pokeId, { ...prev, name: p.name || prev.name, count: prev.count + 1 });
+      });
+    });
+    if (counts.size === 0) return null;
+    return [...counts.values()].reduce((best, cur) => cur.count > best.count ? cur : best);
+  })();
   const teamPlayCounts = new Map();
   playerBattles.forEach((battle) => {
     const battlePokeIds = new Set(
@@ -401,7 +420,7 @@ export const PlayerDetail = ({
       label: 'Plus utilisé',
       value: mostUsedPokemon ? mostUsedPokemon.name : 'Pas encore',
       detail: mostUsedPokemon ? `${mostUsedPokemon.count} combat${mostUsedPokemon.count > 1 ? 's' : ''}` : 'Ajoute un combat pour le révéler',
-      tile: t.iconTileAmber,
+      tile: t.iconTileEmerald,
       visual: mostUsedPokemon ? { type: 'pokemon', pokemon: mostUsedPokemon } : null,
     },
     {
@@ -550,7 +569,7 @@ export const PlayerDetail = ({
           </div>
           <div className={`${t.surface} rounded-2xl p-4 flex flex-col gap-1.5`}>
             <div className={`w-8 h-8 rounded-lg ${t.iconTileIndigo} flex items-center justify-center`}>
-              <Trophy size={16} />
+              <TrendingUp size={16} />
             </div>
             <p className={`text-2xl font-black ${t.text} leading-none`}>
               {winRate !== null ? `${winRate}%` : '—'}
@@ -559,7 +578,7 @@ export const PlayerDetail = ({
           </div>
         </div>
 
-        <div className={`grid grid-cols-3 gap-1 p-1 rounded-2xl ${t.surfaceMuted}`}>
+        <div className={`grid grid-cols-3 gap-1 p-1 rounded-2xl ${isDark ? t.surfaceMuted : 'bg-white/40 backdrop-blur-sm'}`}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -768,25 +787,39 @@ export const PlayerDetail = ({
             <div className="grid grid-cols-2 gap-3">
               {/* ── MVP principal ── */}
               {mvpPrincipal && (
-                <div className={`col-span-2 ${t.surface} rounded-2xl p-4 flex items-center gap-4 overflow-hidden`}>
-                  <div className="w-16 h-16 rounded-2xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+                <div className={`${t.surface} rounded-2xl p-4 min-h-[146px] flex flex-col overflow-hidden`}>
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/15 flex items-center justify-center mb-3">
                     <img
                       src={getPokemonImageUrl(mvpPrincipal.pokeId)}
                       alt={mvpPrincipal.name}
-                      className="w-14 h-14 object-contain"
+                      className="w-11 h-11 object-contain"
                       onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                     />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide`}>MVP principal</p>
-                    <p className={`font-black ${t.text} truncate mt-0.5`}>{mvpPrincipal.name}</p>
-                    <p className={`text-xs font-semibold mt-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                      ★ MVP {mvpPrincipal.count} fois
-                    </p>
+                  <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>MVP PRINCIPAL</p>
+                  <p className={`font-black truncate mt-1 ${t.text}`}>{mvpPrincipal.name}</p>
+                  <p className={`${t.textSecondary} text-xs font-semibold mt-auto pt-2 leading-snug`}>
+                    Titré {mvpPrincipal.count} fois
+                  </p>
+                </div>
+              )}
+
+              {/* ── Pokémon adverse le plus redoutable ── */}
+              {mostDangerousOpponent && (
+                <div className={`${t.surface} rounded-2xl p-4 min-h-[146px] flex flex-col overflow-hidden`}>
+                  <div className={`w-12 h-12 rounded-2xl ${isDark ? 'bg-indigo-500/15' : 'bg-indigo-50'} flex items-center justify-center mb-3`}>
+                    <img
+                      src={getPokemonImageUrl(mostDangerousOpponent.pokeId)}
+                      alt={mostDangerousOpponent.name}
+                      className="w-11 h-11 object-contain"
+                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                    />
                   </div>
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ${isDark ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
-                    ★ MVP
-                  </span>
+                  <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>ADVERSAIRE PRINCIPAL</p>
+                  <p className={`font-black truncate mt-1 ${t.text}`}>{mostDangerousOpponent.name}</p>
+                  <p className={`${t.textSecondary} text-xs font-semibold mt-auto pt-2 leading-snug`}>
+                    Vainqueur {mostDangerousOpponent.count} fois
+                  </p>
                 </div>
               )}
               {funFacts.map(({ Icon, label, value, detail, tile, visual, valueClass }) => (
