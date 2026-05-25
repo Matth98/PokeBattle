@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
+import { useTranslation } from '../hooks/useTranslation';
 
 const ALL_TYPES = Object.keys(TYPE_HEX);
 
@@ -83,14 +84,14 @@ function EffectivenessSection({ label, grouped, isDark }) {
 }
 
 const INFO_ICONS = {
-  'Poids': '⚖️', 'Taille': '📏', 'Taux de capture': '🎯',
-  "Génération d'apparition": '📅', "Groupe d'œufs": '🥚',
-  'Répartition': '⚧️', 'Gain de niveau': '📈', 'Espèce': '🔬',
-  "Points d'efforts donnés": '💪', 'Base exp. donnée': '⭐',
+  'pokemon.weight': '⚖️', 'pokemon.height': '📏', 'pokemon.captureRate': '🎯',
+  'pokemon.generation': '📅', 'pokemon.eggGroup': '🥚',
+  'pokemon.gender': '⚧️', 'pokemon.growthRate': '📈', 'pokemon.species': '🔬',
+  'pokemon.effortPoints': '💪', 'pokemon.baseExp': '⭐',
 };
 
-function InfoRow({ label, value, accentColor, isDark }) {
-  const icon = INFO_ICONS[label];
+function InfoRow({ labelKey, label, value, accentColor, isDark }) {
+  const icon = INFO_ICONS[labelKey];
   return (
     <div className="py-3 flex items-center gap-3">
       {icon && (
@@ -107,6 +108,7 @@ function InfoRow({ label, value, accentColor, isDark }) {
 }
 
 export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLabel = 'Recherche' }) => {
+  const tr = useTranslation();
   const { data, loading, error } = usePokemonDetail(pokeId);
 
   const primaryType = data?.types?.[0] || 'normal';
@@ -135,7 +137,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
         onClick={onBack}
         className={`fixed z-20 left-4 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
         style={{ top: 'calc(env(safe-area-inset-top) + 0.6rem)', ...(isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : {}) }}
-        aria-label="Retour"
+        aria-label={tr('common.back')}
       >
         <ChevronLeft size={24} className="-translate-x-px" />
       </button>
@@ -180,7 +182,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             <p className={`text-sm font-mono font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
               #{String(data.id).padStart(4, '0')}
             </p>
-            <h1 className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{pokeName}</h1>
+            <h1 className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{data?.name || pokeName}</h1>
 
             <div className="flex gap-2 mb-3">
               {data.types.map(tn => <TypeBadge key={tn} typeName={tn} />)}
@@ -193,7 +195,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             )}
 
             {/* Stats */}
-            <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>Stats</h2>
+            <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>{tr('pokemon.stats')}</h2>
             <div className="space-y-2 mb-10">
               {data.stats.map(({ name, value }) => (
                 <div key={name} className="flex items-center gap-3">
@@ -208,7 +210,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                 </div>
               ))}
               <div className="flex items-center gap-3">
-                <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>BASE</span>
+                <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{tr('pokemon.base')}</span>
                 <span className={`w-8 text-base font-black text-left tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{data.total}</span>
                 <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} overflow-hidden`}>
                   <div className="h-full rounded-full" style={{ width: `${Math.min(100, (data.total / 780) * 100)}%`, backgroundColor: accentHex }} />
@@ -218,14 +220,14 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
 
             {/* Résistances / Faiblesses */}
             <div className="space-y-6 mb-10">
-              <EffectivenessSection label="Résistances" grouped={resistanceGroups} isDark={isDark} />
-              <EffectivenessSection label="Faiblesses"  grouped={weaknessGroups}  isDark={isDark} />
+              <EffectivenessSection label={tr('pokemon.resistances')} grouped={resistanceGroups} isDark={isDark} />
+              <EffectivenessSection label={tr('pokemon.weaknesses')}  grouped={weaknessGroups}  isDark={isDark} />
             </div>
 
             {/* Talents */}
             {data.abilities.length > 0 && (
               <div className="mb-10">
-                <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>Talents</h2>
+                <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>{tr('pokemon.abilities')}</h2>
                 <div className="space-y-3">
                   {data.abilities.map(({ nameFr, descFr, isHidden }, i) => (
                     <div key={i}>
@@ -233,7 +235,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                         {nameFr}
                         {isHidden && (
                           <span className={`ml-2 text-[10px] font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                            (Caché)
+                            ({tr('pokemon.hidden')})
                           </span>
                         )}
                       </p>
@@ -245,18 +247,18 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             )}
 
             {/* Caractéristiques */}
-            <h2 className={`text-xl font-black mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>Caractéristiques</h2>
+            <h2 className={`text-xl font-black mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{tr('pokemon.characteristics')}</h2>
             <div>
-              <InfoRow label="Poids"                   value={`${data.weight} kg  —  ${(data.weight * 2.205).toFixed(1)} lbs.`} accentColor={accentHex} isDark={isDark} />
-              <InfoRow label="Taille"                  value={`${data.height} m  —  ${Math.floor(data.height * 3.281)}'${String(Math.round((data.height * 3.281 % 1) * 12)).padStart(2, '0')}'`} accentColor={accentHex} isDark={isDark} />
-              <InfoRow label="Taux de capture"         value={String(data.captureRate)}  accentColor={accentHex} isDark={isDark} />
-              <InfoRow label="Génération d'apparition" value={data.generation}           accentColor={accentHex} isDark={isDark} />
-              <InfoRow label="Groupe d'œufs"           value={data.eggGroups}            accentColor={accentHex} isDark={isDark} />
-              <InfoRow label="Répartition"             value={data.genderText}           accentColor={accentHex} isDark={isDark} />
-              <InfoRow label="Gain de niveau"          value={data.growthRate}           accentColor={accentHex} isDark={isDark} />
-              {data.genus && <InfoRow label="Espèce"   value={data.genus}                accentColor={accentHex} isDark={isDark} />}
-              {data.evYield !== '—' && <InfoRow label="Points d'efforts donnés" value={data.evYield} accentColor={accentHex} isDark={isDark} />}
-              <InfoRow label="Base exp. donnée"        value={String(data.baseExperience)} accentColor={accentHex} isDark={isDark} />
+              <InfoRow labelKey="pokemon.weight"       label={tr('pokemon.weight')}       value={`${data.weight} kg  —  ${(data.weight * 2.205).toFixed(1)} lbs.`} accentColor={accentHex} isDark={isDark} />
+              <InfoRow labelKey="pokemon.height"       label={tr('pokemon.height')}       value={`${data.height} m  —  ${Math.floor(data.height * 3.281)}'${String(Math.round((data.height * 3.281 % 1) * 12)).padStart(2, '0')}'`} accentColor={accentHex} isDark={isDark} />
+              <InfoRow labelKey="pokemon.captureRate"  label={tr('pokemon.captureRate')}  value={String(data.captureRate)}  accentColor={accentHex} isDark={isDark} />
+              <InfoRow labelKey="pokemon.generation"   label={tr('pokemon.generation')}   value={data.generation}           accentColor={accentHex} isDark={isDark} />
+              <InfoRow labelKey="pokemon.eggGroup"     label={tr('pokemon.eggGroup')}     value={data.eggGroups}            accentColor={accentHex} isDark={isDark} />
+              <InfoRow labelKey="pokemon.gender"       label={tr('pokemon.gender')}       value={data.genderText}           accentColor={accentHex} isDark={isDark} />
+              <InfoRow labelKey="pokemon.growthRate"   label={tr('pokemon.growthRate')}   value={data.growthRate}           accentColor={accentHex} isDark={isDark} />
+              {data.genus && <InfoRow labelKey="pokemon.species" label={tr('pokemon.species')} value={data.genus} accentColor={accentHex} isDark={isDark} />}
+              {data.evYield !== '—' && <InfoRow labelKey="pokemon.effortPoints" label={tr('pokemon.effortPoints')} value={data.evYield} accentColor={accentHex} isDark={isDark} />}
+              <InfoRow labelKey="pokemon.baseExp"      label={tr('pokemon.baseExp')}      value={String(data.baseExperience)} accentColor={accentHex} isDark={isDark} />
             </div>
           </div>
         </div>

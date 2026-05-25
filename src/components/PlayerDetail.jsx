@@ -28,6 +28,7 @@ import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 
 const TYPE_SUPER_EFFECTIVE = {
   normal:[], fire:['grass','ice','bug','steel'], water:['fire','ground','rock'],
@@ -54,6 +55,7 @@ export const PlayerDetail = ({
   initialActiveTab = 'pokemon',
   isDark,
 }) => {
+  const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
   const canEdit = isSuperAdmin ||
     !player?.userId ||
@@ -499,7 +501,7 @@ export const PlayerDetail = ({
   ];
   const tabs = [
     { id: 'pokemon', label: 'Pokémon' },
-    { id: 'teams', label: 'Équipes' },
+    { id: 'teams', label: tr('teams.title') },
     { id: 'facts', label: 'Fun facts' },
   ];
 
@@ -610,13 +612,13 @@ export const PlayerDetail = ({
                 className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
               >
                 <Plus size={16} />
-                Ajouter
+                {tr('common.add')}
               </button>
             </div>
 
             {!player.pokemon || player.pokemon.length === 0 ? (
               <div className={`${t.surface} rounded-2xl p-8 text-center`}>
-                <p className={`${t.textSecondary} text-sm`}>Aucun Pokémon</p>
+                <p className={`${t.textSecondary} text-sm`}>{tr('teams.noPokemon')}</p>
               </div>
             ) : (
               <div className={`${t.surface} rounded-2xl overflow-hidden`}>
@@ -685,7 +687,7 @@ export const PlayerDetail = ({
           <section>
             <div className="flex justify-between items-baseline mb-3 px-1">
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
-                Équipes ({playerTeams.length})
+                {tr('teams.title')} ({playerTeams.length})
               </h2>
               {onAddTeam && (
                 <button
@@ -693,7 +695,7 @@ export const PlayerDetail = ({
                   className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
                 >
                   <Plus size={16} />
-                  Créer
+                  {tr('common.create')}
                 </button>
               )}
             </div>
@@ -702,7 +704,7 @@ export const PlayerDetail = ({
                 <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-3`}>
                   <Shield size={22} />
                 </div>
-                <p className={`${t.textSecondary} text-sm`}>Aucune équipe</p>
+                <p className={`${t.textSecondary} text-sm`}>{tr('teams.none')}</p>
               </div>
             ) : (
               <div className={`${t.surface} rounded-2xl overflow-hidden`}>
@@ -885,7 +887,7 @@ export const PlayerDetail = ({
         <PokemonPicker
           t={t}
           isDark={isDark}
-          title="Ajouter un Pokémon"
+          title={tr('common.add') + ' Pokémon'}
           alreadyPickedIds={(player.pokemon || []).map((p) => p.pokeId)}
           onSelect={handleAddPokemon}
           onClose={() => setAddingPokemon(false)}
@@ -902,10 +904,10 @@ export const PlayerDetail = ({
                   onClick={cancelEditPlayer}
                   className={`${t.accent} font-semibold`}
                 >
-                  Annuler
+                  {tr('common.cancel')}
                 </button>
               </div>
-              <h2 className={`text-base font-black ${t.text}`}>Modifier le joueur</h2>
+              <h2 className={`text-base font-black ${t.text}`}>{tr('common.edit')}</h2>
               <div className="flex-1 flex justify-end">
                 <button
                   onClick={handleSavePlayer}
@@ -952,12 +954,12 @@ export const PlayerDetail = ({
 
               <div>
                 <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
-                  Nom du joueur
+                  {tr('players.nameLabel')}
                 </label>
                 <input
                   ref={editNameInputRef}
                   type="text"
-                  placeholder="Ex: Matthias"
+                  placeholder={tr('players.namePlaceholder')}
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
@@ -983,16 +985,16 @@ export const PlayerDetail = ({
                     onClick={cancelCreateTeam}
                     className={`${t.accent} font-semibold`}
                   >
-                    Annuler
+                    {tr('common.cancel')}
                   </button>
                 </div>
-                <h2 className={`text-base font-black ${t.text}`}>Nouvelle équipe</h2>
+                <h2 className={`text-base font-black ${t.text}`}>{tr('teams.newTitle')}</h2>
                 <div className="flex-1 flex justify-end">
                   <button
                     onClick={handleSaveTeam}
                     className={`${t.accent} font-bold`}
                   >
-                    Créer
+                    {tr('common.create')}
                   </button>
                 </div>
               </div>
@@ -1000,22 +1002,22 @@ export const PlayerDetail = ({
               <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }} data-scroll-lock-ignore>
                 <div>
                   <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
-                    Nom de l'équipe
+                    {tr('teams.nameLabel')}
                   </label>
                   <input
                     ref={newTeamNameInputRef}
                     type="text"
-                    placeholder="Ex: Équipe de feu"
+                    placeholder={tr('teams.namePlaceholder')}
                     value={newTeamData.name}
                     onChange={(e) => setNewTeamData({ ...newTeamData, name: e.target.value })}
                     className={`w-full ${t.inputSoft} ${teamFormErrors.name ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
                   />
-                  {teamFormErrors.name && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>Ce champ est requis</p>}
+                  {teamFormErrors.name && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>{tr('common.required')}</p>}
                 </div>
 
                 <div>
                   <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
-                    Propriétaire
+                    {tr('teams.owner')}
                   </label>
                   <div className={`${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3`}>
                     <PlayerAvatar player={player} size={32} textSize="text-xs" className="flex-shrink-0" />
@@ -1025,7 +1027,7 @@ export const PlayerDetail = ({
 
                 <div>
                   <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
-                    Format
+                    {tr('teams.format')}
                   </label>
                   <div className={`flex gap-1 p-1 rounded-xl ${t.surfaceMuted}`}>
                     {['1v1', '2v2'].map((fmt) => (
@@ -1068,13 +1070,13 @@ export const PlayerDetail = ({
                       className={`${t.accent} text-sm font-semibold flex items-center gap-1 ${isAtMax ? 'opacity-40 cursor-not-allowed' : ''}`}
                     >
                       <Plus size={16} />
-                      Ajouter
+                      {tr('common.add')}
                     </button>
                   </div>
 
                   {newTeamData.pokemon.length === 0 ? (
                     <div className={`${t.surfaceInset} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
-                      Aucun Pokémon sélectionné
+                      {tr('teams.noPokemon')}
                     </div>
                   ) : (
                     <div className={`${t.surfaceInset} rounded-2xl overflow-hidden`}>
@@ -1106,8 +1108,8 @@ export const PlayerDetail = ({
                   {teamFormErrors.pokemon && currentCount !== required && (
                     <p className={`${t.danger} text-xs mt-2 ml-1`}>
                       {currentCount < required
-                        ? `Il manque ${required - currentCount} Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`
-                        : `Trop de Pokémon (${currentCount}/${required}) pour le format ${newTeamData.format}`}
+                        ? tr('teams.missingPokemon', required - currentCount, currentCount, required, newTeamData.format)
+                        : tr('teams.tooManyPokemon', currentCount, required, newTeamData.format)}
                     </p>
                   )}
                 </div>
@@ -1121,7 +1123,7 @@ export const PlayerDetail = ({
         <PokemonPicker
           t={t}
           isDark={isDark}
-          title="Choisir un Pokémon"
+          title={tr('teams.choosePokemon')}
           alreadyPickedIds={newTeamData.pokemon.map((p) => p.pokeId)}
           defaultResults={(player.pokemon || []).map((p) => ({ pokeId: p.pokeId, name: p.name }))}
           defaultLabel={`Pokémon de ${player.name}`}
@@ -1135,21 +1137,21 @@ export const PlayerDetail = ({
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingTeamClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingTeamClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
-              Supprimer {playerTeams.find((tm) => tm._id === deletingTeam)?.name} ?
+              {tr('teams.deleteTitle')}
             </p>
-            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
             <div className="flex gap-2">
               <button
                 onClick={cancelDeletingTeam}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
-                Annuler
+                {tr('common.cancel')}
               </button>
               <button
                 onClick={handleDeleteTeam}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
               >
-                Supprimer
+                {tr('common.delete')}
               </button>
             </div>
           </div>
@@ -1161,7 +1163,7 @@ export const PlayerDetail = ({
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingPokemonClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingPokemonClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
-              Supprimer {deletingPokemonObj?.name} ?
+              {tr('common.delete')} {deletingPokemonObj?.name} ?
             </p>
 
             {teamsContainingDeleted.length > 0 && (
@@ -1170,7 +1172,7 @@ export const PlayerDetail = ({
                   <AlertTriangle size={16} className={`${t.warningSoftText} flex-shrink-0 mt-0.5`} />
                   <div>
                     <p className={`text-sm font-semibold ${t.warningSoftText} mb-1`}>
-                      Présent dans {teamsContainingDeleted.length === 1 ? 'une équipe' : `${teamsContainingDeleted.length} équipes`}
+                      Présent dans {teamsContainingDeleted.length === 1 ? 'une équipe' : `${teamsContainingDeleted.length} ${tr('teams.title').toLowerCase()}`}
                     </p>
                     <ul className={`text-sm ${t.text} space-y-0.5`}>
                       {teamsContainingDeleted.map((team) => (
@@ -1190,20 +1192,20 @@ export const PlayerDetail = ({
               </div>
             )}
 
-            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
 
             <div className="flex gap-2">
               <button
                 onClick={cancelDeletingPokemon}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
-                Annuler
+                {tr('common.cancel')}
               </button>
               <button
                 onClick={handleDeletePokemon}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
               >
-                Supprimer
+                {tr('common.delete')}
               </button>
             </div>
           </div>

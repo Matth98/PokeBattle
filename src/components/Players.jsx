@@ -5,6 +5,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const Players = ({
   players,
@@ -21,6 +22,7 @@ export const Players = ({
   showForm,
   setShowForm,
 }) => {
+  const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
   const canEditPlayer = (player) =>
     isSuperAdmin ||
@@ -135,7 +137,7 @@ export const Players = ({
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)' }}
       >
         <div className="flex justify-between items-center">
-          <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>Joueurs</h1>
+          <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>{tr('players.title')}</h1>
           <div className="flex items-center gap-2">
             {inSelection ? (
               <>
@@ -198,14 +200,14 @@ export const Players = ({
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-4`}>
               <Users size={26} />
             </div>
-            <p className={`${t.text} font-bold text-lg mb-1`}>Aucun joueur</p>
+            <p className={`${t.text} font-bold text-lg mb-1`}>{tr('players.none')}</p>
             <p className={`${t.textSecondary} text-sm mb-6`}>Crée un joueur pour commencer.</p>
             <button
               onClick={() => setShowForm(true)}
               className={`${t.accentBg} text-white px-5 py-2.5 rounded-full font-semibold inline-flex items-center gap-2`}
             >
               <Plus size={16} />
-              Créer un joueur
+              {tr('players.new')}
             </button>
           </div>
         ) : (
@@ -269,21 +271,21 @@ export const Players = ({
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
-              Supprimer {selectedItems.length} joueur{selectedItems.length > 1 ? 's' : ''} ?
+              {tr('players.deleteMultipleTitle', selectedItems.length)}
             </p>
-            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
             <div className="flex gap-2">
               <button
                 onClick={cancelDeletingSelected}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
-                Annuler
+                {tr('common.cancel')}
               </button>
               <button
                 onClick={handleDeleteMultiple}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
               >
-                Supprimer
+                {tr('common.delete')}
               </button>
             </div>
           </div>
@@ -295,21 +297,21 @@ export const Players = ({
         <div className={`fixed inset-0 ${t.overlay} ${isConfirmDeleteClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmDeleteClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
-              Supprimer {playerToDelete?.name} ?
+              {tr('players.deleteTitle')}
             </p>
-            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
             <div className="flex gap-2">
               <button
                 onClick={cancelConfirmDelete}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
-                Annuler
+                {tr('common.cancel')}
               </button>
               <button
                 onClick={handleConfirmSingleDelete}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
               >
-                Supprimer
+                {tr('common.delete')}
               </button>
             </div>
           </div>
@@ -327,17 +329,17 @@ export const Players = ({
                   onClick={closeFormWithAnimation}
                   className={`${t.accent} font-semibold`}
                 >
-                  Annuler
+                  {tr('common.cancel')}
                 </button>
               </div>
-              <h2 className={`text-base font-black ${t.text}`}>Nouveau joueur</h2>
+              <h2 className={`text-base font-black ${t.text}`}>{tr('players.new')}</h2>
               <div className="flex-1 flex justify-end">
                 <button
                   onClick={handleAddPlayer}
                   disabled={!newPlayerName.trim()}
                   className={`${t.accent} font-bold ${!newPlayerName.trim() ? 'opacity-40' : ''}`}
                 >
-                  Créer
+                  {tr('common.save')}
                 </button>
               </div>
             </div>
@@ -379,11 +381,11 @@ export const Players = ({
               {/* Nom */}
               <div>
                 <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
-                  Nom du joueur
+                  {tr('players.nameLabel')}
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Matthias"
+                  placeholder={tr('players.namePlaceholder')}
                   value={newPlayerName}
                   onChange={(e) => setNewPlayerName(e.target.value)}
                   className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}

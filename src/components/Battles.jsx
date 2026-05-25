@@ -11,6 +11,7 @@ import { TeamSelectorModal } from './TeamSelectorModal';
 import { SwipeableRow } from './SwipeableRow';
 import { DraggableList } from './DraggableList';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 
 const emptyBattle = () => ({
   format: '1v1',
@@ -57,6 +58,7 @@ export const Battles = ({
   clearEditingBattle,
   renderPage = true,
 }) => {
+  const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
   const canDeleteBattle = (battle) =>
     isSuperAdmin ||
@@ -338,7 +340,7 @@ export const Battles = ({
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)' }}
       >
         <div className="flex justify-between items-center">
-          <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>Combats</h1>
+          <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>{tr('battles.title')}</h1>
           <div className="flex items-center gap-2">
             {inSelection ? (
               <>
@@ -347,7 +349,7 @@ export const Battles = ({
                   className={`px-5 h-11 rounded-full backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} text-sm font-semibold`}
                   style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
                 >
-                  Tout
+                  {tr('common.all')}
                 </button>
                 <button
                   onClick={() => setDeletingSelected(true)}
@@ -406,14 +408,14 @@ export const Battles = ({
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileAmber} flex items-center justify-center mb-4`}>
               <Zap size={26} />
             </div>
-            <p className={`${t.text} font-bold text-lg mb-1`}>Aucun combat</p>
-            <p className={`${t.textSecondary} text-sm mb-6`}>Enregistre ton premier combat.</p>
+            <p className={`${t.text} font-bold text-lg mb-1`}>{tr('battles.none')}</p>
+            <p className={`${t.textSecondary} text-sm mb-6`}>{tr('battles.noneDesc')}</p>
             <button
               onClick={() => setShowForm(true)}
               className={`${t.accentBg} text-white px-5 py-2.5 rounded-full font-semibold inline-flex items-center gap-2`}
             >
               <Plus size={16} />
-              Enregistrer un combat
+              {tr('battles.new')}
             </button>
           </div>
         ) : (
@@ -568,20 +570,20 @@ export const Battles = ({
           <div className={`fixed inset-0 ${t.overlay} ${isConfirmDeleteClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
             <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmDeleteClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
               <p className={`font-black text-lg ${t.text} mb-1`}>
-                Supprimer ce combat ?
+                {tr('battles.deleteTitle')}
               </p>
               {p1 && p2 && (
                 <p className={`${t.textSecondary} text-sm mb-1`}>
                   {p1.name} vs {p2.name}
                 </p>
               )}
-              <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+              <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
               <div className="flex gap-2">
                 <button
                   onClick={cancelConfirmDelete}
                   className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
                 >
-                  Annuler
+                  {tr('common.cancel')}
                 </button>
                 <button
                   onClick={async () => {
@@ -590,7 +592,7 @@ export const Battles = ({
                   }}
                   className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
                 >
-                  Supprimer
+                  {tr('common.delete')}
                 </button>
               </div>
             </div>
@@ -603,21 +605,21 @@ export const Battles = ({
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
-              Supprimer {selectedItems.length} combat{selectedItems.length > 1 ? 's' : ''} ?
+              {tr('battles.deleteTitle')}
             </p>
-            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
             <div className="flex gap-2">
               <button
                 onClick={cancelDeletingSelected}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
-                Annuler
+                {tr('common.cancel')}
               </button>
               <button
                 onClick={handleDeleteMultiple}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
               >
-                Supprimer
+                {tr('common.delete')}
               </button>
             </div>
           </div>
@@ -636,11 +638,11 @@ export const Battles = ({
                   disabled={isSaving}
                   className={`${t.accent} font-semibold disabled:opacity-40`}
                 >
-                  Annuler
+                  {tr('common.cancel')}
                 </button>
               </div>
               <h2 className={`text-base font-black ${t.text}`}>
-                {isEditing ? 'Modifier le combat' : 'Nouveau combat'}
+                {isEditing ? tr('battles.editTitle') : tr('battles.newTitle')}
               </h2>
               <div className="flex-1 flex justify-end">
                 <button
@@ -650,7 +652,7 @@ export const Battles = ({
                 >
                   {isSaving
                     ? <Loader2 size={16} className="animate-spin" />
-                    : (isEditing ? 'Enregistrer' : 'Créer')}
+                    : (isEditing ? tr('common.save') : tr('common.new'))}
                 </button>
               </div>
             </div>
@@ -659,7 +661,7 @@ export const Battles = ({
               {/* Format - Segmented control */}
               <div>
                 <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
-                  Format
+                  {tr('battles.format')}
                 </label>
                 <div className={`flex gap-1 p-1 rounded-xl ${t.surfaceMuted}`}>
                   {['1v1', '2v2'].map((fmt) => (
@@ -693,7 +695,7 @@ export const Battles = ({
                 return (
                   <div key={slot} className="space-y-2">
                     <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} ml-1 block`}>
-                      Joueur {idx + 1}
+                      {idx === 0 ? tr('battles.player1') : tr('battles.player2')}
                     </label>
                     <div className="relative">
                       <button
@@ -707,7 +709,7 @@ export const Battles = ({
                             <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === playerId)?.name}</span>
                           </>
                         ) : (
-                          <span className={`flex-1 ${t.textSecondary}`}>Sélectionner un joueur</span>
+                          <span className={`flex-1 ${t.textSecondary}`}>{tr('battles.selectPlayer')}</span>
                         )}
                         <ChevronDown size={16} className={t.textSecondary} />
                       </button>
@@ -828,23 +830,23 @@ export const Battles = ({
               {(newBattleData.player1 || newBattleData.player2) && (
                 <div>
                   <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
-                    Score
+                    {tr('battles.score')}
                   </label>
                   <div className={`${t.surfaceInset} rounded-2xl p-4 space-y-3`}>
                     <div className="flex items-center gap-3">
                       <p className={`flex-1 min-w-0 truncate text-left font-black text-base ${newBattleData.winner === 'player1' ? t.success : t.text}`}>
-                        {players.find((p) => p._id === newBattleData.player1)?.name || 'Joueur 1'}
+                        {players.find((p) => p._id === newBattleData.player1)?.name || tr('battles.player1')}
                       </p>
                       <p className={`font-black text-3xl ${t.text} whitespace-nowrap`}>
                         {p1Score}–{p2Score}
                       </p>
                       <p className={`flex-1 min-w-0 truncate text-right font-black text-base ${newBattleData.winner === 'player2' ? t.success : t.text}`}>
-                        {players.find((p) => p._id === newBattleData.player2)?.name || 'Joueur 2'}
+                        {players.find((p) => p._id === newBattleData.player2)?.name || tr('battles.player2')}
                       </p>
                     </div>
                     <div className={`pt-2 border-t ${t.divider}`}>
                       <label className={`block text-xs font-semibold ${t.textSecondary} mb-1`}>
-                        Gagnant
+                        {tr('battles.selectWinner')}
                       </label>
                       <div className="relative">
                         <button
@@ -860,7 +862,7 @@ export const Battles = ({
                               </span>
                             </>
                           ) : (
-                            <span className={`flex-1 ${t.textSecondary}`}>À déterminer (égalité)</span>
+                            <span className={`flex-1 ${t.textSecondary}`}>{tr('battles.noWinner')}</span>
                           )}
                           <ChevronDown size={16} className={t.textSecondary} />
                         </button>
@@ -871,7 +873,7 @@ export const Battles = ({
                               onClick={() => { handleWinnerChange(''); setOpenWinnerDropdown(false); }}
                               className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
                             >
-                              <span className={`font-medium ${t.textSecondary}`}>À déterminer (égalité)</span>
+                              <span className={`font-medium ${t.textSecondary}`}>{tr('battles.noWinner')}</span>
                             </button>
                             {newBattleData.player1 && (
                               <button

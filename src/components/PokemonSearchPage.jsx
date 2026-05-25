@@ -1,8 +1,10 @@
 import React, { useState, useRef, useImperativeHandle } from 'react';
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon }, ref) => {
+  const tr = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const { searchResults, searchLoading, searchPokemon, getPokemonImageUrl } = usePokemon();
   const inputRef = useRef(null);
@@ -35,7 +37,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
           <button
             onClick={onBack}
             className={`-ml-1 ${t.accent} flex-shrink-0`}
-            aria-label="Retour"
+            aria-label={tr('common.back')}
           >
             <ChevronLeft size={26} />
           </button>
@@ -47,7 +49,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
               type="text"
               value={searchTerm}
               onChange={handleChange}
-              placeholder="Nom du Pokémon…"
+              placeholder={tr('pokemon.searchPlaceholder')}
               autoFocus
               className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
               style={{ fontSize: '16px' }}
@@ -103,11 +105,11 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
         )}
 
         {hasQuery && searchLoading && (
-          <p className={`${t.textSecondary} text-sm text-center mt-8`}>Recherche…</p>
+          <p className={`${t.textSecondary} text-sm text-center mt-8`}>{tr('common.searching')}</p>
         )}
 
         {hasQuery && !searchLoading && searchResults.length === 0 && (
-          <p className={`${t.textSecondary} text-sm text-center mt-8`}>Aucun résultat</p>
+          <p className={`${t.textSecondary} text-sm text-center mt-8`}>{tr('common.noResults')}</p>
         )}
 
         {searchResults.length > 0 && (

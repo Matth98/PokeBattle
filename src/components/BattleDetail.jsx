@@ -5,6 +5,7 @@ import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { PokemonDetailModal } from './PokemonDetailModal';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 
@@ -74,7 +75,7 @@ const calcTypeAdvantage = (myTeam, oppTeam, pokemonTypes) => {
   return score;
 };
 
-const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, onPokemonClick }) => (
+const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, tr, onPokemonClick }) => (
   <section>
     <div className="flex items-center gap-3 mb-3 px-1">
       <PlayerAvatar player={player} size={32} textSize="text-xs" className="flex-shrink-0" />
@@ -82,7 +83,7 @@ const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, onPokem
         <h2 className={`font-black truncate ${t.text}`}>{player?.name || '—'}</h2>
         {isWinner && (
           <span className="inline-flex flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white">
-            Vainqueur
+            {tr('battles.winner')}
           </span>
         )}
       </div>
@@ -112,7 +113,7 @@ const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, onPokem
               </p>
               {pk.eliminated && (
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${t.dangerSoftBg} ${t.dangerSoftText}`}>
-                  Éliminé
+                  {tr('battles.eliminated')}
                 </span>
               )}
             </button>
@@ -133,6 +134,7 @@ export const BattleDetail = ({
   onDelete,
   backLabel = 'Combats',
 }) => {
+  const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
   const canEdit = isSuperAdmin || !battle?.createdBy || (battle && dbUser?.playerId && (
     String(battle.player1?._id ?? battle.player1) === String(dbUser.playerId) ||
@@ -257,7 +259,7 @@ export const BattleDetail = ({
             onClick={onBack}
             className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-            aria-label="Retour"
+            aria-label={tr('common.back')}
           >
             <ChevronLeft size={24} className="-translate-x-px" />
           </button>
@@ -266,7 +268,7 @@ export const BattleDetail = ({
               onClick={() => onEdit(battle)}
               className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-              aria-label="Modifier"
+              aria-label={tr('common.edit')}
             >
               <Pencil size={20} />
             </button>
@@ -327,6 +329,7 @@ export const BattleDetail = ({
           pokemon={battle.team1}
           getPokemonImageUrl={getPokemonImageUrl}
           t={t}
+          tr={tr}
           onPokemonClick={(p) => setViewingPokemon(p)}
         />
         <TeamSection
@@ -335,6 +338,7 @@ export const BattleDetail = ({
           pokemon={battle.team2}
           getPokemonImageUrl={getPokemonImageUrl}
           t={t}
+          tr={tr}
           onPokemonClick={(p) => setViewingPokemon(p)}
         />
 
@@ -343,7 +347,7 @@ export const BattleDetail = ({
           <div className={`${t.surface} rounded-2xl overflow-hidden`}>
             {/* Titre */}
             <div className="px-4 pt-4 pb-1 text-center">
-              <h2 className={`font-black text-xl ${t.text}`}>Statistiques</h2>
+              <h2 className={`font-black text-xl ${t.text}`}>{tr('battles.stats')}</h2>
             </div>
             {/* En-têtes joueurs */}
             <div className={`flex items-center px-4 py-3 border-b ${t.divider}`}>
@@ -376,7 +380,7 @@ export const BattleDetail = ({
               <div className="flex items-center mb-3">
                 <span className={`font-black text-xl w-12 ${advColor(p1TypeAdv) || t.text}`}>{fmtAdv(p1TypeAdv)}</span>
                 <div className="flex-1 flex items-center justify-center gap-1.5">
-                  <span className={`text-sm font-semibold ${t.textSecondary}`}>Avantage type</span>
+                  <span className={`text-sm font-semibold ${t.textSecondary}`}>{tr('battles.typeAdvantage')}</span>
                   <button
                     onClick={() => setShowTypeDetail((v) => !v)}
                     className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${showTypeDetail ? `${t.accentSoftBg} ${t.accent}` : `${t.surfaceMuted} ${t.textTertiary}`}`}
@@ -472,7 +476,7 @@ export const BattleDetail = ({
               <div className={`${t.surface} rounded-2xl p-4`}>
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className={`font-black text-base ${t.text}`}>Pokémon du match</h2>
+                  <h2 className={`font-black text-base ${t.text}`}>{tr('battles.matchPokemon')}</h2>
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${isDark ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
                     ★ MVP
                   </span>
@@ -580,7 +584,7 @@ export const BattleDetail = ({
             className={`w-full ${t.surface} ${t.danger} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2`}
           >
             <Trash2 size={18} />
-            Supprimer ce combat
+            {tr('common.delete')}
           </button>
         )}
       </div>
@@ -589,20 +593,20 @@ export const BattleDetail = ({
       {confirmingDelete && (
         <div className={`fixed inset-0 ${t.overlay} ${isConfirmClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
-            <p className={`font-black text-lg ${t.text} mb-1`}>Supprimer ce combat ?</p>
-            <p className={`${t.textSecondary} text-sm mb-5`}>Cette action est définitive.</p>
+            <p className={`font-black text-lg ${t.text} mb-1`}>{tr('battles.deleteTitle')}</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
             <div className="flex gap-2">
               <button
                 onClick={handleCancelDelete}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
               >
-                Annuler
+                {tr('common.cancel')}
               </button>
               <button
                 onClick={handleConfirmDelete}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
               >
-                Supprimer
+                {tr('common.delete')}
               </button>
             </div>
           </div>

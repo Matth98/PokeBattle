@@ -1,7 +1,9 @@
 // src/components/LoginScreen.jsx
 import React, { useState } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function LoginScreen({ onSignInWithGoogle }) {
+  const tr = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
@@ -13,7 +15,7 @@ export function LoginScreen({ onSignInWithGoogle }) {
     } catch (e) {
       setError(e.code === 'auth/popup-closed-by-user'
         ? ''
-        : 'Connexion échouée. Réessaie.');
+        : tr('login.error'));
     } finally {
       setLoading(false);
     }
@@ -29,7 +31,7 @@ export function LoginScreen({ onSignInWithGoogle }) {
           className="w-24 h-24 mx-auto mb-4 rounded-2xl shadow-lg"
         />
         <h1 className="text-4xl font-black text-white tracking-tight">PokéScores</h1>
-        <p className="text-gray-400 mt-2 text-sm">Enregistre tes combats Pokémon</p>
+        <p className="text-gray-400 mt-2 text-sm">{tr('login.subtitle')}</p>
       </div>
 
       {/* Boutons */}
@@ -46,7 +48,7 @@ export function LoginScreen({ onSignInWithGoogle }) {
             alt=""
             className="w-5 h-5"
           />
-          Continuer avec Google
+          {tr('login.google')}
         </button>
 
       </div>
@@ -55,7 +57,7 @@ export function LoginScreen({ onSignInWithGoogle }) {
       {loading && (
         <div className="mt-8 flex items-center gap-2 text-gray-400 text-sm">
           <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-          Connexion en cours…
+          {tr('login.loading')}
         </div>
       )}
       {error && (

@@ -1,30 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from './useLanguage';
+import { getI18n } from '../i18n';
 
 const pokemonCache = new Map();
 const speciesCache = new Map();
 const typeRelCache = new Map();
 const abilityCache = new Map();
 
-const EGG_GROUPS_FR = {
-  'monster': 'Monstre', 'water1': 'Eau 1', 'bug': 'Insecte', 'flying': 'Vol',
-  'ground': 'Terrestre', 'fairy': 'Fée', 'plant': 'Plante', 'humanshape': 'Humanoïde',
-  'water3': 'Eau 3', 'mineral': 'Minéral', 'indeterminate': 'Amorphe', 'water2': 'Eau 2',
-  'ditto': 'Métamorph', 'dragon': 'Dragon', 'no-eggs': 'Sans œuf', 'human-like': 'Humanoïde',
-};
-
-const GROWTH_RATE_FR = {
-  'slow': 'Lent', 'medium': 'Moyen', 'fast': 'Rapide', 'medium-slow': 'Moyennement lent',
-  'slow-then-very-fast': 'Très lent en fin', 'fast-then-very-slow': 'Très rapide en fin',
-};
-
-const GENERATION_FR = {
-  'generation-i': 'Génération 1', 'generation-ii': 'Génération 2',
-  'generation-iii': 'Génération 3', 'generation-iv': 'Génération 4',
-  'generation-v': 'Génération 5', 'generation-vi': 'Génération 6',
-  'generation-vii': 'Génération 7', 'generation-viii': 'Génération 8',
-  'generation-ix': 'Génération 9',
-};
-
+// Kept for backward compat — components importing STAT_FR directly still work
 export const STAT_FR = {
   hp: 'PV', attack: 'ATT', defense: 'DEF',
   'special-attack': 'SATT', 'special-defense': 'SDEF', speed: 'VIT',
@@ -38,16 +21,33 @@ async function fetchTypeRel(typeName) {
   return data.damage_relations;
 }
 
-async function fetchAbility(abilityName) {
-  if (abilityCache.has(abilityName)) return abilityCache.get(abilityName);
+function pickLang(entries, lang, fallbacks = ['en', 'fr']) {
+  const all = [lang, ...fallbacks.filter(f => f !== lang)];
+  for (const l of all) {
+    const found = entries?.find(e => e.language.name === l);
+    if (found) return found;
+  }
+  return null;
+}
+
+async function fetchAbility(abilityName, lang) {
+  const key = `${abilityName}-${lang}`;
+  if (abilityCache.has(key)) return abilityCache.get(key);
   const res = await fetch(`https://pokeapi.co/api/v2/ability/${abilityName}`);
   const data = await res.json();
-  const nameFr = data.names?.find(n => n.language.name === 'fr')?.name || abilityName;
-  const descFr = data.flavor_text_entries
-    ?.filter(e => e.language.name === 'fr')
-    ?.pop()?.flavor_text?.replace(/[\n\f\r]/g, ' ').split('\\n').join(' ').split('\\f').join(' ') || '';
-  const result = { nameFr, descFr };
-  abilityCache.set(abilityName, result);
+  const nameEntry = pickLang(data.names, lang);
+  const descEntries = data.flavor_text_entries?.filter(e => {
+    const langs = [lang, 'en', 'fr'].filter((l, i, a) => a.indexOf(l) === i);
+    return langs.includes(e.language.name);
+  }) || [];
+  const descEntry = [...descEntries].reverse().find(e => e.language.name === lang)
+    || [...descEntries].reverse().find(e => e.language.name === 'en')
+    || descEntries[descEntries.length - 1];
+  const result = {
+    nameFr: nameEntry?.name || abilityName,
+    descFr: descEntry?.flavor_text?.replace(/[\n\f\r]/g, ' ').split('\\n').join(' ').split('\\f').join(' ') || '',
+  };
+  abilityCache.set(key, result);
   return result;
 }
 
@@ -55,6 +55,7 @@ export function usePokemonDetail(pokeId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { language } = useLanguage();
 
   useEffect(() => {
     if (!pokeId) return;
@@ -107,31 +108,37 @@ export function usePokemonDetail(pokeId) {
         const abilitiesRaw = [...pokemonData.abilities].sort((a, b) => a.slot - b.slot);
         const abilities = await Promise.all(
           abilitiesRaw.map(async (a) => {
-            const detail = await fetchAbility(a.ability.name);
+            const detail = await fetchAbility(a.ability.name, language);
             return { ...detail, isHidden: a.is_hidden };
           })
         );
 
+        const i18n = getI18n(language);
+        const STAT_MAP = i18n.stats;
+
         const STAT_ORDER = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
         const statsMap = Object.fromEntries(pokemonData.stats.map(s => [s.stat.name, s.base_stat]));
-        const stats = STAT_ORDER.map(key => ({ name: STAT_FR[key], value: statsMap[key] || 0 }));
+        const stats = STAT_ORDER.map(key => ({ name: STAT_MAP[key] || STAT_FR[key], value: statsMap[key] || 0 }));
         const total = stats.reduce((sum, s) => sum + s.value, 0);
 
         const evYield = pokemonData.stats
           .filter(s => s.effort > 0)
-          .map(s => `${STAT_FR[s.stat.name] || s.stat.name} +${s.effort}`)
+          .map(s => `${STAT_MAP[s.stat.name] || STAT_FR[s.stat.name] || s.stat.name} +${s.effort}`)
           .join(', ');
 
-        const flavorFr = speciesData.flavor_text_entries
-          ?.filter(e => e.language.name === 'fr')
-          ?.pop()?.flavor_text
-          ?.replace(/\f/g, ' ').replace(/\n/g, ' ') || '';
+        const flavorEntry = pickLang(speciesData.flavor_text_entries, language);
+        const flavorText = flavorEntry?.flavor_text?.replace(/\f/g, ' ').replace(/\n/g, ' ') || '';
 
-        const genusFr = speciesData.genera?.find(g => g.language.name === 'fr')?.genus || '';
+        const genusEntry = pickLang(speciesData.genera, language);
+        const genus = genusEntry?.genus || '';
+
+        // Pokémon name in current language
+        const nameEntry = pickLang(speciesData.names, language);
+        const name = nameEntry?.name || pokemonData.name;
 
         let genderText;
         if (speciesData.gender_rate === -1) {
-          genderText = 'Asexué';
+          genderText = i18n.pokemon.asexual;
         } else {
           const femalePercent = (speciesData.gender_rate / 8) * 100;
           genderText = `${100 - femalePercent}% ♂︎  -  ${femalePercent}% ♀︎`;
@@ -141,20 +148,21 @@ export function usePokemonDetail(pokeId) {
 
         setData({
           id: pokemonData.id,
+          name,
           types: typeNames,
           stats,
           total,
           effectiveness,
           abilities,
-          flavorText: flavorFr,
-          genus: genusFr,
+          flavorText,
+          genus,
           weight: pokemonData.weight / 10,
           height: pokemonData.height / 10,
           captureRate: speciesData.capture_rate,
-          generation: GENERATION_FR[speciesData.generation?.name] || speciesData.generation?.name || '',
-          eggGroups: speciesData.egg_groups?.map(g => EGG_GROUPS_FR[g.name] || g.name).join(', ') || '',
+          generation: i18n.generation[speciesData.generation?.name] || speciesData.generation?.name || '',
+          eggGroups: speciesData.egg_groups?.map(g => i18n.eggGroup[g.name] || g.name).join(', ') || '',
           genderText,
-          growthRate: GROWTH_RATE_FR[speciesData.growth_rate?.name] || speciesData.growth_rate?.name || '',
+          growthRate: i18n.growthRate[speciesData.growth_rate?.name] || speciesData.growth_rate?.name || '',
           evYield: evYield || '—',
           baseExperience: pokemonData.base_experience ?? '—',
           officialArtwork: pokemonData.sprites?.other?.['official-artwork']?.front_default,
@@ -169,7 +177,7 @@ export function usePokemonDetail(pokeId) {
 
     load();
     return () => { cancelled = true; };
-  }, [pokeId]);
+  }, [pokeId, language]);
 
   return { data, loading, error };
 }

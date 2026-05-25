@@ -16,6 +16,8 @@ import { LoginScreen } from './components/LoginScreen';
 import { ClaimPlayerScreen } from './components/ClaimPlayerScreen';
 import { PokemonSearchPage } from './components/PokemonSearchPage';
 import { PokemonDetailPage } from './components/PokemonDetailPage';
+import { SettingsPage } from './components/SettingsPage';
+import { LanguageProvider } from './hooks/useLanguage';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -40,6 +42,7 @@ function AppContent({ isDark, setIsDark }) {
     dbUserLoading,
     refetchDbUser,
     signInWithGoogle,
+    signOut,
   } = useAuth();
   const toast = useToast();
   const t = isDark ? theme.dark : theme.light;
@@ -52,6 +55,7 @@ function AppContent({ isDark, setIsDark }) {
   const [playerDetailTab, setPlayerDetailTab] = useState('pokemon');
   const [backLabel, setBackLabel] = useState('');
   const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // ── Mémoire de scroll par onglet ──
   const scrollMemoryRef = useRef(new Map());
@@ -405,6 +409,8 @@ function AppContent({ isDark, setIsDark }) {
             navigateTo('playerDetail');
           }}
           onSearchPokemon={() => navigateTo('pokemonSearch')}
+          linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
       )}
 
@@ -640,6 +646,28 @@ function AppContent({ isDark, setIsDark }) {
         />
       )}
 
+      {settingsOpen && (
+        <SettingsPage
+          user={user}
+          linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
+          isDark={isDark}
+          setIsDark={setIsDark}
+          t={t}
+          onClose={() => setSettingsOpen(false)}
+          onSignOut={signOut}
+          onOpenPlayer={() => {
+            setSettingsOpen(false);
+            const p = players.find(pl => pl._id === dbUser?.playerId);
+            if (!p) return;
+            setTimeout(() => {
+              setSelectedPlayer(p);
+              setPlayerDetailTab('pokemon');
+              navigateTo('playerDetail');
+            }, 350);
+          }}
+        />
+      )}
+
       {!['pokemonSearch', 'pokemonDetail'].includes(currentTab) && (
         <Navigation
           currentTab={currentTab}
@@ -666,11 +694,13 @@ function App() {
   }, [isDark]);
 
   return (
-    <AuthProvider>
-      <ToastProvider isDark={isDark}>
-        <AppContent isDark={isDark} setIsDark={setIsDark} />
-      </ToastProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <ToastProvider isDark={isDark}>
+          <AppContent isDark={isDark} setIsDark={setIsDark} />
+        </ToastProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 

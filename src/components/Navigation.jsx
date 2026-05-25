@@ -1,14 +1,16 @@
 import React from 'react';
 import { Home, Shield, Swords, Users } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 const TABS = [
-  { id: 'home', label: 'Accueil', Icon: Home },
-  { id: 'players', label: 'Joueurs', Icon: Users },
-  { id: 'battles', label: 'Combats', Icon: Swords },
-  { id: 'teams', label: 'Équipes', Icon: Shield },
+  { id: 'home', Icon: Home, key: 'nav.home' },
+  { id: 'players', Icon: Users, key: 'nav.players' },
+  { id: 'battles', Icon: Swords, key: 'nav.battles' },
+  { id: 'teams', Icon: Shield, key: 'nav.teams' },
 ];
 
 export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle }) => {
+  const tr = useTranslation();
   // On considère qu'on est dans une "section" même quand on est dans la fiche détail
   const activeFor = (tab) => {
     if (currentTab === tab) return true;
@@ -24,8 +26,9 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="grid grid-cols-5 items-end px-3 pt-2 pb-2">
-        {TABS.slice(0, 2).map(({ id, label, Icon }) => {
+        {TABS.slice(0, 2).map(({ id, key, Icon }) => {
           const isActive = activeFor(id);
+          const label = tr(key);
           return (
             <button
               key={id}
@@ -66,8 +69,9 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
             Match
           </span>
         </button>
-        {TABS.slice(2).map(({ id, label, Icon }) => {
+        {TABS.slice(2).map(({ id, key, Icon }) => {
           const isActive = activeFor(id);
+          const label = tr(key);
           return (
             <button
               key={id}

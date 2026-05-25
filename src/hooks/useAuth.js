@@ -5,8 +5,12 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
+
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
 const AuthContext  = createContext(null);
@@ -36,6 +40,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    // Récupère le résultat d'un signInWithRedirect au retour de l'OAuth
+    getRedirectResult(auth).catch(() => {});
+
     return onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
@@ -50,6 +57,11 @@ export function AuthProvider({ children }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    if (isMobile) {
+      // Sur mobile, signInWithPopup rejette après le retour OAuth même si
+      // l'auth réussit. On utilise le flow redirect qui est fiable sur iOS.
+      return signInWithRedirect(auth, provider);
+    }
     return signInWithPopup(auth, provider);
   };
 

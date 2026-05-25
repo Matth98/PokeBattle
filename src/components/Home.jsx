@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Search, Users, Shield, Zap, ChevronRight, Trophy } from 'lucide-react';
+import { Search, Users, Shield, Zap, ChevronRight, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
 import { PlayerAvatar } from './PlayerAvatar';
+import { useTranslation } from '../hooks/useTranslation';
 
 const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   <button
@@ -18,7 +19,8 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings }) => {
+  const tr = useTranslation();
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
   const { getPokemonImageUrl } = usePokemon();
   const [scrolled, setScrolled] = useState(false);
@@ -81,17 +83,17 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             >
               <Search size={20} />
             </button>
-            <button
-              onClick={() => setIsDark(!isDark)}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${
+<button
+              onClick={onOpenSettings}
+              className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${
                 scrolled
                   ? `${t.surfaceMuted} ${t.text}`
                   : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
               }`}
               style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-              aria-label={isDark ? 'Mode clair' : 'Mode sombre'}
+              aria-label="Paramètres"
             >
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+              <PlayerAvatar player={linkedPlayer} size={44} textSize="text-sm" />
             </button>
           </div>
         </div>
@@ -101,9 +103,9 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">
-            <StatTile Icon={Users}  value={players.length} label="Joueurs"  tile={t.iconTileBlue}   t={t} onClick={() => setCurrentTab('players')} />
-            <StatTile Icon={Zap}    value={battles.length} label="Combats"  tile={t.iconTileAmber}  t={t} onClick={() => setCurrentTab('battles')} />
-            <StatTile Icon={Shield} value={teams.length}   label="Équipes"  tile={t.iconTilePurple} t={t} onClick={() => setCurrentTab('teams')} />
+            <StatTile Icon={Users}  value={players.length} label={tr('nav.players')}  tile={t.iconTileBlue}   t={t} onClick={() => setCurrentTab('players')} />
+            <StatTile Icon={Zap}    value={battles.length} label={tr('nav.battles')}  tile={t.iconTileAmber}  t={t} onClick={() => setCurrentTab('battles')} />
+            <StatTile Icon={Shield} value={teams.length}   label={tr('nav.teams')}    tile={t.iconTilePurple} t={t} onClick={() => setCurrentTab('teams')} />
           </div>
         </section>
 
@@ -111,14 +113,14 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         <section>
           <div className="flex justify-between items-baseline mb-3 px-1">
             <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
-              Combats récents
+              {tr('home.recentBattles')}
             </h2>
             {battles.length > 3 && (
               <button
                 onClick={() => setCurrentTab('battles')}
                 className={`${t.accent} text-sm font-semibold flex items-center gap-0.5`}
               >
-                Tout voir <ChevronRight size={14} />
+                {tr('home.seeAll')} <ChevronRight size={14} />
               </button>
             )}
           </div>
@@ -128,8 +130,8 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileAmber} flex items-center justify-center mb-3`}>
                 <Zap size={22} />
               </div>
-              <p className={`${t.text} font-semibold mb-1`}>Aucun combat</p>
-              <p className={`${t.textSecondary} text-sm`}>Enregistre ton premier combat depuis l'onglet Combats.</p>
+              <p className={`${t.text} font-semibold mb-1`}>{tr('home.noBattles')}</p>
+              <p className={`${t.textSecondary} text-sm`}>{tr('home.noBattlesDesc')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -230,7 +232,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         {players.length > 0 && battles.length > 0 && (
           <section>
             <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-3 px-1`}>
-              Top joueur
+              {tr('home.topPlayer')}
             </h2>
             {(() => {
               const ranked = [...players]
@@ -244,7 +246,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               if (!top) {
                 return (
                   <div className={`${t.surface} rounded-2xl p-4 text-center ${t.textSecondary} text-sm`}>
-                    Pas encore de victoires enregistrées
+                    {tr('home.noWins')}
                   </div>
                 );
               }
@@ -257,7 +259,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   <div className="flex-1 min-w-0">
                     <p className={`font-black ${t.text} truncate`}>{top.name}</p>
                     <p className={`${t.textSecondary} text-sm`}>
-                      {top.stats?.wins || 0} victoire{(top.stats?.wins || 0) > 1 ? 's' : ''} sur {top.total} combat{top.total > 1 ? 's' : ''}
+                      {tr('home.winsOf', top.stats?.wins || 0, top.total)}
                     </p>
                   </div>
                   <ChevronRight size={18} className={t.textTertiary} />

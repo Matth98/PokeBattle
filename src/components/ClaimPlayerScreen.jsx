@@ -1,5 +1,6 @@
 // src/components/ClaimPlayerScreen.jsx
 import React, { useState } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 /**
  * Shown on first login when dbUser.playerId === null.
@@ -12,12 +13,13 @@ import React, { useState } from 'react';
  *   loading           — spinner during request
  */
 export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, loading }) {
+  const tr = useTranslation();
   const [creating, setCreating] = useState(false);
   const [name, setName]         = useState('');
   const [error, setError]       = useState('');
 
   const handleCreate = async () => {
-    if (!name.trim()) { setError('Donne un nom à ton profil.'); return; }
+    if (!name.trim()) { setError(tr('claim.nameError')); return; }
     setError('');
     await onCreatePlayer({ name: name.trim(), avatar: null });
     setName('');
@@ -27,9 +29,9 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-start pt-16 px-6 pb-6">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-black text-white">Quel est ton joueur ?</h1>
+        <h1 className="text-2xl font-black text-white">{tr('claim.title')}</h1>
         <p className="text-gray-400 mt-2 text-sm">
-          Sélectionne ta fiche existante ou crée ton profil.
+          {tr('claim.subtitle')}
         </p>
       </div>
 
@@ -84,7 +86,7 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
           <input
             id="playerName"
             type="text"
-            placeholder="Ton nom de joueur"
+            placeholder={tr('claim.namePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full bg-zinc-900 text-white placeholder-gray-500 rounded-xl
@@ -99,13 +101,13 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
             className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold
                        py-3.5 rounded-xl transition-colors disabled:opacity-50"
           >
-            {loading ? 'Création…' : 'Créer mon profil'}
+            {loading ? tr('common.loading') : tr('claim.createBtn')}
           </button>
           <button
             onClick={() => { setCreating(false); setError(''); }}
             className="w-full text-gray-400 text-sm py-2"
           >
-            Annuler
+            {tr('common.cancel')}
           </button>
         </div>
       ) : (
@@ -114,7 +116,7 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
           className="w-full max-w-sm bg-purple-600 hover:bg-purple-500 text-white
                      font-semibold py-3.5 rounded-xl transition-colors"
         >
-          Créer mon profil
+          {tr('claim.create')}
         </button>
       )}
 

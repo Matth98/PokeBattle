@@ -4,6 +4,7 @@ import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { PokemonDetailModal } from './PokemonDetailModal';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const TeamDetail = ({
   team,
@@ -13,6 +14,7 @@ export const TeamDetail = ({
   onEdit,
   backLabel = 'Équipes',
 }) => {
+  const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
   const canEdit = isSuperAdmin ||
     !team?.userId ||
@@ -49,7 +51,7 @@ export const TeamDetail = ({
             onClick={onBack}
             className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-            aria-label="Retour"
+            aria-label={tr('common.back')}
           >
             <ChevronLeft size={24} className="-translate-x-px" />
           </button>
@@ -58,7 +60,7 @@ export const TeamDetail = ({
               onClick={() => onEdit(team)}
               className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-              aria-label="Modifier"
+              aria-label={tr('common.edit')}
             >
               <Pencil size={20} />
             </button>
@@ -107,7 +109,7 @@ export const TeamDetail = ({
               <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-3`}>
                 <Shield size={22} />
               </div>
-              <p className={`${t.textSecondary} text-sm`}>Aucun Pokémon dans cette équipe</p>
+              <p className={`${t.textSecondary} text-sm`}>{tr('teams.noTeamPokemon')}</p>
             </div>
           ) : (
             <div className={`${t.surface} rounded-2xl overflow-hidden`}>
