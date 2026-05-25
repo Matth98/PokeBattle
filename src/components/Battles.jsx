@@ -361,7 +361,8 @@ export const Battles = ({
                     setSelectionMode(null);
                     setSelectedItems([]);
                   }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/15 text-white' : 'bg-white text-gray-900')}`}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/30 text-gray-900')}`}
+                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label="Annuler"
                 >
                   <X size={18} />
@@ -372,7 +373,8 @@ export const Battles = ({
                 <button
                   onClick={() => setSelectionMode('battles')}
                   disabled={battles.length === 0}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/15 text-white' : 'bg-white text-gray-900')} ${battles.length === 0 ? 'opacity-40' : ''}`}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/30 text-gray-900')} ${battles.length === 0 ? 'opacity-40' : ''}`}
+                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label="Sélectionner"
                 >
                   <CheckSquare size={18} />
@@ -384,7 +386,8 @@ export const Battles = ({
                     setBattleSelectedPokemon({ player1: [], player2: [] });
                     setShowForm(true);
                   }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${t.accentBg} text-white`}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${t.accentBg} text-white`}
+                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label="Nouveau combat"
                 >
                   <Plus size={20} />
