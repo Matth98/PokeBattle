@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import {
@@ -116,6 +116,22 @@ export const PlayerDetail = ({
 
   const fileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
+  const editNameInputRef = useRef(null);
+  const newTeamNameInputRef = useRef(null);
+
+  // Focus inputs with preventScroll so the modal doesn't jump to the bottom
+  // when the keyboard opens. The 50ms delay lets the enter animation complete.
+  useEffect(() => {
+    if (!editingPlayer) return;
+    const id = setTimeout(() => editNameInputRef.current?.focus({ preventScroll: true }), 50);
+    return () => clearTimeout(id);
+  }, [editingPlayer]);
+
+  useEffect(() => {
+    if (!creatingTeam) return;
+    const id = setTimeout(() => newTeamNameInputRef.current?.focus({ preventScroll: true }), 50);
+    return () => clearTimeout(id);
+  }, [creatingTeam]);
 
   const handleAvatarPick = async (e) => {
     const file = e.target.files?.[0];
@@ -914,7 +930,7 @@ export const PlayerDetail = ({
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-8 space-y-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+            <div className="flex-1 overflow-y-auto px-5 py-8 space-y-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }} data-scroll-lock-ignore>
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => editFileInputRef.current?.click()}
@@ -952,12 +968,12 @@ export const PlayerDetail = ({
                   Nom du joueur
                 </label>
                 <input
+                  ref={editNameInputRef}
                   type="text"
                   placeholder="Ex: Matthias"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
-                  autoFocus
                 />
               </div>
             </div>
@@ -994,18 +1010,18 @@ export const PlayerDetail = ({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+              <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }} data-scroll-lock-ignore>
                 <div>
                   <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                     Nom de l'équipe
                   </label>
                   <input
+                    ref={newTeamNameInputRef}
                     type="text"
                     placeholder="Ex: Équipe de feu"
                     value={newTeamData.name}
                     onChange={(e) => setNewTeamData({ ...newTeamData, name: e.target.value })}
                     className={`w-full ${t.inputSoft} ${teamFormErrors.name ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
-                    autoFocus
                   />
                   {teamFormErrors.name && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>Ce champ est requis</p>}
                 </div>

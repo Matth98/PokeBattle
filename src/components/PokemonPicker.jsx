@@ -88,7 +88,7 @@ export const PokemonPicker = ({
         </div>
 
         {/* Liste */}
-        <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+        <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }} data-scroll-lock-ignore>
           {error && (
             <p className={`${t.danger} text-sm text-center mb-2`}>Erreur : {error}</p>
           )}
