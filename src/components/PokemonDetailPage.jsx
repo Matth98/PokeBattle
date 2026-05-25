@@ -137,7 +137,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
         style={{ top: 'calc(env(safe-area-inset-top) + 0.6rem)', ...(isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : {}) }}
         aria-label="Retour"
       >
-        <ChevronLeft size={24} />
+        <ChevronLeft size={24} className="-translate-x-px" />
       </button>
 
       {/* ── États de chargement ── */}

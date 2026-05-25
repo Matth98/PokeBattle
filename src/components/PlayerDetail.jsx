@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import {
@@ -119,19 +119,6 @@ export const PlayerDetail = ({
   const editNameInputRef = useRef(null);
   const newTeamNameInputRef = useRef(null);
 
-  // Focus inputs with preventScroll so the modal doesn't jump to the bottom
-  // when the keyboard opens. The 50ms delay lets the enter animation complete.
-  useEffect(() => {
-    if (!editingPlayer) return;
-    const id = setTimeout(() => editNameInputRef.current?.focus({ preventScroll: true }), 50);
-    return () => clearTimeout(id);
-  }, [editingPlayer]);
-
-  useEffect(() => {
-    if (!creatingTeam) return;
-    const id = setTimeout(() => newTeamNameInputRef.current?.focus({ preventScroll: true }), 50);
-    return () => clearTimeout(id);
-  }, [creatingTeam]);
 
   const handleAvatarPick = async (e) => {
     const file = e.target.files?.[0];
@@ -539,7 +526,7 @@ export const PlayerDetail = ({
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label="Retour"
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={24} className="-translate-x-px" />
           </button>
           {canEdit && (
             <button

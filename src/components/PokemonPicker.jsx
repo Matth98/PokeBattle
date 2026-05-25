@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Search, X, Check } from 'lucide-react';
-import { usePokemon } from '../hooks/usePokemon';
+import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
@@ -15,6 +15,9 @@ import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
  * - alreadyPickedIds : tableau de pokeId déjà sélectionnés (grisés)
  * - defaultResults : liste affichée quand la recherche est vide (ex: roster du joueur)
  * - defaultLabel : libellé au-dessus de defaultResults
+ *
+ * Quand defaultResults est absent et la recherche est vide, affiche tous les
+ * Pokémon groupés par génération.
  */
 export const PokemonPicker = ({
   t,
@@ -33,17 +36,44 @@ export const PokemonPicker = ({
   useBodyScrollLock();
 
   const hasQuery = searchTerm.trim().length > 0;
-  const rawDisplayed = hasQuery ? searchResults : (defaultResults || []);
-  const displayed = !hasQuery ? [...rawDisplayed].sort((a, b) => a.pokeId - b.pokeId) : rawDisplayed;
-  const showDefaultLabel = !hasQuery && defaultLabel && (defaultResults?.length ?? 0) > 0;
+  // Quand defaultResults est fourni, affichage plat avec label ; sinon, groupé par génération
+  const useGrouped = !hasQuery && defaultResults === null;
+
+  // Affichage plat (recherche ou defaultResults)
+  const flatDisplayed = hasQuery
+    ? searchResults
+    : (defaultResults ? [...defaultResults].sort((a, b) => a.pokeId - b.pokeId) : []);
+
+  const PokemonRow = ({ p, idx, total }) => {
+    const isPicked = alreadyPickedIds.includes(p.pokeId);
+    const isLast = idx === total - 1;
+    return (
+      <button
+        key={p.pokeId}
+        onClick={() => !isPicked && onSelect(p)}
+        disabled={isPicked}
+        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition ${
+          !isLast ? `border-b ${t.divider}` : ''
+        } ${isPicked ? 'opacity-40 cursor-not-allowed' : 'active:bg-black/5 dark:active:bg-white/5'}`}
+      >
+        <img
+          src={getPokemonImageUrl(p.pokeId)}
+          alt={p.name}
+          className="w-10 h-10 object-contain flex-shrink-0"
+          onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+        />
+        <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</span>
+        <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
+        {isPicked && <span className={t.accent}><Check size={16} /></span>}
+      </button>
+    );
+  };
 
   return (
-    <div className={`fixed inset-0 ${t.overlay} ${isClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
+    <div className={`fixed inset-0 ${t.overlay} ${!isClosing ? 'anim-fade-in' : ''} z-[9999] flex flex-col`}>
       <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
         {/* Grip + Header */}
-        <div
-          className={`${t.surface} px-5 pt-3 pb-3 border-b ${t.divider}`}
-        >
+        <div className={`${t.surface} px-5 pt-3 pb-3 border-b ${t.divider}`}>
           <div className={`w-10 h-1 ${t.surfaceMuted} rounded-full mx-auto mb-3`} aria-hidden="true" />
           <div className="flex items-center justify-between">
             <h2 className={`text-lg font-black ${t.text}`}>{title}</h2>
@@ -69,7 +99,6 @@ export const PokemonPicker = ({
               }}
               ref={inputRef}
               className={`flex-1 bg-transparent outline-none ${t.text} placeholder:${t.textTertiary} text-base`}
-              autoFocus
             />
             {hasQuery && (
               <button
@@ -89,55 +118,43 @@ export const PokemonPicker = ({
 
         {/* Liste */}
         <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }} data-scroll-lock-ignore>
-          {error && (
-            <p className={`${t.danger} text-sm text-center mb-2`}>Erreur : {error}</p>
-          )}
-          {searchLoading && (
-            <p className={`${t.textSecondary} text-sm text-center`}>Recherche...</p>
-          )}
+          {error && <p className={`${t.danger} text-sm text-center mb-2`}>Erreur : {error}</p>}
+          {searchLoading && <p className={`${t.textSecondary} text-sm text-center`}>Recherche...</p>}
           {!searchLoading && hasQuery && searchResults.length === 0 && !error && (
             <p className={`${t.textSecondary} text-sm text-center mt-8`}>Aucun résultat</p>
           )}
-          {!hasQuery && (!defaultResults || defaultResults.length === 0) && (
-            <p className={`${t.textSecondary} text-sm text-center mt-8`}>Tape pour rechercher un Pokémon</p>
+
+          {/* Résultats de recherche ou defaultResults — affichage plat */}
+          {!useGrouped && flatDisplayed.length > 0 && (
+            <>
+              {!hasQuery && defaultLabel && (
+                <p className={`${t.textSecondary} text-xs font-bold uppercase tracking-wide mb-2 px-1`}>
+                  {defaultLabel}
+                </p>
+              )}
+              <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
+                {flatDisplayed.map((p, idx) => (
+                  <PokemonRow key={p.pokeId} p={p} idx={idx} total={flatDisplayed.length} />
+                ))}
+              </div>
+            </>
           )}
 
-          {showDefaultLabel && (
-            <p className={`${t.textSecondary} text-xs font-bold uppercase tracking-wide mb-2 px-1`}>
-              {defaultLabel}
-            </p>
-          )}
-
-          {displayed.length > 0 && (
-            <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
-              {displayed.map((p, idx) => {
-                const isPicked = alreadyPickedIds.includes(p.pokeId);
-                const isLast = idx === displayed.length - 1;
-                return (
-                  <button
-                    key={p.pokeId}
-                    onClick={() => !isPicked && onSelect(p)}
-                    disabled={isPicked}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition ${
-                      !isLast ? `border-b ${t.divider}` : ''
-                    } ${isPicked ? 'opacity-40 cursor-not-allowed' : 'active:bg-black/5 dark:active:bg-white/5'}`}
-                  >
-                    <img
-                      src={getPokemonImageUrl(p.pokeId)}
-                      alt={p.name}
-                      className="w-10 h-10 object-contain flex-shrink-0"
-                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                    />
-                    <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</span>
-                    <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
-                    {isPicked && (
-                      <span className={`${t.accent}`}>
-                        <Check size={16} />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+          {/* Toutes les générations — affichage groupé */}
+          {useGrouped && (
+            <div className="space-y-5">
+              {POKEMON_BY_GENERATION.map(({ label, pokemon }) => (
+                <div key={label}>
+                  <p className={`${t.textSecondary} text-xs font-bold uppercase tracking-wide mb-2 px-1`}>
+                    {label}
+                  </p>
+                  <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
+                    {pokemon.map((p, idx) => (
+                      <PokemonRow key={p.pokeId} p={p} idx={idx} total={pokemon.length} />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

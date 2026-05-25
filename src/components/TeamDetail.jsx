@@ -51,7 +51,7 @@ export const TeamDetail = ({
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label="Retour"
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={24} className="-translate-x-px" />
           </button>
           {canEdit && onEdit && (
             <button

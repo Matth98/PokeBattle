@@ -259,7 +259,7 @@ export const BattleDetail = ({
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label="Retour"
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={24} className="-translate-x-px" />
           </button>
           {canEdit && onEdit && (
             <button
@@ -460,6 +460,13 @@ export const BattleDetail = ({
         {mvpPokemon && (() => {
           const primaryType = (pokemonTypes[mvpPokemon.pokeId] || [])[0];
           const bgColor = TYPE_HEX[primaryType] || '#828282';
+          const bgColorAlpha = (() => {
+            if (!bgColor.startsWith('#') || bgColor.length < 7) return bgColor;
+            const r = parseInt(bgColor.slice(1, 3), 16);
+            const g = parseInt(bgColor.slice(3, 5), 16);
+            const b = parseInt(bgColor.slice(5, 7), 16);
+            return `rgba(${r},${g},${b},0.28)`;
+          })();
           return (
             <section>
               <div className={`${t.surface} rounded-2xl p-4`}>
@@ -479,7 +486,7 @@ export const BattleDetail = ({
                   {/* Image circulaire */}
                   <div
                     className="w-20 h-20 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden"
-                    style={{ backgroundColor: bgColor, boxShadow: isDark ? '0 0 0 3px rgba(255,255,255,0.12)' : '0 0 0 3px rgba(0,0,0,0.07)' }}
+                    style={{ backgroundColor: bgColorAlpha, boxShadow: isDark ? '0 0 0 3px rgba(255,255,255,0.12)' : '0 0 0 3px rgba(0,0,0,0.07)' }}
                   >
                     <img
                       src={mvpArtwork || getPokemonImageUrl(mvpPokemon.pokeId)}

@@ -387,7 +387,6 @@ export const Players = ({
                   value={newPlayerName}
                   onChange={(e) => setNewPlayerName(e.target.value)}
                   className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing}`}
-                  autoFocus
                 />
               </div>
             </div>
