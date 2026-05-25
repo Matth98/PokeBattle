@@ -5,14 +5,17 @@ import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
 import { PlayerAvatar } from './PlayerAvatar';
 
-const StatTile = ({ Icon, value, label, tile, t }) => (
-  <div className={`${t.surface} rounded-2xl p-4 flex flex-col gap-2`}>
+const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`${t.surface} rounded-2xl p-4 flex flex-col gap-2 text-left w-full active:scale-95 transition-transform duration-100`}
+  >
     <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${tile}`}>
       <Icon size={18} strokeWidth={2} />
     </div>
     <p className={`text-2xl font-black ${t.text} leading-none`}>{value}</p>
     <p className={`${t.textSecondary} text-xs font-medium`}>{label}</p>
-  </div>
+  </button>
 );
 
 export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon }) => {
@@ -76,7 +79,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Rechercher un Pokémon"
             >
-              <Search size={18} />
+              <Search size={20} />
             </button>
             <button
               onClick={() => setIsDark(!isDark)}
@@ -88,7 +91,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label={isDark ? 'Mode clair' : 'Mode sombre'}
             >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
           </div>
         </div>
@@ -98,9 +101,9 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">
-            <StatTile Icon={Users} value={players.length} label="Joueurs" tile={t.iconTileEmerald} t={t} />
-            <StatTile Icon={Shield} value={teams.length} label="Équipes" tile={t.iconTileIndigo} t={t} />
-            <StatTile Icon={Zap} value={battles.length} label="Combats" tile={t.iconTileAmber} t={t} />
+            <StatTile Icon={Users}  value={players.length} label="Joueurs"  tile={t.iconTileBlue}   t={t} onClick={() => setCurrentTab('players')} />
+            <StatTile Icon={Zap}    value={battles.length} label="Combats"  tile={t.iconTileAmber}  t={t} onClick={() => setCurrentTab('battles')} />
+            <StatTile Icon={Shield} value={teams.length}   label="Équipes"  tile={t.iconTilePurple} t={t} onClick={() => setCurrentTab('teams')} />
           </div>
         </section>
 

@@ -162,7 +162,7 @@ export const Players = ({
                   style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label="Annuler"
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </>
             ) : (
@@ -174,7 +174,7 @@ export const Players = ({
                   style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label="Sélectionner"
                 >
-                  <CheckSquare size={18} />
+                  <CheckSquare size={20} />
                 </button>
                 <button
                   onClick={() => setShowForm(true)}
@@ -182,7 +182,7 @@ export const Players = ({
                   style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label="Nouveau joueur"
                 >
-                  <Plus size={20} />
+                  <Plus size={22} />
                 </button>
               </>
             )}

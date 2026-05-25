@@ -504,7 +504,7 @@ export const PlayerDetail = ({
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label="Retour"
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={24} />
           </button>
           {canEdit && (
             <button
@@ -513,7 +513,7 @@ export const PlayerDetail = ({
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Modifier"
             >
-              <Pencil size={18} />
+              <Pencil size={20} />
             </button>
           )}
         </div>

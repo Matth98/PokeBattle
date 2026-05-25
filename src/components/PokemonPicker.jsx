@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -27,6 +27,7 @@ export const PokemonPicker = ({
   defaultLabel = null,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const inputRef = useRef(null);
   const { searchResults, searchLoading, error, searchPokemon, getPokemonImageUrl } = usePokemon();
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
   useBodyScrollLock();
@@ -66,6 +67,7 @@ export const PokemonPicker = ({
                 setSearchTerm(e.target.value);
                 searchPokemon(e.target.value);
               }}
+              ref={inputRef}
               className={`flex-1 bg-transparent outline-none ${t.text} placeholder:${t.textTertiary} text-base`}
               autoFocus
             />
@@ -74,6 +76,7 @@ export const PokemonPicker = ({
                 onClick={() => {
                   setSearchTerm('');
                   searchPokemon('');
+                  inputRef.current?.focus({ preventScroll: true });
                 }}
                 className={`${t.textTertiary} flex-shrink-0`}
                 aria-label="Effacer"

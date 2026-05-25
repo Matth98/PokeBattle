@@ -271,7 +271,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
           style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
           aria-label="Fermer"
         >
-          <X size={16} />
+          <X size={18} />
         </button>
 
         {/* ── Contenu scrollable ── */}
