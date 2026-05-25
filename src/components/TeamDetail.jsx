@@ -66,7 +66,7 @@ export const TeamDetail = ({
         </div>
       </div>
 
-      <div className="px-5 mt-1 pb-48 space-y-6">
+      <div className="px-5 mt-1 pb-40 space-y-6">
         {/* ── Hero ── */}
         <div className="flex flex-col items-center text-center">
           {/* Grosse miniature 2x2 */}
