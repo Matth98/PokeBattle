@@ -249,7 +249,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] flex flex-col"
+      className="fixed inset-0 z-[9999] flex flex-col backdrop-blur-md"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)', opacity: overlayOpacity }}
     >
       <motion.div
