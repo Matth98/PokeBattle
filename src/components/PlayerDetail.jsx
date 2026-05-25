@@ -607,13 +607,15 @@ export const PlayerDetail = ({
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 Pokémon ({rosterSize})
               </h2>
-              <button
-                onClick={() => setAddingPokemon(true)}
-                className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
-              >
-                <Plus size={16} />
-                {tr('common.add')}
-              </button>
+              {canEdit && (
+                <button
+                  onClick={() => setAddingPokemon(true)}
+                  className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
+                >
+                  <Plus size={16} />
+                  {tr('common.add')}
+                </button>
+              )}
             </div>
 
             {!player.pokemon || player.pokemon.length === 0 ? (
@@ -627,7 +629,7 @@ export const PlayerDetail = ({
                   return (
                     <SwipeableRow
                       key={p.id}
-                      onDelete={() => setDeletingPokemon(p.id)}
+                      onDelete={canEdit ? () => setDeletingPokemon(p.id) : undefined}
                       surfaceClass={t.surface}
                       className={[
                         !isLast ? `border-b ${t.divider}` : '',

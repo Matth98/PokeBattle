@@ -60,6 +60,14 @@ export const Battles = ({
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
+  // Combats auxquels l'utilisateur courant a participé
+  const myBattles = isSuperAdmin
+    ? battles
+    : battles.filter((b) =>
+        dbUser?.playerId &&
+        (String(b.player1) === String(dbUser.playerId) ||
+         String(b.player2) === String(dbUser.playerId))
+      );
   const canDeleteBattle = (battle) =>
     isSuperAdmin ||
     !battle.createdBy ||
@@ -344,13 +352,15 @@ export const Battles = ({
           <div className="flex items-center gap-2">
             {inSelection ? (
               <>
-                <button
-                  onClick={() => setSelectedItems(battles.map((b) => b._id))}
-                  className={`px-5 h-11 rounded-full backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} text-sm font-semibold`}
-                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-                >
-                  {tr('common.all')}
-                </button>
+                {myBattles.length > 0 && (
+                  <button
+                    onClick={() => setSelectedItems(myBattles.map((b) => b._id))}
+                    className={`px-5 h-11 rounded-full backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} text-sm font-semibold`}
+                    style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                  >
+                    {tr('common.all')}
+                  </button>
+                )}
                 <button
                   onClick={() => setDeletingSelected(true)}
                   disabled={selectedItems.length === 0}
@@ -374,15 +384,16 @@ export const Battles = ({
               </>
             ) : (
               <>
-                <button
-                  onClick={() => setSelectionMode('battles')}
-                  disabled={battles.length === 0}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} ${battles.length === 0 ? 'opacity-40' : ''}`}
-                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-                  aria-label="Sélectionner"
-                >
-                  <CheckSquare size={20} />
-                </button>
+                {myBattles.length > 0 && (
+                  <button
+                    onClick={() => setSelectionMode('battles')}
+                    className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')}`}
+                    style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                    aria-label="Sélectionner"
+                  >
+                    <CheckSquare size={20} />
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (clearEditingBattle) clearEditingBattle();

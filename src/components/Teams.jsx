@@ -34,6 +34,12 @@ export const Teams = ({
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
+  // Équipes appartenant à l'utilisateur courant
+  const myTeams = isSuperAdmin
+    ? teams
+    : teams.filter((team) =>
+        dbUser?._id && String(team.userId) === String(dbUser._id)
+      );
   const canEditTeam = (team) =>
     isSuperAdmin ||
     !team.userId ||
@@ -230,13 +236,15 @@ export const Teams = ({
           <div className="flex items-center gap-2">
             {inSelection ? (
               <>
-                <button
-                  onClick={() => setSelectedItems(teams.map((team) => team._id))}
-                  className={`px-5 h-11 rounded-full backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} text-sm font-semibold`}
-                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-                >
-                  Tout
-                </button>
+                {myTeams.length > 0 && (
+                  <button
+                    onClick={() => setSelectedItems(myTeams.map((team) => team._id))}
+                    className={`px-5 h-11 rounded-full backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} text-sm font-semibold`}
+                    style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                  >
+                    {tr('common.all')}
+                  </button>
+                )}
                 <button
                   onClick={() => setDeletingSelected(true)}
                   disabled={selectedItems.length === 0}
@@ -260,15 +268,16 @@ export const Teams = ({
               </>
             ) : (
               <>
-                <button
-                  onClick={() => setSelectionMode('teams')}
-                  disabled={teams.length === 0}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} ${teams.length === 0 ? 'opacity-40' : ''}`}
-                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
-                  aria-label={tr('teams.selectPlayer')}
-                >
-                  <CheckSquare size={20} />
-                </button>
+                {myTeams.length > 0 && (
+                  <button
+                    onClick={() => setSelectionMode('teams')}
+                    className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')}`}
+                    style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                    aria-label="Sélectionner"
+                  >
+                    <CheckSquare size={20} />
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (clearEditingTeam) clearEditingTeam();
