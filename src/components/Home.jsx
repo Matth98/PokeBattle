@@ -97,7 +97,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         </div>
       </div>
 
-      <div className="relative z-[1] px-5 mt-5 pb-32 space-y-7">
+      <div className="relative z-[1] px-5 mt-5 pb-48 space-y-7">
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">

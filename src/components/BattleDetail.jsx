@@ -274,7 +274,7 @@ export const BattleDetail = ({
         </div>
       </div>
 
-      <div className="px-5 mt-1 pb-32 space-y-6">
+      <div className="px-5 mt-1 pb-48 space-y-6">
         {/* ── Hero score ── */}
         <div className="flex items-center gap-3 w-full max-w-md mx-auto pb-4">
           {/* Joueur 1 */}

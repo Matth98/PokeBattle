@@ -398,7 +398,7 @@ export const Battles = ({
         </div>
       </div>
 
-      <div className="relative z-[1] px-5 mt-5 pb-32">
+      <div className="relative z-[1] px-5 mt-5 pb-48">
         {battles.length === 0 ? (
           <div className={`${t.surface} rounded-2xl p-10 text-center mt-12`}>
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileAmber} flex items-center justify-center mb-4`}>
