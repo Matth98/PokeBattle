@@ -47,7 +47,7 @@ export const TeamDetail = ({
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/30 text-gray-900'}`}
+            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label="Retour"
           >
@@ -56,7 +56,7 @@ export const TeamDetail = ({
           {canEdit && onEdit && (
             <button
               onClick={() => onEdit(team)}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/30 text-gray-900'}`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
             style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Modifier"
             >

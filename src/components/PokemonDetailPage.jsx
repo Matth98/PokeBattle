@@ -133,7 +133,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       {/* ── Bouton retour flottant (par-dessus la cover) ── */}
       <button
         onClick={onBack}
-        className={`fixed z-20 left-4 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/30 text-gray-900'}`}
+        className={`fixed z-20 left-4 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
         style={{ top: 'calc(env(safe-area-inset-top) + 0.6rem)', ...(isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : {}) }}
         aria-label="Retour"
       >
