@@ -243,8 +243,8 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
     { multVal: 0.5,  label: '½'  },
   ]);
   const weaknessGroups = groupByMult([
-    { multVal: 4, label: 4 },
     { multVal: 2, label: 2 },
+    { multVal: 4, label: 4 },
   ]);
 
   return (
@@ -326,7 +326,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
                 {data.stats.map(({ name, value }) => (
                   <div key={name} className="flex items-center gap-3">
                     <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{name}</span>
-                    <span className={`w-8 text-base font-semibold text-right tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{value}</span>
+                    <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{value}</span>
                     <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} overflow-hidden`}>
                       <div
                         className="h-full rounded-full"
@@ -337,7 +337,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
                 ))}
                 <div className="flex items-center gap-3">
                   <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>BASE</span>
-                  <span className={`w-8 text-base font-black text-right tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{data.total}</span>
+                  <span className={`w-8 text-base font-black text-left tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{data.total}</span>
                   <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} overflow-hidden`}>
                     <div className="h-full rounded-full" style={{ width: `${Math.min(100, (data.total / 780) * 100)}%`, backgroundColor: accentHex }} />
                   </div>
