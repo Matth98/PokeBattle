@@ -61,19 +61,14 @@ export const Battles = ({
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
-  // Combats auxquels l'utilisateur courant a participé
-  const myBattles = isSuperAdmin
-    ? battles
-    : battles.filter((b) =>
-        dbUser?.playerId &&
-        (String(b.player1) === String(dbUser.playerId) ||
-         String(b.player2) === String(dbUser.playerId))
-      );
   const canDeleteBattle = (battle) =>
     isSuperAdmin ||
     !battle.createdBy ||
     (dbUser?._id && String(battle.createdBy) === String(dbUser._id));
-  const canSelectBattle = (b) => myBattles.some((mb) => mb._id === b._id);
+  // En mode sélection, seules les batailles supprimables sont sélectionnables.
+  // On utilise canDeleteBattle (basé sur createdBy) plutôt qu'un filtre sur
+  // player1/player2 qui serait cassé car ces champs sont des objets populés.
+  const canSelectBattle = (b) => canDeleteBattle(b);
 
   const [newBattleData, setNewBattleData] = useState(emptyBattle());
   const [battleSelectedPokemon, setBattleSelectedPokemon] = useState({ player1: [], player2: [] });

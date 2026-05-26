@@ -356,12 +356,21 @@ function AppContent({ isDark, setIsDark }) {
   };
 
   const handleDeleteMultipleBattles = async (ids) => {
+    let successCount = 0;
     for (const id of ids) {
       const success = await deleteBattle(id);
-      if (success) setBattles((prev) => prev.filter((b) => b._id !== id));
+      if (success) {
+        setBattles((prev) => prev.filter((b) => b._id !== id));
+        successCount++;
+      }
     }
     refreshPlayers();
-    toast.success(`${ids.length} combat${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`);
+    if (successCount > 0) {
+      toast.success(`${successCount} combat${successCount > 1 ? 's' : ''} supprimé${successCount > 1 ? 's' : ''}`);
+    }
+    if (successCount < ids.length) {
+      toast.error(`${ids.length - successCount} combat${ids.length - successCount > 1 ? 's' : ''} non supprimé${ids.length - successCount > 1 ? 's' : ''}`);
+    }
   };
 
   if (authLoading) {
