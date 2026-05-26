@@ -251,7 +251,9 @@ function AppContent({ isDark, setIsDark }) {
   // un User peut ajouter des Pokémon même à un joueur revendiqué par un autre compte.
   // On ne montre pas de toast en cas d'échec (le combat lui-même est déjà enregistré).
   const handleSyncBattlePokemon = async (id, data) => {
-    const updated = await updatePlayer(id, data);
+    // Utilise PATCH /players/:id/pokemon — pas de vérification de propriétaire,
+    // accessible à tout utilisateur authentifié (sync silencieux après un combat).
+    const updated = await syncPlayerPokemon(id, data.pokemon);
     if (updated) {
       setPlayers(prev => prev.map(p => p._id === id ? updated : p));
     }
