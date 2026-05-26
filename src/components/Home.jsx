@@ -9,7 +9,7 @@ import { useTranslation } from '../hooks/useTranslation';
 const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   <button
     onClick={onClick}
-    className={`${t.surface} rounded-2xl p-4 flex flex-col gap-2 text-left w-full active:scale-95 transition-transform duration-100`}
+    className={`${t.surface} rounded-2xl p-4 flex flex-col gap-2 text-left w-full shadow-sm active:scale-95 transition-transform duration-100`}
   >
     <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${tile}`}>
       <Icon size={18} strokeWidth={2} />
@@ -126,7 +126,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           </div>
 
           {recentBattles.length === 0 ? (
-            <div className={`${t.surface} rounded-2xl p-8 text-center`}>
+            <div className={`${t.surface} rounded-2xl p-8 text-center shadow-sm`}>
               <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileAmber} flex items-center justify-center mb-3`}>
                 <Zap size={22} />
               </div>
@@ -147,7 +147,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                       setSelectedBattle(b);
                       setCurrentTab('battleDetail');
                     }}
-                    className={`w-full ${t.surface} rounded-2xl px-4 py-3 flex items-center gap-3 text-left`}
+                    className={`w-full ${t.surface} rounded-2xl px-4 py-3 flex items-center gap-3 text-left shadow-sm`}
                   >
                     {/* Joueur 1 — avatar + nom + Pokémon */}
                     <div className="flex-1 min-w-0">
@@ -253,7 +253,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               return (
                 <button
                   onClick={() => onSelectPlayer?.(top)}
-                  className={`w-full ${t.surface} rounded-2xl p-4 flex items-center gap-3 text-left`}
+                  className={`w-full ${t.surface} rounded-2xl p-4 flex items-center gap-3 text-left shadow-sm`}
                 >
                   <PlayerAvatar player={top} size={48} textSize="text-lg" className="flex-shrink-0" />
                   <div className="flex-1 min-w-0">
