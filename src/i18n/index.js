@@ -46,7 +46,7 @@ const fr = {
     deleteMultipleTitle: (n) => `Supprimer ${n} combat${n > 1 ? 's' : ''} ?`,
     editTitle: 'Modifier le combat',
     newTitle: 'Nouveau combat',
-    eliminated: 'éliminé',
+    eliminated: 'Éliminé',
     player1Wins: 'Victoire Joueur 1', player2Wins: 'Victoire Joueur 2',
     totalElim: 'Pokémon éliminés',
     mvp: 'MVP',

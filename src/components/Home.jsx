@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Users, Shield, Zap, ChevronRight, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
 import { PlayerAvatar } from './PlayerAvatar';
+import { PokemonDetailModal } from './PokemonDetailModal';
 import { useTranslation } from '../hooks/useTranslation';
 
 const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
@@ -22,8 +23,26 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
 export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings }) => {
   const tr = useTranslation();
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
+
+  // Top 5 Pokémon MVP : survivants les plus présents dans les équipes gagnantes
+  const topPokemon = useMemo(() => {
+    const counts = {};
+    for (const b of battles) {
+      if (!b.winner) continue;
+      const winTeam = b.winner === 'player1' ? (b.team1 || []) : (b.team2 || []);
+      for (const p of winTeam) {
+        if (p.eliminated) continue;
+        if (!counts[p.pokeId]) counts[p.pokeId] = { pokeId: p.pokeId, name: p.name, wins: 0 };
+        counts[p.pokeId].wins++;
+      }
+    }
+    return Object.values(counts)
+      .sort((a, b) => b.wins - a.wins)
+      .slice(0, 5);
+  }, [battles]);
   const { getPokemonImageUrl } = usePokemon();
   const [scrolled, setScrolled] = useState(false);
+  const [viewingPokemon, setViewingPokemon] = useState(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -32,6 +51,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   }, []);
 
   return (
+    <>
     <div className="relative min-h-screen">
       <div
         aria-hidden="true"
@@ -228,7 +248,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           )}
         </section>
 
-        {/* ── Bilan rapide (optionnel) ── */}
+        {/* ── Top joueur ── */}
         {players.length > 0 && battles.length > 0 && (
           <section>
             <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-3 px-1`}>
@@ -268,7 +288,71 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             })()}
           </section>
         )}
+
+        {/* ── Top Pokémon ── */}
+        {topPokemon.length > 0 && (
+          <section>
+            <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-3 px-1`}>
+              Top Pokémon
+            </h2>
+            <div
+              className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-1"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollSnapType: 'x mandatory' }}
+            >
+              {topPokemon.map((p, i) => (
+                <button
+                  key={p.pokeId}
+                  onClick={() => setViewingPokemon({ pokeId: p.pokeId, name: p.name })}
+                  className={`flex-shrink-0 w-[120px] ${t.surface} rounded-2xl pt-3 pb-4 px-3 flex flex-col items-center shadow-sm active:scale-95 transition-transform duration-100`}
+                  style={{ scrollSnapAlign: 'start' }}
+                >
+                  {/* Rang */}
+                  <div className="w-full flex justify-start mb-1">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                      i === 0
+                        ? 'bg-amber-400 text-white'
+                        : i === 1
+                          ? isDark ? 'bg-zinc-500 text-white' : 'bg-gray-300 text-gray-700'
+                          : i === 2
+                            ? 'bg-amber-700/70 text-white'
+                            : `${t.surfaceMuted} ${t.textTertiary}`
+                    }`}>
+                      {i + 1}
+                    </span>
+                  </div>
+                  {/* Sprite */}
+                  <img
+                    src={getPokemonImageUrl(p.pokeId)}
+                    alt={p.name}
+                    className="w-16 h-16 object-contain"
+                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                  />
+                  {/* Nom */}
+                  <p className={`font-bold text-xs ${t.text} truncate w-full text-center mt-1 leading-tight`}>
+                    {p.name}
+                  </p>
+                  {/* Victoires */}
+                  <p className={`text-[11px] ${t.textSecondary} mt-0.5`}>
+                    {p.wins} victoire{p.wins > 1 ? 's' : ''}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
+
+    {/* ── Détail Pokémon (bottom sheet) ── */}
+    {viewingPokemon && (
+      <PokemonDetailModal
+        pokeId={viewingPokemon.pokeId}
+        pokeName={viewingPokemon.name}
+        t={t}
+        isDark={isDark}
+        onClose={() => setViewingPokemon(null)}
+      />
+    )}
+    </>
   );
 };
