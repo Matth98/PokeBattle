@@ -24,22 +24,35 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   const tr = useTranslation();
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
 
-  // Top 5 Pokémon MVP : survivants les plus présents dans les équipes gagnantes
+  // TOP 5 MVP : classement de paires (joueur × Pokémon).
+  // Pour chaque combat, le MVP est le survivant de l'équipe gagnante.
+  // On groupe par playerId + pokeId → les 5 paires les plus titrées.
   const topPokemon = useMemo(() => {
-    const counts = {};
+    const counts = {}; // clé : `${playerId}:${pokeId}`
     for (const b of battles) {
       if (!b.winner) continue;
-      const winTeam = b.winner === 'player1' ? (b.team1 || []) : (b.team2 || []);
-      for (const p of winTeam) {
-        if (p.eliminated) continue;
-        if (!counts[p.pokeId]) counts[p.pokeId] = { pokeId: p.pokeId, name: p.name, wins: 0 };
-        counts[p.pokeId].wins++;
+      const isP1 = b.winner === 'player1';
+      const winTeam   = isP1 ? (b.team1 || []) : (b.team2 || []);
+      const winnerId  = String(isP1
+        ? (b.player1?._id ?? b.player1)
+        : (b.player2?._id ?? b.player2));
+      const survivors = winTeam.filter((p) => !p.eliminated);
+      for (const p of survivors) {
+        const key = `${winnerId}:${p.pokeId}`;
+        if (!counts[key]) {
+          counts[key] = { pokeId: p.pokeId, name: p.name, mvps: 0, playerId: winnerId };
+        }
+        counts[key].mvps++;
       }
     }
     return Object.values(counts)
-      .sort((a, b) => b.wins - a.wins)
-      .slice(0, 5);
-  }, [battles]);
+      .sort((a, b) => b.mvps - a.mvps)
+      .slice(0, 5)
+      .map((entry) => ({
+        ...entry,
+        player: players.find((pl) => String(pl._id) === entry.playerId) || null,
+      }));
+  }, [battles, players]);
   const { getPokemonImageUrl } = usePokemon();
   const [scrolled, setScrolled] = useState(false);
   const [viewingPokemon, setViewingPokemon] = useState(null);
@@ -296,8 +309,12 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               Top Pokémon
             </h2>
             <div
-              className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-1"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollSnapType: 'x mandatory' }}
+              className="overflow-x-auto -mx-5 pb-1"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+            <div
+              className="flex gap-3 pl-5"
+              style={{ scrollSnapType: 'x mandatory' }}
             >
               {topPokemon.map((p, i) => (
                 <button
@@ -306,9 +323,9 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   className={`flex-shrink-0 w-[120px] ${t.surface} rounded-2xl pt-3 pb-4 px-3 flex flex-col items-center shadow-sm active:scale-95 transition-transform duration-100`}
                   style={{ scrollSnapAlign: 'start' }}
                 >
-                  {/* Rang */}
-                  <div className="w-full flex justify-start mb-1">
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                  {/* Rang + avatar joueur */}
+                  <div className="w-full flex justify-between items-center mb-1">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
                       i === 0
                         ? 'bg-amber-400 text-white'
                         : i === 1
@@ -319,6 +336,9 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                     }`}>
                       {i + 1}
                     </span>
+                    {p.player && (
+                      <PlayerAvatar player={p.player} size={20} textSize="text-[7px]" className="flex-shrink-0" />
+                    )}
                   </div>
                   {/* Sprite */}
                   <img
@@ -333,10 +353,13 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   </p>
                   {/* Victoires */}
                   <p className={`text-[11px] ${t.textSecondary} mt-0.5`}>
-                    {p.wins} victoire{p.wins > 1 ? 's' : ''}
+                    {p.mvps} MVP{p.mvps > 1 ? 's' : ''}
                   </p>
                 </button>
               ))}
+              {/* Spacer droit : gap(12px) + w-2(8px) = 20px = même gouttière qu'à gauche */}
+              <div className="flex-shrink-0 w-2" aria-hidden="true" />
+            </div>
             </div>
           </section>
         )}
