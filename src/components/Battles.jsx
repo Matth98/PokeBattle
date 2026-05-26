@@ -46,6 +46,7 @@ export const Battles = ({
   onAddBattle,
   onUpdateBattle,
   onUpdatePlayer,
+  onSyncPokemon,
   onDeleteBattle,
   onDeleteMultiple,
   selectionMode,
@@ -268,8 +269,11 @@ export const Battles = ({
 
   // Synchronise les Pokémon du combat avec le roster des joueurs
   // — tout Pokémon présent dans team1/team2 mais absent du roster est ajouté.
+  // Utilise onSyncPokemon (silencieux, sans toast) pour les deux joueurs,
+  // y compris les joueurs revendiqués par un autre compte.
   const syncBattlePokemonToRosters = async (payload) => {
-    if (!onUpdatePlayer) return;
+    const syncFn = onSyncPokemon || onUpdatePlayer;
+    if (!syncFn) return;
     for (const slot of ['player1', 'player2']) {
       const playerId = payload[slot];
       const teamKey = slot === 'player1' ? 'team1' : 'team2';
@@ -286,7 +290,7 @@ export const Battles = ({
           level: 50,
         }));
       if (toAdd.length === 0) continue;
-      await onUpdatePlayer(playerId, {
+      await syncFn(playerId, {
         ...player,
         pokemon: [...(player.pokemon || []), ...toAdd],
       });
@@ -671,7 +675,7 @@ export const Battles = ({
                 >
                   {isSaving
                     ? <Loader2 size={16} className="animate-spin" />
-                    : (isEditing ? tr('common.save') : tr('common.new'))}
+                    : (isEditing ? tr('common.save') : tr('common.validate'))}
                 </button>
               </div>
             </div>

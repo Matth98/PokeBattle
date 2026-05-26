@@ -10,7 +10,7 @@ const fr = {
   common: {
     back: 'Retour', edit: 'Modifier', delete: 'Supprimer', cancel: 'Annuler',
     save: 'Enregistrer', add: 'Ajouter', all: 'Tout', select: 'Sélectionner',
-    clear: 'Effacer', confirm: 'Confirmer', required: 'Ce champ est requis',
+    clear: 'Effacer', confirm: 'Confirmer', validate: 'Valider', required: 'Ce champ est requis',
     irreversible: 'Cette action est définitive.', noResults: 'Aucun résultat',
     loading: 'Chargement…', searching: 'Recherche…', hidden: 'Caché',
     new: 'Nouveau', create: 'Créer', close: 'Fermer',
@@ -143,7 +143,7 @@ const en = {
   common: {
     back: 'Back', edit: 'Edit', delete: 'Delete', cancel: 'Cancel',
     save: 'Save', add: 'Add', all: 'All', select: 'Select',
-    clear: 'Clear', confirm: 'Confirm', required: 'This field is required',
+    clear: 'Clear', confirm: 'Confirm', validate: 'Submit', required: 'This field is required',
     irreversible: 'This action is permanent.', noResults: 'No results',
     loading: 'Loading…', searching: 'Searching…', hidden: 'Hidden',
     new: 'New', create: 'Create', close: 'Close',
@@ -274,7 +274,7 @@ const es = {
   common: {
     back: 'Volver', edit: 'Editar', delete: 'Eliminar', cancel: 'Cancelar',
     save: 'Guardar', add: 'Añadir', all: 'Todo', select: 'Seleccionar',
-    clear: 'Borrar', confirm: 'Confirmar', required: 'Campo requerido',
+    clear: 'Borrar', confirm: 'Confirmar', validate: 'Validar', required: 'Campo requerido',
     irreversible: 'Esta acción es definitiva.', noResults: 'Sin resultados',
     loading: 'Cargando…', searching: 'Buscando…', hidden: 'Oculto',
     new: 'Nuevo', create: 'Crear', close: 'Cerrar',
@@ -398,7 +398,7 @@ const de = {
   common: {
     back: 'Zurück', edit: 'Bearbeiten', delete: 'Löschen', cancel: 'Abbrechen',
     save: 'Speichern', add: 'Hinzufügen', all: 'Alle', select: 'Auswählen',
-    clear: 'Leeren', confirm: 'Bestätigen', required: 'Pflichtfeld',
+    clear: 'Leeren', confirm: 'Bestätigen', validate: 'Bestätigen', required: 'Pflichtfeld',
     irreversible: 'Diese Aktion ist endgültig.', noResults: 'Keine Ergebnisse',
     loading: 'Laden…', searching: 'Suche…', hidden: 'Versteckt',
     new: 'Neu', create: 'Erstellen', close: 'Schließen',
@@ -522,7 +522,7 @@ const ja = {
   common: {
     back: '戻る', edit: '編集', delete: '削除', cancel: 'キャンセル',
     save: '保存', add: '追加', all: 'すべて', select: '選択',
-    clear: 'クリア', confirm: '確認', required: '必須項目です',
+    clear: 'クリア', confirm: '確認', validate: '確定', required: '必須項目です',
     irreversible: 'この操作は取り消せません。', noResults: '結果なし',
     loading: '読み込み中…', searching: '検索中…', hidden: '隠れ',
     new: '新規', create: '作成', close: '閉じる',

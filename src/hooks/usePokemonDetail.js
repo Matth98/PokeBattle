@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from './useLanguage';
 import { getI18n } from '../i18n';
+import FR_DESCRIPTIONS_GEN9 from '../data/frDescriptionsGen9';
 
 const pokemonCache = new Map();
 const speciesCache = new Map();
@@ -142,7 +143,13 @@ export function usePokemonDetail(pokeId) {
           .join(', ');
 
         const flavorEntry = pickLang(speciesData.flavor_text_entries, language);
-        const flavorText = flavorEntry?.flavor_text?.replace(/\f/g, ' ').replace(/\n/g, ' ') || '';
+        let flavorText = flavorEntry?.flavor_text?.replace(/\f/g, ' ').replace(/\n/g, ' ') || '';
+
+        // Fallback statique pour le français : si PokeAPI n'a pas d'entrée française
+        // (typiquement Pokémon Gen IX), on utilise les descriptions officielles des jeux
+        if (language === 'fr' && !speciesData.flavor_text_entries?.some(e => e.language.name === 'fr')) {
+          flavorText = FR_DESCRIPTIONS_GEN9[pokemonData.id] || flavorText;
+        }
 
         const genusEntry = pickLang(speciesData.genera, language);
         const genus = genusEntry?.genus || '';

@@ -146,6 +146,7 @@ function AppContent({ isDark, setIsDark }) {
     fetchTeams,
     createPlayer,
     updatePlayer,
+    syncPlayerPokemon,
     deletePlayer,
     createBattle,
     updateBattle,
@@ -244,6 +245,17 @@ function AppContent({ isDark, setIsDark }) {
     } else {
       toast.error('Erreur lors de la mise à jour');
     }
+  };
+
+  // Sync silencieux des rosters lors de la création d'un combat :
+  // un User peut ajouter des Pokémon même à un joueur revendiqué par un autre compte.
+  // On ne montre pas de toast en cas d'échec (le combat lui-même est déjà enregistré).
+  const handleSyncBattlePokemon = async (id, data) => {
+    const updated = await updatePlayer(id, data);
+    if (updated) {
+      setPlayers(prev => prev.map(p => p._id === id ? updated : p));
+    }
+    // Pas de toast.error — l'erreur est ignorée silencieusement
   };
 
   const handleDeletePlayer = async (id) => {
@@ -550,6 +562,7 @@ function AppContent({ isDark, setIsDark }) {
           onAddBattle={handleAddBattle}
           onUpdateBattle={handleUpdateBattle}
           onUpdatePlayer={handleUpdatePlayer}
+          onSyncPokemon={handleSyncBattlePokemon}
           onDeleteBattle={handleDeleteBattle}
           onDeleteMultiple={handleDeleteMultipleBattles}
           selectionMode={selectionMode}
@@ -602,6 +615,7 @@ function AppContent({ isDark, setIsDark }) {
           onAddBattle={handleAddBattle}
           onUpdateBattle={handleUpdateBattle}
           onUpdatePlayer={handleUpdatePlayer}
+          onSyncPokemon={handleSyncBattlePokemon}
           onDeleteBattle={handleDeleteBattle}
           onDeleteMultiple={handleDeleteMultipleBattles}
           selectionMode={selectionMode}

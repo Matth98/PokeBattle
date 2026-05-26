@@ -85,6 +85,22 @@ export const useAPI = () => {
     }
   }, []);
 
+  // Sync silencieux du roster Pokémon — utilise PATCH /players/:id/pokemon
+  // qui ne vérifie pas la propriété. Tout utilisateur authentifié peut l'appeler.
+  const syncPlayerPokemon = useCallback(async (id, pokemon) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/players/${id}/pokemon`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+        body: JSON.stringify({ pokemon }),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }, []);
+
   const deletePlayer = useCallback(async (id) => {
     try {
       const res = await fetch(`${API_BASE_URL}/players/${id}`, {
@@ -195,6 +211,7 @@ export const useAPI = () => {
     fetchTeams,
     createPlayer,
     updatePlayer,
+    syncPlayerPokemon,
     deletePlayer,
     createBattle,
     updateBattle,
