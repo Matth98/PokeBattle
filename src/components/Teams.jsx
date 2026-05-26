@@ -215,7 +215,7 @@ export const Teams = ({
           return (
             <div
               key={px}
-              className={`absolute rounded-full border ${isDark ? 'border-white/5' : 'border-black/[0.06]'}`}
+              className={`absolute rounded-full border ${isDark ? 'border-white/5' : 'border-white/50'}`}
               style={{ width: vw, height: vw, top: `calc(${vw} / -2)`, left: `calc(${vw} / -2)` }}
             />
           );
