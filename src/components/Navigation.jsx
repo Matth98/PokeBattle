@@ -65,7 +65,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
               aria-hidden="true"
             />
           </span>
-          <span className="text-xs tracking-wide font-bold" style={{ color: '#E88700' }}>
+          <span className="text-xs tracking-wide font-bold" style={{ background: 'linear-gradient(90deg, #FF9D38 0.18%, #E35BEE 100.18%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             Match
           </span>
         </button>
