@@ -110,11 +110,24 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, setIsDark, t, onClose
     >
       <motion.div
         ref={sheetRef}
-        className={`relative ${isDark ? 'bg-zinc-900' : 'bg-[#F2F2F7]'} flex-1 overflow-hidden flex flex-col rounded-t-3xl`}
+        className={`relative ${isDark ? 'bg-zinc-900' : 'bg-[#EAF3F7]'} flex-1 overflow-hidden flex flex-col rounded-t-3xl`}
         style={{ y, marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', damping: 32, stiffness: 320 }}
       >
+        {/* ── Background illustration (Pokéball) ── */}
+        <div
+          className="absolute bottom-0 right-0 pointer-events-none select-none z-0"
+          style={{ width: 300, height: 300 }}
+          aria-hidden="true"
+        >
+          <svg width="300" height="300" viewBox="0 0 303 303" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g opacity="0.03">
+              <path d="M106.066 106.066C47.5812 164.551 47.5812 259.713 106.066 318.198C164.551 376.683 259.713 376.683 318.198 318.198C376.683 259.713 376.683 164.551 318.198 106.066C259.713 47.5812 164.551 47.5812 106.066 106.066ZM121.976 121.976C169.006 74.9462 243.936 72.4166 293.978 114.376L244.609 163.745C221.959 148.53 190.919 150.921 170.915 170.925C150.911 190.929 148.53 221.97 163.734 244.62L114.376 293.978C72.4166 243.936 74.9462 169.006 121.976 121.976ZM237.434 186.83C251.387 200.783 251.387 223.481 237.434 237.434C223.481 251.387 200.783 251.387 186.83 237.434C172.877 223.481 172.877 200.783 186.83 186.83C200.783 172.877 223.481 172.877 237.434 186.83ZM302.288 302.288C255.258 349.318 180.328 351.847 130.286 309.888L179.655 260.519C202.305 275.735 233.345 273.343 253.349 253.339C273.353 233.335 275.735 202.294 260.525 179.649L309.893 130.281C351.853 180.323 349.328 255.248 302.293 302.283L302.288 302.288Z" fill={isDark ? 'white' : 'black'}/>
+            </g>
+          </svg>
+        </div>
+
         {/* ── Grip handle ── */}
         <div className="absolute top-0 left-0 right-0 flex justify-center pt-3 z-10 pointer-events-none">
           <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-white/30' : 'bg-black/20'}`} />
@@ -133,7 +146,7 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, setIsDark, t, onClose
         {/* ── Scrollable content ── */}
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto"
+          className="relative z-10 flex-1 overflow-y-auto"
           data-scroll-lock-ignore
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}
         >
