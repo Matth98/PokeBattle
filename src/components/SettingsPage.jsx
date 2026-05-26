@@ -136,7 +136,7 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, setIsDark, t, onClose
         {/* ── Close button ── */}
         <button
           onClick={handleClose}
-          className={`absolute top-2 right-4 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl shadow-sm z-10 ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-gray-700'}`}
+          className={`absolute top-2 right-4 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl shadow-sm z-20 ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-gray-700'}`}
           style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
           aria-label={tr('common.close')}
         >
