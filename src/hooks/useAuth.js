@@ -40,14 +40,35 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    // Récupère le résultat d'un signInWithRedirect au retour de l'OAuth
-    getRedirectResult(auth).catch(() => {});
+    let cancelled = false;
+    let unsubscribe;
 
-    return onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
-      fetchDbUser(firebaseUser);
-    });
+    // On attend getRedirectResult AVANT de souscrire à onAuthStateChanged.
+    // Cela garantit que l'état Firebase est à jour (redirect traité) avant
+    // que le listener ne fire — évite le flash LoginScreen + la boucle.
+    (async () => {
+      try {
+        await getRedirectResult(auth);
+      } catch (err) {
+        const code = err?.code ?? '';
+        if (!['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(code)) {
+          console.warn('[auth] getRedirectResult:', code, err?.message);
+        }
+      }
+
+      if (cancelled) return;
+
+      unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+        setUser(firebaseUser);
+        setLoading(false);
+        fetchDbUser(firebaseUser);
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, [fetchDbUser]);
 
   // Call after claiming/creating a player to refresh dbUser

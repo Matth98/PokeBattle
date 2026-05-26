@@ -654,7 +654,7 @@ function AppContent({ isDark, setIsDark }) {
           setIsDark={setIsDark}
           t={t}
           onClose={() => setSettingsOpen(false)}
-          onSignOut={signOut}
+          onSignOut={() => { setSettingsOpen(false); signOut(); }}
           onOpenPlayer={() => {
             setSettingsOpen(false);
             const p = players.find(pl => pl._id === dbUser?.playerId);
