@@ -760,7 +760,7 @@ export const PlayerDetail = ({
                   return (
                     <SwipeableRow
                       key={team._id}
-                      onDelete={onDeleteTeam ? () => setDeletingTeam(team._id) : undefined}
+                      onDelete={canEdit && onDeleteTeam ? () => setDeletingTeam(team._id) : undefined}
                       surfaceClass={t.surface}
                       className={[
                         !isLast ? `border-b ${t.divider}` : '',
