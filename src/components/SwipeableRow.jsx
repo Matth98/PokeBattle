@@ -26,6 +26,8 @@ export const SwipeableRow = ({
   surfaceClass = 'bg-white',
   disabled = false,
 }) => {
+  // Pas de callback → pas de swipe possible (zone rouge jamais affichée)
+  const swipeEnabled = !disabled && !!onDelete;
   const containerRef = useRef(null);
   const startXRef = useRef(null);
   const startYRef = useRef(null);
@@ -73,7 +75,7 @@ export const SwipeableRow = ({
   }, [close]);
 
   const handleTouchStart = (e) => {
-    if (disabled) return;
+    if (!swipeEnabled) return;
     startXRef.current = e.touches[0].clientX;
     startYRef.current = e.touches[0].clientY;
     lockedAxisRef.current = null;
@@ -81,7 +83,7 @@ export const SwipeableRow = ({
   };
 
   const handleTouchMove = (e) => {
-    if (disabled || startXRef.current == null) return;
+    if (!swipeEnabled || startXRef.current == null) return;
     const dx = e.touches[0].clientX - startXRef.current;
     const dy = e.touches[0].clientY - startYRef.current;
 
@@ -99,7 +101,7 @@ export const SwipeableRow = ({
   };
 
   const handleTouchEnd = () => {
-    if (disabled) return;
+    if (!swipeEnabled) return;
     setIsDragging(false);
     if (lockedAxisRef.current === 'x') {
       if (currentXRef.current < -threshold) {
@@ -139,7 +141,7 @@ export const SwipeableRow = ({
     >
       {/* Action révélée derrière — n'est MONTÉE DANS LE DOM que pendant un swipe
           ou quand le swipe est resté ouvert. Sinon : aucun pixel rouge possible. */}
-      {(isSwiping || isOpen) && (
+      {swipeEnabled && (isSwiping || isOpen) && (
         <div
           className="absolute inset-y-0 right-0 flex items-center justify-center bg-red-500"
           style={{ width: actionWidth }}

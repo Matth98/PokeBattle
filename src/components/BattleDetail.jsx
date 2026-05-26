@@ -136,13 +136,12 @@ export const BattleDetail = ({
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
-  const canEdit = isSuperAdmin || !battle?.createdBy || (battle && dbUser?.playerId && (
+  const canEdit = isSuperAdmin || (battle && dbUser?.playerId && (
     String(battle.player1?._id ?? battle.player1) === String(dbUser.playerId) ||
     String(battle.player2?._id ?? battle.player2) === String(dbUser.playerId)
   ));
   const canDelete = isSuperAdmin ||
-    !battle?.createdBy ||
-    (battle && dbUser?._id && String(battle.createdBy) === String(dbUser._id));
+    (battle && dbUser?._id && battle.createdBy && String(battle.createdBy) === String(dbUser._id));
 
   const { getPokemonImageUrl } = usePokemon();
   const [confirmingDelete, setConfirmingDelete] = useState(false);

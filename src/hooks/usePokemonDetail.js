@@ -21,10 +21,21 @@ async function fetchTypeRel(typeName) {
   return data.damage_relations;
 }
 
-function pickLang(entries, lang, fallbacks = ['en', 'fr']) {
-  const all = [lang, ...fallbacks.filter(f => f !== lang)];
+// Variantes de codes langue dans PokeAPI
+// (ex: flavor_text_entries japonais = 'ja-Hrkt', names japonais = 'ja')
+const LANG_VARIANTS = {
+  ja: ['ja', 'ja-Hrkt'],
+};
+
+function pickLang(entries, lang, fallbacks = ['fr', 'en']) {
+  const primaryVariants = LANG_VARIANTS[lang] || [lang];
+  // Fallbacks dédupliqués (retire les variantes du lang primaire)
+  const fallbackList = fallbacks.filter(f => f !== lang && !primaryVariants.includes(f));
+  const all = [...primaryVariants, ...fallbackList];
+  // Inverser la liste pour préférer l'entrée la plus récente (dernier jeu)
+  const list = [...(entries || [])].reverse();
   for (const l of all) {
-    const found = entries?.find(e => e.language.name === l);
+    const found = list.find(e => e.language.name === l);
     if (found) return found;
   }
   return null;
@@ -36,12 +47,15 @@ async function fetchAbility(abilityName, lang) {
   const res = await fetch(`https://pokeapi.co/api/v2/ability/${abilityName}`);
   const data = await res.json();
   const nameEntry = pickLang(data.names, lang);
+  const langVariants = LANG_VARIANTS[lang] || [lang];
   const descEntries = data.flavor_text_entries?.filter(e => {
-    const langs = [lang, 'en', 'fr'].filter((l, i, a) => a.indexOf(l) === i);
+    const langs = [...langVariants, 'fr', 'en'].filter((l, i, a) => a.indexOf(l) === i);
     return langs.includes(e.language.name);
   }) || [];
-  const descEntry = [...descEntries].reverse().find(e => e.language.name === lang)
-    || [...descEntries].reverse().find(e => e.language.name === 'en')
+  const reversed = [...descEntries].reverse();
+  const descEntry = reversed.find(e => langVariants.includes(e.language.name))
+    || reversed.find(e => e.language.name === 'fr')
+    || reversed.find(e => e.language.name === 'en')
     || descEntries[descEntries.length - 1];
   const result = {
     nameFr: nameEntry?.name || abilityName,
@@ -50,6 +64,7 @@ async function fetchAbility(abilityName, lang) {
   abilityCache.set(key, result);
   return result;
 }
+
 
 export function usePokemonDetail(pokeId) {
   const [data, setData] = useState(null);

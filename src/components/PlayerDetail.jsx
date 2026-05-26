@@ -606,15 +606,14 @@ export const PlayerDetail = ({
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 Pokémon ({rosterSize})
               </h2>
-              {canEdit && (
-                <button
-                  onClick={() => setAddingPokemon(true)}
-                  className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
-                >
-                  <Plus size={16} />
-                  {tr('common.add')}
-                </button>
-              )}
+              <button
+                onClick={canEdit ? () => setAddingPokemon(true) : undefined}
+                className={`${t.accent} text-sm font-semibold flex items-center gap-1${canEdit ? '' : ' invisible pointer-events-none select-none'}`}
+                aria-hidden={!canEdit}
+              >
+                <Plus size={16} />
+                {tr('common.add')}
+              </button>
             </div>
 
             {!player.pokemon || player.pokemon.length === 0 ? (
@@ -690,15 +689,14 @@ export const PlayerDetail = ({
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 {tr('teams.title')} ({playerTeams.length})
               </h2>
-              {canEdit && onAddTeam && (
-                <button
-                  onClick={openCreateTeam}
-                  className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
-                >
-                  <Plus size={16} />
-                  {tr('common.create')}
-                </button>
-              )}
+              <button
+                onClick={canEdit && onAddTeam ? openCreateTeam : undefined}
+                className={`${t.accent} text-sm font-semibold flex items-center gap-1${canEdit && onAddTeam ? '' : ' invisible pointer-events-none select-none'}`}
+                aria-hidden={!(canEdit && onAddTeam)}
+              >
+                <Plus size={16} />
+                {tr('common.create')}
+              </button>
             </div>
             {playerTeams.length === 0 ? (
               <div className={`${t.surface} rounded-2xl p-8 text-center`}>
