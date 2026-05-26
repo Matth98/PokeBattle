@@ -264,7 +264,16 @@ function AppContent({ isDark, setIsDark }) {
     const target = players.find((p) => p._id === id);
     const success = await deletePlayer(id);
     if (success) {
-      setPlayers(players.filter(p => p._id !== id));
+      setPlayers((prev) => prev.filter((p) => p._id !== id));
+      // Les combats liés ont été supprimés côté serveur — on resynchronise
+      setBattles((prev) => prev.filter(
+        (b) => String(b.player1?._id ?? b.player1) !== String(id) &&
+               String(b.player2?._id ?? b.player2) !== String(id)
+      ));
+      // Si le joueur supprimé était le joueur lié de l'utilisateur courant
+      if (dbUser?.playerId && String(dbUser.playerId) === String(id)) {
+        await refetchDbUser().catch(() => {});
+      }
       toast.success(`${target?.name || 'Joueur'} supprimé`);
     } else {
       toast.error('Erreur lors de la suppression');
@@ -272,13 +281,28 @@ function AppContent({ isDark, setIsDark }) {
   };
 
   const handleDeleteMultiplePlayers = async (ids) => {
+    const idSet = new Set(ids.map(String));
+    let successCount = 0;
     for (const id of ids) {
       const target = players.find((p) => p._id === id);
       const success = await deletePlayer(id);
-      if (success) setPlayers((prev) => prev.filter((p) => p._id !== id));
+      if (success) {
+        successCount++;
+        setPlayers((prev) => prev.filter((p) => p._id !== id));
+        setBattles((prev) => prev.filter(
+          (b) => String(b.player1?._id ?? b.player1) !== String(id) &&
+                 String(b.player2?._id ?? b.player2) !== String(id)
+        ));
+      }
       if (!success && target) toast.error(`Échec : ${target.name}`);
     }
-    toast.success(`${ids.length} joueur${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`);
+    // Si l'un des joueurs supprimés était le joueur lié de l'utilisateur courant
+    if (dbUser?.playerId && idSet.has(String(dbUser.playerId))) {
+      await refetchDbUser().catch(() => {});
+    }
+    if (successCount > 0) {
+      toast.success(`${successCount} joueur${successCount > 1 ? 's' : ''} supprimé${successCount > 1 ? 's' : ''}`);
+    }
   };
 
   const handleAddTeam = async (teamData) => {

@@ -107,7 +107,12 @@ export const useAPI = () => {
         method: 'DELETE',
         headers: await getAuthHeaders(),
       });
-      if (!res.ok) throw new Error('Erreur suppression joueur');
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const msg = body?.error || `Erreur ${res.status}`;
+        setError(msg);
+        return false;
+      }
       return true;
     } catch (err) {
       setError(err.message);
