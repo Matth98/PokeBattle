@@ -621,7 +621,7 @@ export const PlayerDetail = ({
                 <p className={`${t.textSecondary} text-sm`}>{tr('teams.noPokemon')}</p>
               </div>
             ) : (
-              <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+              <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
                 {[...player.pokemon].sort((a, b) => a.pokeId - b.pokeId).map((p, idx) => {
                   const isLast = idx === player.pokemon.length - 1;
                   return (
@@ -706,7 +706,7 @@ export const PlayerDetail = ({
                 <p className={`${t.textSecondary} text-sm`}>{tr('teams.none')}</p>
               </div>
             ) : (
-              <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+              <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
                 {playerTeams.map((team, idx) => {
                   const isLast = idx === playerTeams.length - 1;
                   const rowContent = (

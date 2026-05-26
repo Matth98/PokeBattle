@@ -111,7 +111,7 @@ export const TeamDetail = ({
               <p className={`${t.textSecondary} text-sm`}>{tr('teams.noTeamPokemon')}</p>
             </div>
           ) : (
-            <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+            <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
               {team.pokemon.map((p, idx) => {
                 const isLast = idx === team.pokemon.length - 1;
                 const types = pokemonTypes[p.pokeId] || [];

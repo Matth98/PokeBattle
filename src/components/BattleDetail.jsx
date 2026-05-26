@@ -93,7 +93,7 @@ const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, tr, onP
         Aucun Pokémon
       </div>
     ) : (
-      <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+      <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
         {pokemon.map((pk, idx) => {
           const isLast = idx === pokemon.length - 1;
           return (
@@ -579,7 +579,7 @@ export const BattleDetail = ({
         {canDelete && (
           <button
             onClick={() => setConfirmingDelete(true)}
-            className={`w-full ${t.surface} ${t.danger} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2`}
+            className={`w-full ${t.surface} ${t.danger} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 shadow-sm`}
           >
             <Trash2 size={18} />
             {tr('common.delete')}

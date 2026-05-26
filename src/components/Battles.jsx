@@ -427,7 +427,7 @@ export const Battles = ({
 
       <div className="relative z-[1] px-5 mt-5 pb-40">
         {battles.length === 0 ? (
-          <div className={`${t.surface} rounded-2xl p-10 text-center mt-12`}>
+          <div className={`${t.surface} rounded-2xl p-10 text-center mt-12 shadow-sm`}>
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileAmber} flex items-center justify-center mb-4`}>
               <Zap size={26} />
             </div>
@@ -446,7 +446,7 @@ export const Battles = ({
             {groupedBattles.map((group) => {
               const isCollapsed = collapsedGroups.has(group.date);
               return (
-                <div key={group.date} className={`${t.surface} rounded-2xl overflow-hidden`}>
+                <div key={group.date} className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
                   <button
                     onClick={() => toggleGroup(group.date)}
                     className={`no-press-fx w-full flex items-center justify-between gap-2 px-4 py-3 ${t.surfaceMuted} active:opacity-80`}

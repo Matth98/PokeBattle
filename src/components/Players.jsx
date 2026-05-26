@@ -198,7 +198,7 @@ export const Players = ({
 
       <div className="relative z-[1] px-5 mt-5 pb-40">
         {players.length === 0 ? (
-          <div className={`${t.surface} rounded-2xl p-10 text-center mt-12`}>
+          <div className={`${t.surface} rounded-2xl p-10 text-center mt-12 shadow-sm`}>
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-4`}>
               <Users size={26} />
             </div>
@@ -213,7 +213,7 @@ export const Players = ({
             </button>
           </div>
         ) : (
-          <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+          <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
             {players.map((p, idx) => {
               const isLast = idx === players.length - 1;
               const isSelected = selectedItems.includes(p._id);

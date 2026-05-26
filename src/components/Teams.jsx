@@ -297,7 +297,7 @@ export const Teams = ({
 
       <div className="relative z-[1] px-5 mt-5 pb-40">
         {teams.length === 0 ? (
-          <div className={`${t.surface} rounded-2xl p-10 text-center mt-12`}>
+          <div className={`${t.surface} rounded-2xl p-10 text-center mt-12 shadow-sm`}>
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-4`}>
               <Shield size={26} />
             </div>
@@ -312,7 +312,7 @@ export const Teams = ({
             </button>
           </div>
         ) : (
-          <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+          <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
             {teams.map((team, idx) => {
               const thumbSlots = (team.pokemon || []).slice(0, 4);
               const isSelected = selectedItems.includes(team._id);
