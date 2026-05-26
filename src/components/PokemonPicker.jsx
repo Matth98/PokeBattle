@@ -36,8 +36,9 @@ export const PokemonPicker = ({
   useBodyScrollLock();
 
   const hasQuery = searchTerm.trim().length > 0;
-  // Quand defaultResults est fourni, affichage plat avec label ; sinon, groupé par génération
-  const useGrouped = !hasQuery && defaultResults === null;
+  // Groupé par génération si : pas de recherche ET pas de liste perso (null ou vide)
+  const hasPersonalList = defaultResults !== null && defaultResults?.length > 0;
+  const useGrouped = !hasQuery && !hasPersonalList;
 
   // Affichage plat (recherche ou defaultResults)
   const flatDisplayed = hasQuery
