@@ -13,6 +13,13 @@ export const getBattleSortTime = (battle) => {
 export const sortBattlesDesc = (battles = []) =>
   [...battles].sort((a, b) => getBattleSortTime(b) - getBattleSortTime(a));
 
+// Horodatage de création d'un combat — utilisé pour le tri intra-groupe
+const getBattleCreatedAt = (battle) => {
+  if (battle?.timestamp) return new Date(battle.timestamp).getTime();
+  if (battle?.createdAt) return new Date(battle.createdAt).getTime();
+  return 0;
+};
+
 export const groupBattlesByDate = (battles = []) => {
   const groups = [];
   const groupByDate = new Map();
@@ -25,6 +32,11 @@ export const groupBattlesByDate = (battles = []) => {
       groups.push(group);
     }
     groupByDate.get(dateKey).battles.push(battle);
+  }
+
+  // Dans chaque groupe, trier du plus récent au plus ancien (heure de création)
+  for (const group of groups) {
+    group.battles.sort((a, b) => getBattleCreatedAt(b) - getBattleCreatedAt(a));
   }
 
   return groups;

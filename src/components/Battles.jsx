@@ -628,7 +628,7 @@ export const Battles = ({
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
-              {tr('battles.deleteTitle')}
+              {tr('battles.deleteMultipleTitle', selectedItems.length)}
             </p>
             <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
             <div className="flex gap-2">

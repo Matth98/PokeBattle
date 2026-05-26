@@ -800,7 +800,7 @@ export const PlayerDetail = ({
                       onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                     />
                   </div>
-                  <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>MVP PRINCIPAL</p>
+                  <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>POKÉMON STAR</p>
                   <p className={`font-black truncate mt-1 ${t.text}`}>{mvpPrincipal.name}</p>
                   <p className={`${t.textSecondary} text-xs font-semibold mt-auto pt-2 leading-snug`}>
                     Titré {mvpPrincipal.count} fois
@@ -819,7 +819,7 @@ export const PlayerDetail = ({
                       onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                     />
                   </div>
-                  <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>ADVERSAIRE PRINCIPAL</p>
+                  <p className={`${t.textSecondary} text-[11px] font-bold uppercase tracking-wide leading-tight`}>PIRE ENNEMI</p>
                   <p className={`font-black truncate mt-1 ${t.text}`}>{mostDangerousOpponent.name}</p>
                   <p className={`${t.textSecondary} text-xs font-semibold mt-auto pt-2 leading-snug`}>
                     Vainqueur {mostDangerousOpponent.count} fois
