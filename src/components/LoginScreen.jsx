@@ -1,5 +1,5 @@
 // src/components/LoginScreen.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 
 export function LoginScreen({ onSignInWithGoogle }) {
@@ -7,18 +7,39 @@ export function LoginScreen({ onSignInWithGoogle }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
+  // Détecte si le composant est toujours monté (sur iOS, signInWithPopup peut
+  // rejeter même quand l'auth réussit — onAuthStateChanged démonte ce composant).
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
+
+  const IGNORED_CODES = [
+    'auth/popup-closed-by-user',
+    'auth/cancelled-popup-request',
+    'auth/popup-blocked',
+  ];
+
   const handle = (fn) => async () => {
     setError('');
     setLoading(true);
     try {
       await fn();
     } catch (e) {
-      setError(e.code === 'auth/popup-closed-by-user'
-        ? ''
-        : tr('login.error'));
-    } finally {
-      setLoading(false);
+      if (IGNORED_CODES.includes(e?.code)) {
+        // Annulation volontaire → pas d'erreur
+        if (mountedRef.current) setLoading(false);
+        return;
+      }
+      // Sur iOS, signInWithPopup peut rejeter même quand l'auth réussit.
+      // On attend 1 s pour laisser onAuthStateChanged démonter ce composant
+      // si l'utilisateur est authentifié. Si on est toujours là → erreur réelle.
+      await new Promise(r => setTimeout(r, 1000));
+      if (mountedRef.current) {
+        setError(tr('login.error'));
+        setLoading(false);
+      }
+      return;
     }
+    if (mountedRef.current) setLoading(false);
   };
 
   return (

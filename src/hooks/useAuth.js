@@ -5,12 +5,8 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
-
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
 const AuthContext  = createContext(null);
@@ -40,35 +36,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    let unsubscribe;
-
-    // On attend getRedirectResult AVANT de souscrire à onAuthStateChanged.
-    // Cela garantit que l'état Firebase est à jour (redirect traité) avant
-    // que le listener ne fire — évite le flash LoginScreen + la boucle.
-    (async () => {
-      try {
-        await getRedirectResult(auth);
-      } catch (err) {
-        const code = err?.code ?? '';
-        if (!['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(code)) {
-          console.warn('[auth] getRedirectResult:', code, err?.message);
-        }
-      }
-
-      if (cancelled) return;
-
-      unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-        setUser(firebaseUser);
-        setLoading(false);
-        fetchDbUser(firebaseUser);
-      });
-    })();
-
-    return () => {
-      cancelled = true;
-      unsubscribe?.();
-    };
+    return onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+      fetchDbUser(firebaseUser);
+    });
   }, [fetchDbUser]);
 
   // Call after claiming/creating a player to refresh dbUser
@@ -76,13 +48,8 @@ export function AuthProvider({ children }) {
     if (user) await fetchDbUser(user);
   }, [user, fetchDbUser]);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
-    if (isMobile) {
-      // Sur mobile, signInWithPopup rejette après le retour OAuth même si
-      // l'auth réussit. On utilise le flow redirect qui est fiable sur iOS.
-      return signInWithRedirect(auth, provider);
-    }
     return signInWithPopup(auth, provider);
   };
 
