@@ -345,23 +345,26 @@ function AppContent({ isDark, setIsDark }) {
   };
 
   const handleDeleteBattle = async (id) => {
-    const success = await deleteBattle(id);
-    if (success) {
-      setBattles(battles.filter(b => b._id !== id));
+    const result = await deleteBattle(id);
+    if (result === true) {
+      setBattles((prev) => prev.filter(b => b._id !== id));
       refreshPlayers();
       toast.success('Combat supprimé');
     } else {
-      toast.error('Erreur lors de la suppression');
+      toast.error(typeof result === 'string' ? result : 'Erreur lors de la suppression');
     }
   };
 
   const handleDeleteMultipleBattles = async (ids) => {
     let successCount = 0;
+    let lastError = null;
     for (const id of ids) {
-      const success = await deleteBattle(id);
-      if (success) {
+      const result = await deleteBattle(id);
+      if (result === true) {
         setBattles((prev) => prev.filter((b) => b._id !== id));
         successCount++;
+      } else {
+        lastError = typeof result === 'string' ? result : 'Erreur suppression';
       }
     }
     refreshPlayers();
@@ -369,7 +372,7 @@ function AppContent({ isDark, setIsDark }) {
       toast.success(`${successCount} combat${successCount > 1 ? 's' : ''} supprimé${successCount > 1 ? 's' : ''}`);
     }
     if (successCount < ids.length) {
-      toast.error(`${ids.length - successCount} combat${ids.length - successCount > 1 ? 's' : ''} non supprimé${ids.length - successCount > 1 ? 's' : ''}`);
+      toast.error(lastError || `${ids.length - successCount} combat${ids.length - successCount > 1 ? 's' : ''} non supprimé${ids.length - successCount > 1 ? 's' : ''}`);
     }
   };
 
