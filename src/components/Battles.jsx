@@ -72,6 +72,7 @@ export const Battles = ({
     isSuperAdmin ||
     !battle.createdBy ||
     (dbUser?._id && String(battle.createdBy) === String(dbUser._id));
+  const canSelectBattle = (b) => myBattles.some((mb) => mb._id === b._id);
 
   const [newBattleData, setNewBattleData] = useState(emptyBattle());
   const [battleSelectedPokemon, setBattleSelectedPokemon] = useState({ player1: [], player2: [] });
@@ -103,6 +104,13 @@ export const Battles = ({
       setBattleSelectedPokemon({ player1: team1, player2: team2 });
     }
   }, [isEditing, editingBattle]);
+
+  // Pour les non-admins en création : pré-remplit player1 avec le joueur lié
+  useEffect(() => {
+    if (showForm && !isEditing && !isSuperAdmin && dbUser?.playerId) {
+      setNewBattleData((prev) => ({ ...prev, player1: dbUser.playerId }));
+    }
+  }, [showForm, isEditing, isSuperAdmin, dbUser?.playerId]);
 
   // Score calculé en direct (1 Pokémon éliminé = 1 point pour l'adversaire)
   const p1Score = (battleSelectedPokemon.player2 || []).filter((p) => p.eliminated).length;
@@ -473,7 +481,7 @@ export const Battles = ({
                         <button
                           onClick={() =>
                             inSelection
-                              ? setSelectedItems(
+                              ? canSelectBattle(b) && setSelectedItems(
                                   isSelected
                                     ? selectedItems.filter((id) => id !== b._id)
                                     : [...selectedItems, b._id]
@@ -482,7 +490,7 @@ export const Battles = ({
                           }
                           className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left`}
                         >
-                          {inSelection && (
+                          {inSelection && canSelectBattle(b) && (
                             <span
                               className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}
                             >
@@ -703,6 +711,8 @@ export const Battles = ({
                 const slotPokemon = battleSelectedPokemon[slot] || [];
                 const otherSlot = slot === 'player1' ? 'player2' : 'player1';
                 const selectablePlayers = players.filter((p) => p._id !== newBattleData[otherSlot]);
+                // Player1 verrouillé pour les non-admins en mode création
+                const isLocked = slot === 'player1' && !isSuperAdmin && !isEditing;
                 return (
                   <div key={slot} className="space-y-2">
                     <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} ml-1 block`}>
@@ -711,8 +721,9 @@ export const Battles = ({
                     <div className="relative">
                       <button
                         type="button"
-                        onClick={() => setOpenPlayerDropdown(openPlayerDropdown === slot ? null : slot)}
-                        className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3 text-left`}
+                        onClick={isLocked ? undefined : () => setOpenPlayerDropdown(openPlayerDropdown === slot ? null : slot)}
+                        disabled={isLocked}
+                        className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3 text-left${isLocked ? ' opacity-70 cursor-default' : ''}`}
                       >
                         {playerId ? (
                           <>
@@ -722,9 +733,9 @@ export const Battles = ({
                         ) : (
                           <span className={`flex-1 ${t.textSecondary}`}>{tr('battles.selectPlayer')}</span>
                         )}
-                        <ChevronDown size={16} className={t.textSecondary} />
+                        {!isLocked && <ChevronDown size={16} className={t.textSecondary} />}
                       </button>
-                      {openPlayerDropdown === slot && (
+                      {!isLocked && openPlayerDropdown === slot && (
                         <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
                           {selectablePlayers.map((p) => (
                             <button
@@ -969,7 +980,7 @@ export const Battles = ({
           title="Ajouter un Pokémon"
           alreadyPickedIds={(battleSelectedPokemon[pickerState.slot] || []).map((p) => p.pokeId)}
           defaultResults={getPlayerRoster(newBattleData[pickerState.slot])}
-          defaultLabel="Pokémon du joueur"
+          defaultLabel={`Pokémon de ${players.find((p) => p._id === newBattleData[pickerState.slot])?.name || 'joueur'}`}
           onSelect={handleAddPokemonToSlot}
           onClose={closePicker}
         />

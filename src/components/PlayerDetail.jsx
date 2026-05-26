@@ -58,7 +58,6 @@ export const PlayerDetail = ({
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
   const canEdit = isSuperAdmin ||
-    !player?.userId ||
     (dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id));
 
   const [addingPokemon, setAddingPokemon] = useState(false);
@@ -691,7 +690,7 @@ export const PlayerDetail = ({
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 {tr('teams.title')} ({playerTeams.length})
               </h2>
-              {onAddTeam && (
+              {canEdit && onAddTeam && (
                 <button
                   onClick={openCreateTeam}
                   className={`${t.accent} text-sm font-semibold flex items-center gap-1`}

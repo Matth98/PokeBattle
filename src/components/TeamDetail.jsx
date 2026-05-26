@@ -17,7 +17,6 @@ export const TeamDetail = ({
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
   const canEdit = isSuperAdmin ||
-    !team?.userId ||
     (dbUser?._id && team?.userId && String(team.userId) === String(dbUser._id));
 
   const { getPokemonImageUrl } = usePokemon();

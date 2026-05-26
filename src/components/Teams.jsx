@@ -42,8 +42,7 @@ export const Teams = ({
       );
   const canEditTeam = (team) =>
     isSuperAdmin ||
-    !team.userId ||
-    (dbUser?._id && String(team.userId) === String(dbUser._id));
+    (dbUser?._id && team.userId && String(team.userId) === String(dbUser._id));
 
   const [newTeamData, setNewTeamData] = useState(emptyTeamData());
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, owner: false, pokemon: false });
@@ -333,7 +332,7 @@ export const Teams = ({
                   <button
                     onClick={() =>
                       inSelection
-                        ? setSelectedItems(
+                        ? canEditTeam(team) && setSelectedItems(
                             isSelected
                               ? selectedItems.filter((id) => id !== team._id)
                               : [...selectedItems, team._id]
@@ -342,7 +341,7 @@ export const Teams = ({
                     }
                     className={`w-full flex items-center gap-3 p-3 ${t.surface} text-left`}
                   >
-                    {inSelection && (
+                    {inSelection && canEditTeam(team) && (
                       <span
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}
                       >
@@ -474,7 +473,7 @@ export const Teams = ({
                 >
                   {isSaving
                     ? <Loader2 size={16} className="animate-spin" />
-                    : (isEditing ? tr('common.save') : tr('teams.new'))}
+                    : (isEditing ? tr('common.save') : tr('common.create'))}
                 </button>
               </div>
             </div>

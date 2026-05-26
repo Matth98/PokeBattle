@@ -221,7 +221,7 @@ export const Players = ({
               return (
                 <SwipeableRow
                   key={p._id}
-                  onDelete={canEditPlayer(p) ? () => setConfirmingDeleteId(p._id) : undefined}
+                  onDelete={isSuperAdmin ? () => setConfirmingDeleteId(p._id) : undefined}
                   disabled={inSelection}
                   surfaceClass={t.surface}
                   className={[
