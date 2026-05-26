@@ -61,13 +61,16 @@ export const Battles = ({
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
+  // Vérifie si l'utilisateur est participant du combat (player1 ou player2).
+  // Gère les deux cas : player1/player2 populé {_id, name} ou ID brut (string).
+  const isParticipant = (battle) =>
+    dbUser?.playerId && (
+      String(battle.player1?._id ?? battle.player1) === String(dbUser.playerId) ||
+      String(battle.player2?._id ?? battle.player2) === String(dbUser.playerId)
+    );
   const canDeleteBattle = (battle) =>
-    isSuperAdmin ||
-    !battle.createdBy ||
-    (dbUser?._id && String(battle.createdBy) === String(dbUser._id));
+    isSuperAdmin || isParticipant(battle);
   // En mode sélection, seules les batailles supprimables sont sélectionnables.
-  // On utilise canDeleteBattle (basé sur createdBy) plutôt qu'un filtre sur
-  // player1/player2 qui serait cassé car ces champs sont des objets populés.
   const canSelectBattle = (b) => canDeleteBattle(b);
   // Combats sur lesquels l'utilisateur a des droits (suppression / sélection)
   const myBattles = battles.filter((b) => canDeleteBattle(b));

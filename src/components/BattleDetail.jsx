@@ -140,9 +140,7 @@ export const BattleDetail = ({
     String(battle.player1?._id ?? battle.player1) === String(dbUser.playerId) ||
     String(battle.player2?._id ?? battle.player2) === String(dbUser.playerId)
   ));
-  const canDelete = isSuperAdmin ||
-    !battle?.createdBy ||
-    (dbUser?._id && String(battle.createdBy) === String(dbUser._id));
+  const canDelete = isSuperAdmin || canEdit;
 
   const { getPokemonImageUrl } = usePokemon();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
