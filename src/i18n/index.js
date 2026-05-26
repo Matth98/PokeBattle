@@ -85,7 +85,7 @@ const fr = {
   },
   settings: {
     title: 'Paramètres', appearance: 'Apparence',
-    darkMode: 'Mode sombre', lightMode: 'Mode clair',
+    darkMode: 'Sombre', lightMode: 'Clair', systemMode: 'Auto',
     language: 'Langue', account: 'Compte', signOut: 'Se déconnecter',
   },
   login: {
@@ -219,7 +219,7 @@ const en = {
   },
   settings: {
     title: 'Settings', appearance: 'Appearance',
-    darkMode: 'Dark mode', lightMode: 'Light mode',
+    darkMode: 'Dark', lightMode: 'Light', systemMode: 'Auto',
     language: 'Language', account: 'Account', signOut: 'Sign out',
   },
   login: {
@@ -344,7 +344,7 @@ const es = {
   },
   settings: {
     title: 'Ajustes', appearance: 'Apariencia',
-    darkMode: 'Modo oscuro', lightMode: 'Modo claro',
+    darkMode: 'Oscuro', lightMode: 'Claro', systemMode: 'Auto',
     language: 'Idioma', account: 'Cuenta', signOut: 'Cerrar sesión',
   },
   login: {
@@ -469,7 +469,7 @@ const de = {
   },
   settings: {
     title: 'Einstellungen', appearance: 'Aussehen',
-    darkMode: 'Dunkelmodus', lightMode: 'Hellmodus',
+    darkMode: 'Dunkel', lightMode: 'Hell', systemMode: 'Auto',
     language: 'Sprache', account: 'Konto', signOut: 'Abmelden',
   },
   login: {
@@ -594,7 +594,7 @@ const ja = {
   },
   settings: {
     title: '設定', appearance: '外観',
-    darkMode: 'ダークモード', lightMode: 'ライトモード',
+    darkMode: 'ダーク', lightMode: 'ライト', systemMode: '自動',
     language: '言語', account: 'アカウント', signOut: 'ログアウト',
   },
   login: {

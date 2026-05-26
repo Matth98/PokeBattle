@@ -18,6 +18,7 @@ import { PokemonSearchPage } from './components/PokemonSearchPage';
 import { PokemonDetailPage } from './components/PokemonDetailPage';
 import { SettingsPage } from './components/SettingsPage';
 import { LanguageProvider } from './hooks/useLanguage';
+import { useThemeMode } from './hooks/useThemeMode';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -34,7 +35,7 @@ if (typeof document !== 'undefined' && !document.querySelector('link[href*="font
   document.head.appendChild(link);
 }
 
-function AppContent({ isDark, setIsDark }) {
+function AppContent({ isDark, themeMode, setThemeMode }) {
   const {
     user,
     loading: authLoading,
@@ -449,7 +450,6 @@ function AppContent({ isDark, setIsDark }) {
           battles={battles}
           teams={teams}
           isDark={isDark}
-          setIsDark={setIsDark}
           t={t}
           setCurrentTab={navigateTo}
           setSelectedBattle={setSelectedBattle}
@@ -703,7 +703,8 @@ function AppContent({ isDark, setIsDark }) {
           user={user}
           linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
           isDark={isDark}
-          setIsDark={setIsDark}
+          themeMode={themeMode}
+          setThemeMode={setThemeMode}
           t={t}
           onClose={() => setSettingsOpen(false)}
           onSignOut={() => { setSettingsOpen(false); signOut(); }}
@@ -737,7 +738,7 @@ function AppContent({ isDark, setIsDark }) {
 }
 
 function App() {
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, themeMode, setThemeMode } = useThemeMode();
 
   // Synchronise la couleur de la barre de navigation du navigateur avec le thème
   useEffect(() => {
@@ -749,7 +750,7 @@ function App() {
     <LanguageProvider>
       <AuthProvider>
         <ToastProvider isDark={isDark}>
-          <AppContent isDark={isDark} setIsDark={setIsDark} />
+          <AppContent isDark={isDark} themeMode={themeMode} setThemeMode={setThemeMode} />
         </ToastProvider>
       </AuthProvider>
     </LanguageProvider>

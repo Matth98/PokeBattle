@@ -1,12 +1,18 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, ChevronRight, LogOut, Moon, Sun, Check } from 'lucide-react';
+import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
-export const SettingsPage = ({ user, linkedPlayer, isDark, setIsDark, t, onClose, onSignOut, onOpenPlayer }) => {
+const THEME_OPTIONS = [
+  { value: 'light',  Icon: Sun,     labelKey: 'settings.lightMode'  },
+  { value: 'system', Icon: Smartphone, labelKey: 'settings.systemMode' },
+  { value: 'dark',   Icon: Moon,    labelKey: 'settings.darkMode'   },
+];
+
+export const SettingsPage = ({ user, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer }) => {
   const tr = useTranslation();
   const displayName = linkedPlayer?.name || user?.displayName || user?.email || 'Utilisateur';
   const email       = user?.email || '';
@@ -180,20 +186,38 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, setIsDark, t, onClose
                 {tr('settings.appearance')}
               </p>
               <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
-                <button
-                  onClick={() => setIsDark(!isDark)}
-                  className="w-full flex items-center gap-3 px-4 py-4"
-                >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
-                    {isDark ? <Moon size={18} /> : <Sun size={18} />}
+                <div className="w-full flex items-center gap-3 px-4 py-4">
+                  {/* Icône + label du mode actif */}
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
+                    {(() => { const { Icon } = THEME_OPTIONS.find(o => o.value === themeMode); return <Icon size={18} />; })()}
                   </div>
                   <span className={`flex-1 text-left font-medium ${t.text}`}>
-                    {isDark ? tr('settings.darkMode') : tr('settings.lightMode')}
+                    {tr(THEME_OPTIONS.find(o => o.value === themeMode).labelKey)}
                   </span>
-                  <div className={`w-12 h-7 rounded-full transition-colors duration-200 flex items-center px-1 ${isDark ? 'bg-indigo-500' : 'bg-gray-300'}`}>
-                    <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${isDark ? 'translate-x-5' : 'translate-x-0'}`} />
+                  {/* Toggle 3 états */}
+                  <div className={`flex items-center gap-0.5 rounded-full p-1 ${isDark ? 'bg-zinc-700' : 'bg-gray-100'}`}>
+                    {THEME_OPTIONS.map(({ value, Icon }) => {
+                      const active = themeMode === value;
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => setThemeMode(value)}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+                            active
+                              ? isDark
+                                ? 'bg-zinc-500 text-white shadow'
+                                : 'bg-white text-gray-900 shadow-sm'
+                              : isDark
+                                ? 'text-zinc-400'
+                                : 'text-gray-400'
+                          }`}
+                        >
+                          <Icon size={15} />
+                        </button>
+                      );
+                    })}
                   </div>
-                </button>
+                </div>
               </div>
             </section>
 
