@@ -69,6 +69,8 @@ export const Battles = ({
   // On utilise canDeleteBattle (basé sur createdBy) plutôt qu'un filtre sur
   // player1/player2 qui serait cassé car ces champs sont des objets populés.
   const canSelectBattle = (b) => canDeleteBattle(b);
+  // Combats sur lesquels l'utilisateur a des droits (suppression / sélection)
+  const myBattles = battles.filter((b) => canDeleteBattle(b));
 
   const [newBattleData, setNewBattleData] = useState(emptyBattle());
   const [battleSelectedPokemon, setBattleSelectedPokemon] = useState({ player1: [], player2: [] });
