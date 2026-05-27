@@ -337,16 +337,12 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                 >
                   {/* Rang + avatar joueur */}
                   <div className="w-full flex justify-between items-center mb-1">
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
-                      i === 0
-                        ? 'bg-amber-400 text-white'
-                        : i === 1
-                          ? isDark ? 'bg-zinc-500 text-white' : 'bg-gray-300 text-gray-700'
-                          : i === 2
-                            ? 'bg-amber-700/70 text-white'
-                            : `${t.surfaceMuted} ${t.textTertiary}`
-                    }`}>
-                      {i + 1}
+                    <span className="flex-shrink-0 text-base leading-none">
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${t.surfaceMuted} ${t.textTertiary}`}>
+                          {i + 1}
+                        </span>
+                      )}
                     </span>
                     {p.player && (
                       <PlayerAvatar player={p.player} size={20} textSize="text-[7px]" className="flex-shrink-0" />
