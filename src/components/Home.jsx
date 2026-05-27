@@ -118,7 +118,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           <div className="flex items-center gap-2">
             <button
               onClick={onSearchPokemon}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${
                 scrolled
                   ? `${t.surfaceMuted} ${t.text}`
                   : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
@@ -130,7 +130,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             </button>
 <button
               onClick={onOpenSettings}
-              className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${
+              className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${
                 scrolled
                   ? `${t.surfaceMuted} ${t.text}`
                   : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
