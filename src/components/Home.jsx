@@ -143,7 +143,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   ? `${t.surfaceMuted} ${t.text}`
                   : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
               }`}
-              style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Rechercher un Pokémon"
             >
               <Search size={20} />
@@ -155,7 +155,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   ? `${t.surfaceMuted} ${t.text}`
                   : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
               }`}
-              style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Paramètres"
             >
               <PlayerAvatar player={linkedPlayer} size={44} textSize="text-sm" />

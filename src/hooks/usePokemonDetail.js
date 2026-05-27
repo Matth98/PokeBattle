@@ -3,11 +3,33 @@ import { useLanguage } from './useLanguage';
 import { getI18n } from '../i18n';
 import FR_DESCRIPTIONS_GEN9 from '../data/frDescriptionsGen9';
 import FR_DESCRIPTIONS_PLA  from '../data/frDescriptionsPLA';
+import FR_DESCRIPTIONS_HISUI from '../data/frDescriptionsHisui';
+import FR_DESCRIPTIONS_ALOLA from '../data/frDescriptionsAlola';
+import FR_DESCRIPTIONS_GALAR from '../data/frDescriptionsGalar';
+import FR_DESCRIPTIONS_FORMES from '../data/frDescriptionsFormes';
 
 const pokemonCache = new Map();
 const speciesCache = new Map();
 const typeRelCache = new Map();
 const abilityCache = new Map();
+
+// Preferred game versions per regional form variant — ensures we get the description
+// that actually describes that form (e.g. Alolan Raichu in Sun/Moon, not Kanto Raichu)
+const FORM_VERSION_PREF = {
+  alola: ['sun', 'moon', 'ultra-sun', 'ultra-moon'],
+  galar: ['sword', 'shield'],
+  hisui: ['legends-arceus'],
+  paldea: ['scarlet', 'violet'],
+};
+
+function getFormVariant(pokemonApiName) {
+  if (!pokemonApiName) return null;
+  const name = pokemonApiName.toLowerCase();
+  for (const variant of Object.keys(FORM_VERSION_PREF)) {
+    if (name.includes(`-${variant}`)) return variant;
+  }
+  return null;
+}
 
 // Kept for backward compat — components importing STAT_FR directly still work
 export const STAT_FR = {
@@ -68,7 +90,7 @@ async function fetchAbility(abilityName, lang) {
 }
 
 
-export function usePokemonDetail(pokeId) {
+export function usePokemonDetail(pokeId, pokemonNameOverride = null) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -104,6 +126,11 @@ export function usePokemonDetail(pokeId) {
           speciesData = await res.json();
           speciesCache.set(speciesId, speciesData);
         }
+
+        // Detect whether this is any alternate form (IDs ≥ 10000 in PokeAPI)
+        const isAlternateForm = pokemonData.id >= 10000;
+        // Detect regional form variant from PokeAPI name (e.g. "raichu-alola" → "alola")
+        const formVariant = getFormVariant(pokemonData.name);
 
         const typeNames = pokemonData.types.sort((a, b) => a.slot - b.slot).map(t => t.type.name);
         const typeRelations = await Promise.all(typeNames.map(fetchTypeRel));
@@ -143,7 +170,27 @@ export function usePokemonDetail(pokeId) {
           .map(s => `${STAT_MAP[s.stat.name] || STAT_FR[s.stat.name] || s.stat.name} +${s.effort}`)
           .join(', ');
 
-        const flavorEntry = pickLang(speciesData.flavor_text_entries, language);
+        // For regional forms, prefer the game version that introduced that form so we get
+        // the description that actually describes the form (not the Kanto/base form).
+        let flavorEntry;
+        if (formVariant && FORM_VERSION_PREF[formVariant]) {
+          const preferredVersions = FORM_VERSION_PREF[formVariant];
+          const langVariants = LANG_VARIANTS[language] || [language];
+          const fallbacks = ['fr', 'en'].filter(l => l !== language && !langVariants.includes(l));
+          const allLangs = [...langVariants, ...fallbacks];
+          flavorEntry = null;
+          for (const lang of allLangs) {
+            const entry = speciesData.flavor_text_entries?.find(
+              e => e.language.name === lang && preferredVersions.includes(e.version.name)
+            );
+            if (entry) { flavorEntry = entry; break; }
+          }
+          // Fall back to default (most recent) if no version-specific entry found
+          if (!flavorEntry) flavorEntry = pickLang(speciesData.flavor_text_entries, language);
+        } else {
+          flavorEntry = pickLang(speciesData.flavor_text_entries, language);
+        }
+
         let flavorText = flavorEntry?.flavor_text?.replace(/\f/g, ' ').replace(/\n/g, ' ') || '';
 
         // Fallback statique pour le français : si PokeAPI n'a pas d'entrée française
@@ -151,13 +198,36 @@ export function usePokemonDetail(pokeId) {
         if (language === 'fr' && !speciesData.flavor_text_entries?.some(e => e.language.name === 'fr')) {
           flavorText = FR_DESCRIPTIONS_PLA[pokemonData.id] || FR_DESCRIPTIONS_GEN9[pokemonData.id] || flavorText;
         }
+        // Fallback statique pour les formes régionales de Hisui (pas de traduction FR dans PokeAPI)
+        if (language === 'fr' && formVariant === 'hisui' && (!flavorEntry || flavorEntry.language?.name !== 'fr')) {
+          flavorText = FR_DESCRIPTIONS_HISUI[pokemonData.id] || flavorText;
+        }
+        // Fallback statique pour les formes régionales d'Alola (priorité sur PokeAPI pour garantir
+        // que la description décrit bien la forme régionale et non la forme de base)
+        if (language === 'fr' && formVariant === 'alola') {
+          flavorText = FR_DESCRIPTIONS_ALOLA[pokemonData.id] || flavorText;
+        }
+        // Fallback statique pour les formes régionales de Galar (même raison qu'Alola)
+        if (language === 'fr' && formVariant === 'galar') {
+          flavorText = FR_DESCRIPTIONS_GALAR[pokemonData.id] || flavorText;
+        }
+        // Fallback statique pour les formes alternatives (non régionales OU régionales sans entrée FR
+        // dans PokeAPI pour leur version d'origine — ex : Motisma, Tauros de Paldéa, Plumeline…)
+        // S'applique à toutes les formes ≥ 10000 : si une entrée existe dans FR_DESCRIPTIONS_FORMES,
+        // elle prend la priorité sur la description générique de l'espèce de base.
+        if (language === 'fr' && isAlternateForm) {
+          flavorText = FR_DESCRIPTIONS_FORMES[pokemonData.id] || flavorText;
+        }
 
         const genusEntry = pickLang(speciesData.genera, language);
         const genus = genusEntry?.genus || '';
 
         // Pokémon name in current language
+        // For ANY alternate form (pokeId >= 10000), use the override name from the app's data
+        // (already localized) because species names only contain the base Pokémon name
+        // (e.g. "Raichu" instead of "Raichu d'Alola", "Motisma" instead of "Motisma Chaleur")
         const nameEntry = pickLang(speciesData.names, language);
-        const name = nameEntry?.name || pokemonData.name;
+        const name = (isAlternateForm && pokemonNameOverride) ? pokemonNameOverride : (nameEntry?.name || pokemonData.name);
 
         let genderText;
         if (speciesData.gender_rate === -1) {

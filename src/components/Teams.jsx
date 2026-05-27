@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useId } from 'react';
 import { ChevronRight, ChevronDown, Plus, Trash2, X, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemon } from '../hooks/usePokemon';
@@ -10,6 +10,24 @@ import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 
 const emptyTeamData = () => ({ name: '', owner: null, format: '1v1', pokemon: [] });
+
+function PokeBallIcon({ colorBlack = 'black', id }) {
+  const clipId = `pb-${id}`;
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g clipPath={`url(#${clipId})`}>
+        <path d="M5.99994 1.19995C3.55794 1.19995 1.54194 3.03595 1.24194 5.39995H3.68994C3.95394 4.36795 4.88994 3.59995 5.99994 3.59995C7.10994 3.59995 8.04594 4.36795 8.31594 5.39995H10.7579C10.4639 3.03595 8.44794 1.19995 5.99994 1.19995Z" fill={colorBlack}/>
+        <path d="M6 0C2.694 0 0 2.694 0 6C0 9.306 2.694 12 6 12C9.306 12 12 9.306 12 6C12 2.694 9.312 0 6 0ZM6 1.2C8.448 1.2 10.464 3.036 10.758 5.4H8.316C8.046 4.368 7.116 3.6 6 3.6C4.884 3.6 3.954 4.368 3.69 5.4H1.242C1.542 3.036 3.558 1.2 6 1.2Z" fill={colorBlack}/>
+        <path d="M10.7579 5.39995H8.31594C8.04594 4.36795 7.11594 3.59995 5.99994 3.59995C4.88394 3.59995 3.95394 4.36795 3.68994 5.39995H1.24194C1.54194 3.03595 3.55794 1.19995 5.99994 1.19995C8.44194 1.19995 10.4639 3.03595 10.7579 5.39995Z" fill="#FF1C1C"/>
+        <path d="M10.7579 6.59998C10.4639 8.96398 8.44794 10.8 5.99994 10.8C3.55194 10.8 1.54194 8.96398 1.24194 6.59998H3.68994C3.95394 7.63198 4.88994 8.39998 5.99994 8.39998C7.10994 8.39998 8.04594 7.63198 8.31594 6.59998H10.7579Z" fill="white"/>
+        <path d="M6.00005 7.20005C6.66279 7.20005 7.20005 6.66279 7.20005 6.00005C7.20005 5.33731 6.66279 4.80005 6.00005 4.80005C5.33731 4.80005 4.80005 5.33731 4.80005 6.00005C4.80005 6.66279 5.33731 7.20005 6.00005 7.20005Z" fill="white"/>
+      </g>
+      <defs>
+        <clipPath id={clipId}><rect width="12" height="12" fill="white"/></clipPath>
+      </defs>
+    </svg>
+  );
+}
 
 export const Teams = ({
   teams,
@@ -43,6 +61,9 @@ export const Teams = ({
   const canEditTeam = (team) =>
     isSuperAdmin ||
     (dbUser?._id && team.userId && String(team.userId) === String(dbUser._id));
+
+  const [formatFilter, setFormatFilter] = useState('all');
+  const uid = useId();
 
   const [newTeamData, setNewTeamData] = useState(emptyTeamData());
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, owner: false, pokemon: false });
@@ -239,7 +260,7 @@ export const Teams = ({
                   <button
                     onClick={() => setSelectedItems(myTeams.map((team) => team._id))}
                     className={`px-5 h-11 rounded-full backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} text-sm font-semibold`}
-                    style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                    style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                   >
                     {tr('common.all')}
                   </button>
@@ -248,7 +269,7 @@ export const Teams = ({
                   onClick={() => setDeletingSelected(true)}
                   disabled={selectedItems.length === 0}
                   className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} ${t.dangerBg} text-white ${selectedItems.length === 0 ? 'opacity-40' : ''}`}
-                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label={tr('common.delete')}
                 >
                   <Trash2 size={18} />
@@ -259,7 +280,7 @@ export const Teams = ({
                     setSelectedItems([]);
                   }}
                   className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')}`}
-                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label={tr('common.cancel')}
                 >
                   <X size={20} />
@@ -271,7 +292,7 @@ export const Teams = ({
                   <button
                     onClick={() => setSelectionMode('teams')}
                     className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')}`}
-                    style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                    style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                     aria-label="Sélectionner"
                   >
                     <CheckSquare size={20} />
@@ -284,7 +305,7 @@ export const Teams = ({
                     setShowForm(true);
                   }}
                   className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} ${t.accentBg} text-white`}
-                  style={isDark ? { boxShadow: '1px 1px #ffffff36', borderTop: '1px solid #ffffff36' } : undefined}
+                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                   aria-label="Nouvelle équipe"
                 >
                   <Plus size={22} />
@@ -295,7 +316,38 @@ export const Teams = ({
         </div>
       </div>
 
-      <div className="relative z-[1] px-5 mt-5 pb-40">
+      {/* ── Filtres format ── */}
+      {teams.length > 0 && (
+        <div className="relative z-[1] px-5 mt-4 flex gap-2">
+          {[
+            { id: 'all', label: 'Tous' },
+            { id: '1v1', label: '1v1' },
+            { id: '2v2', label: '2v2' },
+          ].map(({ id, label }) => {
+            const active = formatFilter === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setFormatFilter(id)}
+                className={`inline-flex items-center gap-1.5 rounded-full text-sm font-bold transition-all ${
+                  id === 'all' ? 'pl-2 pr-3.5 py-2' : 'px-4 py-2'
+                } ${
+                  active
+                    ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                    : isDark
+                      ? 'bg-white/10 text-gray-300'
+                      : 'bg-white text-gray-600 shadow-sm'
+                }`}
+              >
+                {id === 'all' && <PokeBallIcon colorBlack="black" id={`${uid}-all`} />}
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="relative z-[1] px-5 mt-4 pb-40">
         {teams.length === 0 ? (
           <div className={`${t.surface} rounded-2xl p-10 text-center mt-12 shadow-sm`}>
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-4`}>
@@ -313,10 +365,19 @@ export const Teams = ({
           </div>
         ) : (
           <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
-            {teams.map((team, idx) => {
+            {(() => {
+              const filtered = formatFilter === 'all' ? teams : teams.filter(tm => tm.format === formatFilter);
+              if (filtered.length === 0) {
+                return (
+                  <div className={`p-10 text-center ${t.textSecondary} text-sm`}>
+                    Aucune équipe pour ce format.
+                  </div>
+                );
+              }
+              return filtered.map((team, idx) => {
               const thumbSlots = (team.pokemon || []).slice(0, 4);
               const isSelected = selectedItems.includes(team._id);
-              const isLast = idx === teams.length - 1;
+              const isLast = idx === filtered.length - 1;
               return (
                 <SwipeableRow
                   key={team._id}
@@ -370,9 +431,13 @@ export const Teams = ({
 
                     <div className="flex-1 min-w-0">
                       <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
-                      <p className={`${t.textSecondary} text-xs mt-0.5 truncate`}>
-                        {team.owner} · {(team.pokemon || []).length} Pokémon
-                      </p>
+                      <div className={`${t.textSecondary} text-xs mt-0.5 flex items-center gap-1.5 min-w-0`}>
+                        {(() => {
+                          const ownerPlayer = players.find(p => p._id === team.ownerId);
+                          return ownerPlayer ? <PlayerAvatar player={ownerPlayer} size={16} textSize="text-[8px]" className="flex-shrink-0" /> : null;
+                        })()}
+                        <span className="truncate">{team.owner} · {(team.pokemon || []).length} Pokémon</span>
+                      </div>
                     </div>
 
                     <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
@@ -382,7 +447,8 @@ export const Teams = ({
                   </button>
                 </SwipeableRow>
               );
-            })}
+              });
+            })()}
           </div>
         )}
       </div>
