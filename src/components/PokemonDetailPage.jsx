@@ -71,9 +71,9 @@ function EffectivenessSection({ label, grouped, isDark }) {
       <h3 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>{label}</h3>
       <div className="space-y-3">
         {grouped.map(({ mult, types }) => (
-          <div key={mult} className="flex items-center gap-3">
+          <div key={mult} className="flex items-start gap-4">
             <MultBadge mult={mult} isDark={isDark} />
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-4">
               {types.map(tn => <TypePictogram key={tn} typeName={tn} />)}
             </div>
           </div>

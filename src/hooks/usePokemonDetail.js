@@ -111,10 +111,10 @@ export function usePokemonDetail(pokeId) {
         const effectiveness = {};
         for (const relations of typeRelations) {
           for (const { name } of (relations.double_damage_from || [])) {
-            effectiveness[name] = (effectiveness[name] || 1) * 2;
+            effectiveness[name] = (effectiveness[name] ?? 1) * 2;
           }
           for (const { name } of (relations.half_damage_from || [])) {
-            effectiveness[name] = (effectiveness[name] || 1) * 0.5;
+            effectiveness[name] = (effectiveness[name] ?? 1) * 0.5;
           }
           for (const { name } of (relations.no_damage_from || [])) {
             effectiveness[name] = 0;
