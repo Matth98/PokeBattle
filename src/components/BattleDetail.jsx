@@ -223,8 +223,8 @@ export const BattleDetail = ({
         className="fixed inset-0 -z-10"
         style={{
           background: isDark
-            ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(255,191,0,0.06) 0%, rgba(255,191,0,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(255,0,229,0.05) 0%, rgba(255,0,229,0) 100%), #09090b'
-            : 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(255,191,0,0.35) 0%, rgba(255,191,0,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(255,0,229,0.28) 0%, rgba(255,0,229,0) 100%), #EFF6F9',
+            ? 'radial-gradient(130% 100% at 0% 0%, rgba(255,191,0,0.06) 0%, rgba(255,191,0,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(255,0,229,0.05) 0%, rgba(255,0,229,0) 100%), #09090b'
+            : 'radial-gradient(130% 100% at 0% 0%, rgba(255,191,0,0.35) 0%, rgba(255,191,0,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(255,0,229,0.28) 0%, rgba(255,0,229,0) 100%), #EFF6F9',
         }}
       />
       {/* ── En-tête sticky ── */}
