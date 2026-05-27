@@ -83,7 +83,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         className="fixed inset-0 -z-10"
         style={{
           background: isDark
-            ? 'radial-gradient(130% 100% at 0% 0%, rgba(147,244,185,0.08) 0%, rgba(0,255,150,0) 100%), radial-gradient(120% 70% at 100% 0%, rgba(255,228,162,0.07) 0%, rgba(239,186,37,0) 100%), #09090b'
+            ? 'radial-gradient(130% 75% at 0% 0%, rgba(147,244,185,0.08) 0%, rgba(0,255,150,0) 100%), radial-gradient(120% 70% at 100% 0%, rgba(255,228,162,0.07) 0%, rgba(239,186,37,0) 100%), #09090b'
             : 'radial-gradient(130% 100% at 0% 0%, #93f4b9 0%, rgba(0,255,150,0) 100%), radial-gradient(120% 70% at 100% 0%, #ffe4a2 0%, rgba(239,186,37,0) 100%), rgb(239,246,249)',
         }}
       />
