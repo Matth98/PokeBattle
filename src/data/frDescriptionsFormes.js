@@ -58,7 +58,7 @@ const FR_DESCRIPTIONS_FORMES = {
 
   // ── Axoloto de Paldéa — Pokémon Écarlate/Violet ──────────────────────────
   // Axoloto de Paldéa (#10253)
-  10253: "Jadis aquatique, il a été chassé de son habitat par d'autres Pokémon. Il s'est adapté à la vie terrestre en sécrétant un venin corrosif qui remplace la substance protectrice qu'il produisait dans l'eau.",
+  10253: "Depuis qu'une dispute territoriale l'a contraint à vivre sur la terre ferme, il protège son corps en le recouvrant d'un fluide toxique.",
 };
 
 export default FR_DESCRIPTIONS_FORMES;

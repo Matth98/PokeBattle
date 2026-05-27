@@ -1,47 +1,47 @@
 // Descriptions françaises officielles des formes régionales de Galar
-// Source : textes des jeux Pokémon Épée / Bouclier (localisation officielle Nintendo)
+// Source : Pokebip.com — textes Pokémon Épée (Corayon, Zigzaton, Linéon : Pokepedia.fr)
 
 const FR_DESCRIPTIONS_GALAR = {
   // Miaouss de Galar (#10161)
-  10161: "À force de vivre parmi les guerriers de Galar, ce Pokémon est devenu très belliqueux. Son pelage, durci au fil des générations, ressemble désormais à de l'acier.",
+  10161: "Après avoir longtemps vécu avec une tribu de barbares des mers, il est devenu plus musclé, et des éléments métalliques lui ont poussé ici et là.",
   // Ponyta de Galar (#10162)
-  10162: "Ce Pokémon vit dans une forêt enchantée baignée d'une énergie bienfaisante. Sa crinière aux reflets irisés absorbe cette énergie et s'illumine pour exprimer ses émotions.",
+  10162: "Sa petite corne possède des vertus curatives. Si une blessure n'est pas trop grave, il n'a qu'à la toucher de sa corne pour qu'elle guérisse.",
   // Galopa de Galar (#10163)
-  10163: "Ce Pokémon rare hante les profondeurs des forêts enchantées de Galar. Sa corne unique aux pouvoirs psychiques peut traverser les illusions et percer les boucliers adverses.",
+  10163: "Sa corne lui permet d'utiliser la capacité Coupe Psycho de façon dévastatrice, et même de percer des plaques d'acier renforcé.",
   // Ramoloss de Galar (#10164)
-  10164: "Des particules épicées issues des Qwilfish de Galar se sont incrustées dans ses fentes frontales au fil des siècles. La substance jaune ainsi formée est prisée comme condiment.",
+  10164: "Bien qu'il ait toujours l'air un peu absent, il arrive que son visage se crispe brusquement. Son alimentation serait à l'origine du phénomène.",
   // Flagadoss de Galar (#10165)
-  10165: "Quand le Coquiperl accroché à son bras le mord, la douleur lui provoque un sursaut de lucidité. Il profite alors de cet instant de vivacité retrouvée pour attaquer.",
+  10165: "Le stimulus de la morsure du Kokiyas a déclenché une réaction chimique des épices retenues dans le corps de Flagadoss, lui donnant le type Poison.",
   // Canarticho de Galar (#10166)
-  10166: "Les conditions éprouvantes de Galar ont forgé son caractère. Son poireau, d'une robustesse comparable à l'acier, est le reflet de sa ténacité sans limite.",
+  10166: "Il s'agit de la Forme de Galar de Canarticho. C'est un guerrier courageux qui brandit un large et imposant poireau.",
   // Smogogo de Galar (#10167)
-  10167: "Ce Pokémon aspire les gaz nocifs et en expulse une partie épurée. Les champignons qui poussent sur sa tête se développent grâce aux polluants qu'il accumule.",
+  10167: "Il aspire les particules polluantes dans l'air et excrète de l'air purifié.",
   // M. Mime de Galar (#10168)
-  10168: "Il tapote des pieds pour créer une surface de glace sous ses semelles, puis exécute des numéros de danse sur patins. Il s'offense profondément si on ne l'applaudit pas.",
+  10168: "Les claquettes sont sa spécialité. En tapant contre le sol qu'il a gelé, il crée des barrières pour se protéger.",
   // Artikodin de Galar (#10169)
-  10169: "Ce Pokémon légendaire se déplace si vite qu'il semble être présent en deux endroits à la fois. Ses yeux émettent des ondes psychiques qui désorientent ses adversaires.",
+  10169: "Les lames en forme de plumes qu'il crée grâce à ses pouvoirs psychiques peuvent trancher une épaisse plaque de fer comme si c'était du papier.",
   // Électhor de Galar (#10170)
-  10170: "Il court à toute vitesse grâce à ses puissantes pattes. L'énergie électrique concentrée dans ses jambes lui permet d'asséner des coups dévastateurs à ses adversaires.",
+  10170: "Électhor est le nom qui a été choisi pour ce Pokémon dont les plumes produisent des crépitements électriques si on les frotte.",
   // Sulfura de Galar (#10171)
-  10171: "Ce Pokémon légendaire enveloppe ses adversaires d'une énergie obscure qui leur inspire un profond désespoir. Les flammes noires qui l'entourent ne brûlent pas mais rongent l'âme.",
+  10171: "Son aura maléfique semblable à un brasier peut consumer intégralement l'âme de quiconque en est la cible.",
   // Roigada de Galar (#10172)
-  10172: "Le venin du Coquiperl qui coiffe sa tête a imprégné son cerveau et décuplé ses facultés psychiques. Ses paroles ont le pouvoir d'hypnotiser quiconque l'écoute.",
+  10172: "Le choc de l'évolution et les toxines ont décuplé l'intelligence du Kokiyas, si bien qu'il contrôle désormais le Roigada qu'il parasite.",
   // Corayon de Galar (#10173)
-  10173: "Ces Corayon fantomatiques sont les âmes de Pokémon disparus lors d'un brusque réchauffement des eaux. Leur ectoplasme transparent est extrêmement toxique.",
+  10173: "Ce Pokémon est commun dans les lieux qui étaient jadis submergés. Il maudit quiconque le prend pour un caillou et le pousse du pied.",
   // Zigzaton de Galar (#10174)
-  10174: "Contrairement à ses cousins d'autres régions, ce Pokémon se déplace en faisant des allers-retours brusques. On pense qu'il s'agit là du comportement originel de l'espèce.",
+  10174: "Il court partout sans s'arrêter. Quand il rencontre un autre Pokémon, il fait exprès de lui rentrer dedans pour le provoquer.",
   // Linéon de Galar (#10175)
-  10175: "Ce Pokémon au tempérament impétueux fonce droit sur tout ce qu'il considère comme un défi. Sa réputation de bagarreur intrépide lui vaut l'admiration des jeunes de Galar.",
+  10175: "Il provoque ses adversaires avec sa longue langue pour les mettre en colère avant de les plaquer au sol avec un puissant tacle.",
   // Darumarond de Galar (#10176)
-  10176: "Ses organes producteurs de chaleur se sont transformés en organes producteurs de froid. Ce mécanisme d'adaptation unique reste un mystère pour les chercheurs pokémon.",
+  10176: "En vivant sur des terres enneigées, sa poche à flammes s'est atrophiée à cause du froid, mais il a développé un organe qui produit un air glacé.",
   // Darumacho de Galar Normal (#10177)
-  10177: "Ce Pokémon peut abaisser la température de son souffle à -60 °C. Il s'en sert pour geler ses adversaires avant de les fracasser d'un seul coup de poing dévastateur.",
-  // Darumacho de Galar Transe (#10178)
-  10178: "En mode Transe, la chaleur à l'intérieur de son corps s'emballe. Ce feu intérieur fait fondre et absorbe toute attaque de glace avant qu'elle ne puisse l'atteindre.",
+  10177: "Il conserve sa nourriture dans la boule de neige sur sa tête. Les jours de blizzard, il descend dans les villages habités par les humains.",
+  // Darumacho de Galar Mode Transe (#10178)
+  10178: "Sa colère a ravivé sa poche à flammes qui était censée être atrophiée. Il crache du feu dans tous les sens sans faire attention aux alentours.",
   // Tutafeh de Galar (#10179)
-  10179: "Ce Pokémon habite un vestige de pierre tiré des ruines ancestrales de Galar. Quiconque touche la stèle qu'il porte est, dit-on, frappé d'une terrible malédiction.",
+  10179: "Tutafeh a pris possession d'une tablette en argile où est gravée une malédiction. On dit qu'il aspire la rancune des autres pour en faire sa force.",
   // Limonde de Galar (#10180)
-  10180: "Ce Pokémon se fond dans le sol marécageux pour tendre des embuscades. Sa mâchoire, garnie de dents acérées, peut broyer de épaisses bottes en caoutchouc d'un seul coup.",
+  10180: "À force de vivre dans de la boue riche en fer, son corps s'est transformé en acier très solide.",
 };
 
 export default FR_DESCRIPTIONS_GALAR;
