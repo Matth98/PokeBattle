@@ -104,15 +104,17 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
 
       {/* ── En-tête ── */}
       <div
-        className={`sticky top-0 z-10 px-4 transition-all duration-200 ${
+        className={`sticky top-0 z-10 px-5 pb-3 transition-all duration-200 ${
           scrolled
             ? `${t.surfaceBlur} border-b ${t.divider}`
             : 'bg-transparent border-b border-transparent'
         }`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)' }}
       >
-        <div className="flex items-center justify-between">
-          <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>PokéScores</h1>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>PokéScores</h1>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={onSearchPokemon}
@@ -142,7 +144,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         </div>
       </div>
 
-      <div className="relative z-[1] px-5 mt-5 pb-32 space-y-7">
+      <div className="relative z-[1] px-5 mt-5 pb-40 space-y-7">
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">
