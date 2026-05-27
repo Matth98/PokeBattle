@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from './useLanguage';
 import { getI18n } from '../i18n';
 import FR_DESCRIPTIONS_GEN9 from '../data/frDescriptionsGen9';
+import FR_DESCRIPTIONS_PLA  from '../data/frDescriptionsPLA';
 
 const pokemonCache = new Map();
 const speciesCache = new Map();
@@ -146,9 +147,9 @@ export function usePokemonDetail(pokeId) {
         let flavorText = flavorEntry?.flavor_text?.replace(/\f/g, ' ').replace(/\n/g, ' ') || '';
 
         // Fallback statique pour le français : si PokeAPI n'a pas d'entrée française
-        // (typiquement Pokémon Gen IX), on utilise les descriptions officielles des jeux
+        // (Gen VIII Légendes Arceus #899-905, Gen IX #906-1025), on utilise les descriptions officielles.
         if (language === 'fr' && !speciesData.flavor_text_entries?.some(e => e.language.name === 'fr')) {
-          flavorText = FR_DESCRIPTIONS_GEN9[pokemonData.id] || flavorText;
+          flavorText = FR_DESCRIPTIONS_PLA[pokemonData.id] || FR_DESCRIPTIONS_GEN9[pokemonData.id] || flavorText;
         }
 
         const genusEntry = pickLang(speciesData.genera, language);
