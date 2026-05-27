@@ -4,7 +4,7 @@ import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes } from '../hooks/usePokemonTypes';
-import { computeBattleMvp } from '../utils/mvp';
+import { calcTypeAdv } from '../utils/mvp';
 import { PlayerAvatar } from './PlayerAvatar';
 import { PokemonDetailModal } from './PokemonDetailModal';
 import { useTranslation } from '../hooks/useTranslation';
@@ -39,31 +39,55 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
 
   const pokemonTypes = usePokemonTypes(allPokeIds);
 
-  // TOP 5 MVP : pour chaque combat, on élit UN seul MVP via l'avantage de types
-  // TOP 5 MVP : pour chaque combat, on élit UN seul MVP via l'avantage de types
-  // (même algorithme que BattleDetail), puis on compte par paire (joueur × Pokémon).
+  // TOP 5 MVP :
+  // Phase 1 — pour chaque combat AVEC un vainqueur, élit le MVP de l'équipe gagnante
+  //           (survivant avec le plus d'avantage de types vs l'équipe adverse).
+  //           Compte par paire (joueur × Pokémon).
+  // Phase 2 — déduplique par Pokémon : un même Pokémon n'apparaît qu'une fois,
+  //           représenté par le joueur qui l'a le plus souvent rendu MVP.
   const topPokemon = useMemo(() => {
-    const counts = {};
+    const pairCounts = {};
     for (const b of battles) {
-      const mvp = computeBattleMvp(b, pokemonTypes);
-      if (!mvp) continue;
-      const playerId = String(
-        mvp.side === 'team1'
+      if (!b.winner) continue;
+      const winSide  = b.winner === 'player1' ? 'team1' : 'team2';
+      const oppSide  = b.winner === 'player1' ? 'team2' : 'team1';
+      const winnerId = String(
+        b.winner === 'player1'
           ? (b.player1?._id ?? b.player1)
           : (b.player2?._id ?? b.player2),
       );
-      const key = `${playerId}:${mvp.pokeId}`;
-      if (!counts[key]) {
-        counts[key] = { pokeId: mvp.pokeId, name: mvp.name, mvps: 0, playerId };
-      }
-      counts[key].mvps++;
+      const survivors = (b[winSide] || []).filter(p => !p.eliminated);
+      if (survivors.length === 0) continue;
+      const oppTeam = b[oppSide] || [];
+
+      const scored = survivors.map(p => ({
+        ...p,
+        score: calcTypeAdv(
+          pokemonTypes[p.pokeId] || [],
+          oppTeam.map(o => pokemonTypes[o.pokeId] || []),
+        ),
+      }));
+      const mvp = scored.reduce((best, cur) => cur.score > best.score ? cur : best);
+
+      const key = `${winnerId}:${mvp.pokeId}`;
+      if (!pairCounts[key]) pairCounts[key] = { pokeId: mvp.pokeId, name: mvp.name, mvps: 0, playerId: winnerId };
+      pairCounts[key].mvps++;
     }
-    return Object.values(counts)
+
+    // Dédupliquer : par pokeId, garder le (joueur, count) le plus élevé
+    const byPoke = {};
+    for (const entry of Object.values(pairCounts)) {
+      if (!byPoke[entry.pokeId] || entry.mvps > byPoke[entry.pokeId].mvps) {
+        byPoke[entry.pokeId] = entry;
+      }
+    }
+
+    return Object.values(byPoke)
       .sort((a, b) => b.mvps - a.mvps)
       .slice(0, 5)
-      .map((entry) => ({
+      .map(entry => ({
         ...entry,
-        player: players.find((pl) => String(pl._id) === entry.playerId) || null,
+        player: players.find(pl => String(pl._id) === entry.playerId) || null,
       }));
   }, [battles, players, pokemonTypes]);
   const { getPokemonImageUrl } = usePokemon();
