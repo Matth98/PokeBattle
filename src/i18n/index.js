@@ -38,7 +38,7 @@ const fr = {
     noneDesc: 'Lance ton premier combat avec le bouton +.',
     format: 'Format', player1: 'Joueur 1', player2: 'Joueur 2',
     selectPlayer: 'Sélectionner un joueur', selectPokemon: 'Sélectionner les Pokémon',
-    selectWinner: 'Résultat', winner: 'Vainqueur', noWinner: 'Sans résultat',
+    selectWinner: 'Vainqueur', winner: 'Vainqueur', noWinner: 'Sans résultat',
     result: 'Résultat', score: 'Score',
     stats: 'Statistiques', typeAdvantage: 'Avantage type',
     matchPokemon: 'Pokémon du match',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2, Trophy } from 'lucide-react';
+import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2, Trophy, Dices } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
@@ -81,6 +81,9 @@ export const Battles = ({
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
   // Quel modal est ouvert et pour quel slot ('player1' | 'player2')
   const [pickerState, setPickerState] = useState({ slot: null, mode: null }); // mode: 'team' | 'pokemon'
+  // Tirage aléatoire
+  const [randomizePickerSlot, setRandomizePickerSlot] = useState(null); // slot qui a déclenché la modale dé
+  const [isRandomizing, setIsRandomizing] = useState(false);
   const { getPokemonImageUrl } = usePokemon();
 
   const isEditing = Boolean(editingBattle && showForm);
@@ -133,6 +136,7 @@ export const Battles = ({
     setNewBattleData(emptyBattle());
     setBattleSelectedPokemon({ player1: [], player2: [] });
     setPickerState({ slot: null, mode: null });
+    setRandomizePickerSlot(null);
     if (clearEditingBattle) clearEditingBattle();
   };
 
@@ -230,6 +234,65 @@ export const Battles = ({
     return [...player.pokemon]
       .sort((a, b) => a.pokeId - b.pokeId)
       .map((p) => ({ pokeId: p.pokeId, name: p.name }));
+  };
+
+  // Génère une équipe aléatoire pour un slot :
+  // – pioche d'abord dans le roster du joueur (shuffle) ;
+  // – complète avec des Pokémon aléatoires (1-1025) si nécessaire.
+  const randomizeSlot = async (slot) => {
+    const playerId = newBattleData[slot];
+    if (!playerId) return;
+    const roster = getPlayerRoster(playerId);
+    const needed = requiredPokemonForFormat(newBattleData.format);
+    let picks = [];
+
+    if (roster.length >= needed) {
+      picks = [...roster].sort(() => Math.random() - 0.5).slice(0, needed);
+    } else {
+      const used = new Set(roster.map((p) => p.pokeId));
+      picks = [...roster];
+      const toFetch = [];
+      while (toFetch.length < needed - roster.length) {
+        const id = Math.floor(Math.random() * 1025) + 1;
+        if (!used.has(id)) { used.add(id); toFetch.push(id); }
+      }
+      const fetched = await Promise.all(
+        toFetch.map(async (id) => {
+          try {
+            const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+            const data = await res.json();
+            const frName = data.names?.find((n) => n.language.name === 'fr')?.name;
+            return { pokeId: id, name: frName || data.name || `Pokémon #${id}` };
+          } catch {
+            return { pokeId: id, name: `Pokémon #${id}` };
+          }
+        })
+      );
+      picks = [...picks, ...fetched];
+    }
+
+    setBattleSelectedPokemon((prev) => ({
+      ...prev,
+      [slot]: picks.map((p) => ({
+        id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
+        pokeId: p.pokeId,
+        name: p.name,
+        eliminated: false,
+      })),
+    }));
+  };
+
+  const handleRandomize = async (target) => {
+    setRandomizePickerSlot(null);
+    setIsRandomizing(true);
+    try {
+      const slots = target === 'both'
+        ? ['player1', 'player2'].filter((s) => newBattleData[s])
+        : [target];
+      await Promise.all(slots.map(randomizeSlot));
+    } finally {
+      setIsRandomizing(false);
+    }
   };
 
   const required = requiredPokemonForFormat(newBattleData.format);
@@ -774,20 +837,30 @@ export const Battles = ({
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="flex gap-2">
                           <button
                             onClick={() => setPickerState({ slot, mode: 'team' })}
-                            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${t.accentSoftBg} ${t.accentSoftText}`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${t.accentSoftBg} ${t.accentSoftText}`}
                           >
                             <Shield size={15} />
                             Équipe
                           </button>
                           <button
                             onClick={() => setPickerState({ slot, mode: 'pokemon' })}
-                            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${t.accentBg} text-white`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${t.accentBg} text-white`}
                           >
                             <Plus size={15} />
                             Ajouter
+                          </button>
+                          <button
+                            onClick={() => setRandomizePickerSlot(slot)}
+                            disabled={isRandomizing}
+                            aria-label="Tirage aléatoire"
+                            className={`w-10 py-2.5 rounded-xl flex items-center justify-center disabled:opacity-40 ${isDark ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-500/15 text-violet-600'}`}
+                          >
+                            {isRandomizing
+                              ? <Loader2 size={17} className="animate-spin" />
+                              : <Dices size={17} />}
                           </button>
                         </div>
 
@@ -994,6 +1067,43 @@ export const Battles = ({
           onSelect={handleAddPokemonToSlot}
           onClose={closePicker}
         />
+      )}
+
+      {/* Modale tirage aléatoire */}
+      {randomizePickerSlot && (
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[10000] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+            <div className="flex items-center gap-2 mb-1">
+              <Dices size={20} className={t.accent} />
+              <p className={`font-black text-lg ${t.text}`}>Tirage aléatoire</p>
+            </div>
+            <p className={`${t.textSecondary} text-sm mb-5`}>
+              Génère une équipe aléatoire à partir du roster du joueur.
+            </p>
+            <div className="flex flex-col gap-2">
+              {newBattleData.player1 && newBattleData.player2 && (
+                <button
+                  onClick={() => handleRandomize('both')}
+                  className={`w-full py-3 rounded-xl font-semibold ${t.accentBg} text-white`}
+                >
+                  Les deux joueurs
+                </button>
+              )}
+              <button
+                onClick={() => handleRandomize(randomizePickerSlot)}
+                className={`w-full py-3 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText}`}
+              >
+                Seulement {players.find((p) => p._id === newBattleData[randomizePickerSlot])?.name || 'ce joueur'}
+              </button>
+              <button
+                onClick={() => setRandomizePickerSlot(null)}
+                className={`w-full py-3 rounded-xl font-semibold ${t.textSecondary}`}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
