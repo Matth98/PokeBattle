@@ -30,15 +30,7 @@ import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 
-const TYPE_SUPER_EFFECTIVE = {
-  normal:[], fire:['grass','ice','bug','steel'], water:['fire','ground','rock'],
-  electric:['water','flying'], grass:['water','ground','rock'], ice:['grass','ground','flying','dragon'],
-  fighting:['normal','ice','rock','dark','steel'], poison:['grass','fairy'],
-  ground:['fire','electric','poison','rock','steel'], flying:['grass','fighting','bug'],
-  psychic:['fighting','poison'], bug:['grass','psychic','dark'], rock:['fire','ice','flying','bug'],
-  ghost:['psychic','ghost'], dragon:['dragon'], dark:['psychic','ghost'],
-  steel:['ice','rock','fairy'], fairy:['fighting','dragon','dark'],
-};
+import { TYPE_SUPER_EFFECTIVE } from '../utils/mvp';
 
 export const PlayerDetail = ({
   player,

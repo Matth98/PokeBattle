@@ -3,6 +3,8 @@ import { Search, Users, Shield, Zap, ChevronRight, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
+import { usePokemonTypes } from '../hooks/usePokemonTypes';
+import { computeBattleMvp } from '../utils/mvp';
 import { PlayerAvatar } from './PlayerAvatar';
 import { PokemonDetailModal } from './PokemonDetailModal';
 import { useTranslation } from '../hooks/useTranslation';
@@ -24,26 +26,36 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   const tr = useTranslation();
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
 
-  // TOP 5 MVP : classement de paires (joueur × Pokémon).
-  // Pour chaque combat, le MVP est le survivant de l'équipe gagnante.
-  // On groupe par playerId + pokeId → les 5 paires les plus titrées.
-  const topPokemon = useMemo(() => {
-    const counts = {}; // clé : `${playerId}:${pokeId}`
+  // Collecte tous les pokeIds présents dans les combats pour le lookup de types
+  const allPokeIds = useMemo(() => {
+    const ids = new Set();
     for (const b of battles) {
-      if (!b.winner) continue;
-      const isP1 = b.winner === 'player1';
-      const winTeam   = isP1 ? (b.team1 || []) : (b.team2 || []);
-      const winnerId  = String(isP1
-        ? (b.player1?._id ?? b.player1)
-        : (b.player2?._id ?? b.player2));
-      const survivors = winTeam.filter((p) => !p.eliminated);
-      for (const p of survivors) {
-        const key = `${winnerId}:${p.pokeId}`;
-        if (!counts[key]) {
-          counts[key] = { pokeId: p.pokeId, name: p.name, mvps: 0, playerId: winnerId };
-        }
-        counts[key].mvps++;
+      for (const p of [...(b.team1 || []), ...(b.team2 || [])]) {
+        if (p.pokeId) ids.add(p.pokeId);
       }
+    }
+    return [...ids];
+  }, [battles]);
+
+  const pokemonTypes = usePokemonTypes(allPokeIds);
+
+  // TOP 5 MVP : pour chaque combat, on élit UN seul MVP via l'avantage de types
+  // (même algorithme que BattleDetail), puis on compte par paire (joueur × Pokémon).
+  const topPokemon = useMemo(() => {
+    const counts = {};
+    for (const b of battles) {
+      const mvp = computeBattleMvp(b, pokemonTypes);
+      if (!mvp) continue;
+      const playerId = String(
+        mvp.side === 'team1'
+          ? (b.player1?._id ?? b.player1)
+          : (b.player2?._id ?? b.player2),
+      );
+      const key = `${playerId}:${mvp.pokeId}`;
+      if (!counts[key]) {
+        counts[key] = { pokeId: mvp.pokeId, name: mvp.name, mvps: 0, playerId };
+      }
+      counts[key].mvps++;
     }
     return Object.values(counts)
       .sort((a, b) => b.mvps - a.mvps)
@@ -52,7 +64,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         ...entry,
         player: players.find((pl) => String(pl._id) === entry.playerId) || null,
       }));
-  }, [battles, players]);
+  }, [battles, players, pokemonTypes]);
   const { getPokemonImageUrl } = usePokemon();
   const [scrolled, setScrolled] = useState(false);
   const [viewingPokemon, setViewingPokemon] = useState(null);
@@ -71,8 +83,8 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         className="fixed inset-0 -z-10"
         style={{
           background: isDark
-            ? 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.06) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.05) 0%, rgba(239,186,37,0) 100%), #09090b'
-            : 'radial-gradient(ellipse 130% 75% at 0% 0%, rgba(0,255,150,0.35) 0%, rgba(0,255,150,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(239,186,37,0.28) 0%, rgba(239,186,37,0) 100%), #EFF6F9',
+            ? 'radial-gradient(130% 100% at 0% 0%, rgba(147,244,185,0.08) 0%, rgba(0,255,150,0) 100%), radial-gradient(120% 70% at 100% 0%, rgba(255,228,162,0.07) 0%, rgba(239,186,37,0) 100%), #09090b'
+            : 'radial-gradient(130% 100% at 0% 0%, #93f4b9 0%, rgba(0,255,150,0) 100%), radial-gradient(120% 70% at 100% 0%, #ffe4a2 0%, rgba(239,186,37,0) 100%), rgb(239,246,249)',
         }}
       />
       {/* Decorative circles */}
