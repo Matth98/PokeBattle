@@ -40,6 +40,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   const pokemonTypes = usePokemonTypes(allPokeIds);
 
   // TOP 5 MVP : pour chaque combat, on élit UN seul MVP via l'avantage de types
+  // TOP 5 MVP : pour chaque combat, on élit UN seul MVP via l'avantage de types
   // (même algorithme que BattleDetail), puis on compte par paire (joueur × Pokémon).
   const topPokemon = useMemo(() => {
     const counts = {};
@@ -337,13 +338,17 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                 >
                   {/* Rang + avatar joueur */}
                   <div className="w-full flex justify-between items-center mb-1">
-                    <span className="flex-shrink-0 text-base leading-none">
-                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (
-                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${t.surfaceMuted} ${t.textTertiary}`}>
-                          {i + 1}
-                        </span>
-                      )}
-                    </span>
+                    {i <= 2 ? (
+                      <img
+                        src={i === 0 ? '/medal-gold.png' : i === 1 ? '/medal-silver.png' : '/medal-bronze.png'}
+                        alt={i === 0 ? 'Or' : i === 1 ? 'Argent' : 'Bronze'}
+                        className="w-6 h-6 object-contain flex-shrink-0"
+                      />
+                    ) : (
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${t.surfaceMuted} ${t.textTertiary}`}>
+                        {i + 1}
+                      </span>
+                    )}
                     {p.player && (
                       <PlayerAvatar player={p.player} size={20} textSize="text-[7px]" className="flex-shrink-0" />
                     )}
