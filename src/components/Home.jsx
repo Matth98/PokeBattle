@@ -46,6 +46,9 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   // Phase 2 — déduplique par Pokémon : un même Pokémon n'apparaît qu'une fois,
   //           représenté par le joueur qui l'a le plus souvent rendu MVP.
   const topPokemon = useMemo(() => {
+    // Attendre que TOUS les types soient chargés avant de calculer
+    if (allPokeIds.length > 0 && allPokeIds.some(id => !pokemonTypes[id])) return [];
+
     const pairCounts = {};
     for (const b of battles) {
       if (!b.winner) continue;
@@ -69,20 +72,12 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       }));
       const mvp = scored.reduce((best, cur) => cur.score > best.score ? cur : best);
 
-      const key = `${winnerId}:${mvp.pokeId}`;
+      const key = `${winnerId}:${String(mvp.name || mvp.pokeId).toLowerCase()}`;
       if (!pairCounts[key]) pairCounts[key] = { pokeId: mvp.pokeId, name: mvp.name, mvps: 0, playerId: winnerId };
       pairCounts[key].mvps++;
     }
 
-    // Dédupliquer : par pokeId, garder le (joueur, count) le plus élevé
-    const byPoke = {};
-    for (const entry of Object.values(pairCounts)) {
-      if (!byPoke[entry.pokeId] || entry.mvps > byPoke[entry.pokeId].mvps) {
-        byPoke[entry.pokeId] = entry;
-      }
-    }
-
-    return Object.values(byPoke)
+    return Object.values(pairCounts)
       .sort((a, b) => b.mvps - a.mvps)
       .slice(0, 5)
       .map(entry => ({

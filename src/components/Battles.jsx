@@ -306,13 +306,19 @@ export const Battles = ({
 
   const sortedBattles = sortBattlesDesc(battles);
   const groupedBattles = groupBattlesByDate(sortedBattles);
-  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
+  const [collapsedGroups, setCollapsedGroups] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('battlesCollapsedGroups');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
 
   const toggleGroup = (date) => {
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(date)) next.delete(date);
       else next.add(date);
+      try { sessionStorage.setItem('battlesCollapsedGroups', JSON.stringify([...next])); } catch {}
       return next;
     });
   };
