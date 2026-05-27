@@ -223,14 +223,14 @@ export const Teams = ({
       </div>
       {/* ── En-tête sticky ── */}
       <div
-        className={`sticky top-0 z-10 px-5 pb-3 transition-all duration-200 ${
+        className={`sticky top-0 z-10 px-4 transition-all duration-200 ${
           scrolled
             ? `${t.surfaceBlur} border-b ${t.divider}`
             : 'bg-transparent border-b border-transparent'
         }`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
       >
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>{tr('teams.title')}</h1>
           <div className="flex items-center gap-2">
             {inSelection ? (
@@ -295,7 +295,7 @@ export const Teams = ({
         </div>
       </div>
 
-      <div className="relative z-[1] px-5 mt-5 pb-40">
+      <div className="relative z-[1] px-5 mt-5 pb-32">
         {teams.length === 0 ? (
           <div className={`${t.surface} rounded-2xl p-10 text-center mt-12 shadow-sm`}>
             <div className={`w-14 h-14 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-4`}>
