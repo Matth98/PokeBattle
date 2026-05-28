@@ -330,7 +330,7 @@ export const Teams = ({
                 key={id}
                 onClick={() => setFormatFilter(id)}
                 className={`inline-flex items-center ${id === 'all' ? 'gap-1' : 'gap-1.5'} rounded-full text-sm font-bold transition-all ${
-                  'px-3.5 h-8'
+                  'px-4 h-9'
                 } ${
                   active
                     ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
