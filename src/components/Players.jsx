@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Users, Camera } from 'lucide-react';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -324,7 +325,7 @@ export const Players = ({
       )}
 
       {/* ── Modale Nouveau joueur (full-height sheet iOS) ── */}
-      {showForm && (
+      {showForm && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isFormClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
           <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isFormClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
             {/* Barre supérieure */}
@@ -399,7 +400,7 @@ export const Players = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 };

@@ -142,11 +142,11 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, themeMode, setThemeMo
         {/* ── Close button ── */}
         <button
           onClick={handleClose}
-          className={`absolute top-2 right-4 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl shadow-sm z-20 ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-gray-700'}`}
+          className={`absolute top-2 right-4 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm z-20 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
           style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
           aria-label={tr('common.close')}
         >
-          <X size={20} />
+          <X size={22} />
         </button>
 
         {/* ── Scrollable content ── */}
