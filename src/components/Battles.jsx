@@ -528,8 +528,8 @@ export const Battles = ({
               <button
                 key={id}
                 onClick={() => setFormatFilter(id)}
-                className={`inline-flex items-center ${id === 'all' ? 'gap-1' : 'gap-1.5'} rounded-full text-xs font-bold transition-all ${
-                  'px-3.5 h-7'
+                className={`inline-flex items-center ${id === 'all' ? 'gap-1' : 'gap-1.5'} rounded-full text-sm font-bold transition-all ${
+                  'px-3.5 h-8'
                 } ${
                   active
                     ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
@@ -576,7 +576,7 @@ export const Battles = ({
                     onClick={() => toggleGroup(group.date)}
                     className={`no-press-fx w-full flex items-center justify-between gap-2 px-4 py-3 ${t.surfaceMuted} active:opacity-80`}
                   >
-                    <span className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${t.textSecondary}`}>
+                    <span className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                       <Calendar size={13} />
                       {formatDate(group.date)}
                     </span>
@@ -808,7 +808,7 @@ export const Battles = ({
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
               {/* Format - Segmented control */}
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                   {tr('battles.format')}
                 </label>
                 <div className={`flex gap-1 p-1 rounded-xl ${t.surfaceMuted}`}>
@@ -844,7 +844,7 @@ export const Battles = ({
                 const isLocked = slot === 'player1' && !isSuperAdmin && !isEditing;
                 return (
                   <div key={slot} className="space-y-2">
-                    <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} ml-1 block`}>
+                    <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} ml-1 block`}>
                       {idx === 0 ? tr('battles.player1') : tr('battles.player2')}
                     </label>
                     <div className="relative">
@@ -990,7 +990,7 @@ export const Battles = ({
               {/* Score live + sélection du gagnant */}
               {(newBattleData.player1 || newBattleData.player2) && (
                 <div>
-                  <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                  <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                     {tr('battles.score')}
                   </label>
                   <div className={`${t.surfaceInset} rounded-2xl p-4 space-y-3`}>
@@ -1066,7 +1066,7 @@ export const Battles = ({
 
               {/* Date */}
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                   Date
                 </label>
                 <div className={`${t.inputSoft} rounded-xl px-3 py-2 flex items-center gap-2`}>
@@ -1082,7 +1082,7 @@ export const Battles = ({
 
               {/* Notes */}
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                   Notes
                 </label>
                 <textarea

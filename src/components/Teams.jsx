@@ -329,8 +329,8 @@ export const Teams = ({
               <button
                 key={id}
                 onClick={() => setFormatFilter(id)}
-                className={`inline-flex items-center ${id === 'all' ? 'gap-1' : 'gap-1.5'} rounded-full text-xs font-bold transition-all ${
-                  'px-3.5 h-7'
+                className={`inline-flex items-center ${id === 'all' ? 'gap-1' : 'gap-1.5'} rounded-full text-sm font-bold transition-all ${
+                  'px-3.5 h-8'
                 } ${
                   active
                     ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
@@ -547,7 +547,7 @@ export const Teams = ({
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
               {/* Nom */}
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                   {tr('teams.nameLabel')}
                 </label>
                 <input
@@ -565,7 +565,7 @@ export const Teams = ({
 
               {/* Propriétaire */}
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                   {tr('teams.owner')}
                 </label>
                 <div className="relative">
@@ -605,7 +605,7 @@ export const Teams = ({
 
               {/* Format - Segmented control iOS */}
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
+                <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                   {tr('teams.format')}
                 </label>
                 <div className={`flex gap-1 p-1 rounded-xl ${t.surfaceMuted}`}>
@@ -630,7 +630,7 @@ export const Teams = ({
               {/* Pokémon */}
               {newTeamData.owner && <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} ml-1`}>
+                  <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} ml-1`}>
                     Pokémon (
                     <span className={currentCount === required ? t.success : t.warning}>
                       {currentCount}/{required}
