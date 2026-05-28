@@ -36,7 +36,7 @@ if (typeof document !== 'undefined' && !document.querySelector('link[href*="font
   document.head.appendChild(link);
 }
 
-const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch'];
+const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
 
 function AppContent({ isDark, themeMode, setThemeMode }) {
   const {
@@ -477,7 +477,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 9,
             pointerEvents: 'none',
             transform: 'translateX(-25vw)',
             overflow: 'hidden',
@@ -496,7 +495,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       )}
 
       {/* Couche avant : page courante */}
-      <div ref={pageRef} style={{ position: 'relative', zIndex: 10 }}>
+      <div ref={pageRef} style={{ position: 'relative' }}>
       {currentTab === 'home' && (
         <Home
           players={players}
