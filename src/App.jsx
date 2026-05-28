@@ -475,8 +475,9 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             inset: 0,
             zIndex: 9,
             pointerEvents: 'none',
-            transform: `translateX(${-window.innerWidth * 0.25}px)`,
+            transform: 'translateX(-25vw)',
             overflow: 'hidden',
+            contain: 'layout paint',
           }}
         >
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 1, pointerEvents: 'none' }} />
@@ -488,6 +489,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} />}
           {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={players} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} />}
           {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} />}
+          {prevTab === 'pokemonDetail' && selectedPokemon && <PokemonDetailPage pokeId={selectedPokemon?.pokeId} pokeName={selectedPokemon?.name} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} />}
         </div>
       )}
 
