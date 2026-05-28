@@ -138,6 +138,20 @@ test('fgOverlayRef revient à opacity 0 après spring-back', () => {
   expect(getByTestId('fg-overlay').style.opacity).toBe('0');
 });
 
+test('fgOverlayRef reste sombre (> 0) pendant l\'animation slide-out', () => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 400 });
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPageWithFgOverlay onBack={onBack} enabled />);
+  act(() => {
+    fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+    fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 100, clientY: 200 }] }); // dx=90 ≥ 80
+    fireEvent.touchEnd(document, { changedTouches: [{ identifier: 1, clientX: 100, clientY: 200 }] });
+    // NE PAS runAllTimers — on vérifie juste après le touchEnd, avant la fin de l'animation
+  });
+  // L'overlay doit être animé vers FG_DIM_MAX (pas vers 0)
+  expect(parseFloat(getByTestId('fg-overlay').style.opacity)).toBeGreaterThan(0);
+});
+
 test('null fgOverlayRef (non fourni) ne provoque pas de crash pendant le swipe', () => {
   const onBack = jest.fn();
   const { getByTestId } = render(<TestPage onBack={onBack} enabled />);

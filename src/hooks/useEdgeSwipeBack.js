@@ -116,7 +116,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
         }
         if (fgOverlayRef?.current) {
           fgOverlayRef.current.style.transition = `opacity ${SLIDE_OUT_MS}ms ease-in`;
-          fgOverlayRef.current.style.opacity = '0';
+          fgOverlayRef.current.style.opacity = String(FG_DIM_MAX);
         }
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
