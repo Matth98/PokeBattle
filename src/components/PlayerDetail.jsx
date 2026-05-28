@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import {
@@ -878,7 +879,7 @@ export const PlayerDetail = ({
       </div>
 
       {/* ── Modal Ajouter Pokémon ── */}
-      {addingPokemon && (
+      {addingPokemon && createPortal(
         <PokemonPicker
           t={t}
           isDark={isDark}
@@ -886,11 +887,12 @@ export const PlayerDetail = ({
           alreadyPickedIds={(player.pokemon || []).map((p) => p.pokeId)}
           onSelect={handleAddPokemon}
           onClose={() => setAddingPokemon(false)}
-        />
+        />,
+        document.body
       )}
 
       {/* ── Modal Modifier joueur ── */}
-      {editingPlayer && (
+      {editingPlayer && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isEditPlayerClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
           <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isEditPlayerClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
             <div className={`${t.surface} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
@@ -963,7 +965,7 @@ export const PlayerDetail = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* ── Modal Créer équipe ── */}
       {creatingTeam && (() => {

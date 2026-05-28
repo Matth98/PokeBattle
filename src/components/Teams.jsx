@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronRight, ChevronDown, Plus, Trash2, X, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemon } from '../hooks/usePokemon';
@@ -517,7 +518,7 @@ export const Teams = ({
     )}
 
       {/* ── Formulaire Créer / Modifier équipe (full-screen sheet iOS) ── */}
-      {showForm && (
+      {showForm && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isFormClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
           <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isFormClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
             {/* Barre supérieure */}
@@ -691,7 +692,7 @@ export const Teams = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* Modal Sélection d'un Pokémon pour l'équipe */}
       {pickingPokemon && (() => {

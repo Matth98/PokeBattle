@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2, Trophy, Dices } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
@@ -778,7 +779,7 @@ export const Battles = ({
       )}
 
       {/* ── Formulaire Nouveau / Modifier combat (full-screen sheet iOS) ── */}
-      {showForm && (
+      {showForm && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isFormClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
           <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isFormClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
             {/* Barre supérieure */}
@@ -1099,7 +1100,7 @@ export const Battles = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* Modal sélection d'équipe */}
       {pickerState.mode === 'team' && pickerState.slot && (
