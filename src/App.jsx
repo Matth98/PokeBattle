@@ -19,6 +19,7 @@ import { PokemonDetailPage } from './components/PokemonDetailPage';
 import { SettingsPage } from './components/SettingsPage';
 import { LanguageProvider } from './hooks/useLanguage';
 import { useThemeMode } from './hooks/useThemeMode';
+import { useEdgeSwipeBack } from './hooks/useEdgeSwipeBack';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -57,6 +58,12 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [backLabel, setBackLabel] = useState('');
   const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
+  const pageRef = useEdgeSwipeBack({
+    onBack: navigateBack,
+    enabled: SUB_PAGES.includes(currentTab),
+  });
 
   // ── Mémoire de scroll par onglet ──
   const scrollMemoryRef = useRef(new Map());
@@ -443,7 +450,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   }
 
   return (
-    <div className={isDark ? 'dark' : ''}>
+    <div ref={pageRef} className={isDark ? 'dark' : ''}>
       {currentTab === 'home' && (
         <Home
           players={players}
