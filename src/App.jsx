@@ -119,11 +119,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     navigateBack();
   }, [currentTab, navigateBack]);
 
-  const pageRef = useEdgeSwipeBack({
-    onBack: handleBack,
-    enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm,
-  });
-
   useLayoutEffect(() => {
     if (shouldRestoreRef.current) {
       const saved = scrollMemoryRef.current.get(currentTab) || 0;
@@ -145,6 +140,11 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   const [selectionMode, setSelectionMode] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
+
+  const pageRef = useEdgeSwipeBack({
+    onBack: handleBack,
+    enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm,
+  });
 
   // Wrappers de fermeture : si on était venus depuis la fiche détail, on y retourne
   const setShowBattleForm = (val) => {
