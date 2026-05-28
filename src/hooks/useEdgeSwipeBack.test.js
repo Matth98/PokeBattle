@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { render, fireEvent, act } from '@testing-library/react';
 import { useEdgeSwipeBack } from './useEdgeSwipeBack';
 
@@ -100,4 +100,53 @@ test('bgRef revient en position après spring-back', () => {
   });
   expect(getByTestId('bg').style.transform).toContain('translateX(');
   expect(onBack).not.toHaveBeenCalled();
+});
+
+// ─── Tests avec fgOverlayRef ─────────────────────────────────────────
+
+function TestPageWithFgOverlay({ onBack, enabled }) {
+  const fgOverlayRef = useRef(null);
+  const ref = useEdgeSwipeBack({ onBack, enabled, fgOverlayRef });
+  return (
+    <div ref={ref} data-testid="page">
+      <div ref={fgOverlayRef} data-testid="fg-overlay" />
+    </div>
+  );
+}
+
+test('fgOverlayRef reçoit une opacité > 0 pendant le drag', () => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 400 });
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPageWithFgOverlay onBack={onBack} enabled />);
+  act(() => {
+    fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+    fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 90, clientY: 200 }] }); // dx=80
+  });
+  expect(parseFloat(getByTestId('fg-overlay').style.opacity)).toBeGreaterThan(0);
+});
+
+test('fgOverlayRef revient à opacity 0 après spring-back', () => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 400 });
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPageWithFgOverlay onBack={onBack} enabled />);
+  act(() => {
+    fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+    fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 50, clientY: 200 }] }); // dx=40 < 80
+    fireEvent.touchEnd(document, { changedTouches: [{ identifier: 1, clientX: 50, clientY: 200 }] });
+    jest.runAllTimers();
+  });
+  expect(getByTestId('fg-overlay').style.opacity).toBe('0');
+});
+
+test('null fgOverlayRef (non fourni) ne provoque pas de crash pendant le swipe', () => {
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPage onBack={onBack} enabled />);
+  expect(() => {
+    act(() => {
+      fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+      fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 90, clientY: 200 }] });
+      fireEvent.touchEnd(document, { changedTouches: [{ identifier: 1, clientX: 90, clientY: 200 }] });
+      jest.runAllTimers();
+    });
+  }).not.toThrow();
 });

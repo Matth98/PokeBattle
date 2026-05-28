@@ -5,12 +5,13 @@ const SWIPE_THRESHOLD = 80;
 const SLIDE_OUT_MS = 220;
 const SPRING_BACK_MS = 200;
 const PARALLAX_RATIO = 0.25;
+const FG_DIM_MAX = 0.25;
 
 function bgInitialX() {
   return -window.innerWidth * PARALLAX_RATIO;
 }
 
-export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
+export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef = null }) {
   const pageRef = useRef(null);
   const onBackRef = useRef(onBack);
   onBackRef.current = onBack;
@@ -30,6 +31,10 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
       if (bgRef?.current) {
         bgRef.current.style.transition = '';
         bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+      }
+      if (fgOverlayRef?.current) {
+        fgOverlayRef.current.style.transition = '';
+        fgOverlayRef.current.style.opacity = '0';
       }
     };
 
@@ -77,6 +82,10 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
         bgRef.current.style.transition = 'none';
         bgRef.current.style.transform = `translateX(${bgInitialX() + clampedDx * PARALLAX_RATIO}px)`;
       }
+      if (fgOverlayRef?.current) {
+        fgOverlayRef.current.style.transition = 'none';
+        fgOverlayRef.current.style.opacity = String(Math.min(1, (clampedDx / window.innerWidth) * FG_DIM_MAX));
+      }
     };
 
     const handleTouchEnd = (e) => {
@@ -105,6 +114,10 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
           bgRef.current.style.transition = `transform ${SLIDE_OUT_MS}ms ease-in`;
           bgRef.current.style.transform = 'translateX(0px)';
         }
+        if (fgOverlayRef?.current) {
+          fgOverlayRef.current.style.transition = `opacity ${SLIDE_OUT_MS}ms ease-in`;
+          fgOverlayRef.current.style.opacity = '0';
+        }
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
           resetStyles();
@@ -118,6 +131,10 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
         if (bgRef?.current) {
           bgRef.current.style.transition = `transform ${SPRING_BACK_MS}ms ease-out`;
           bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+        }
+        if (fgOverlayRef?.current) {
+          fgOverlayRef.current.style.transition = `opacity ${SPRING_BACK_MS}ms ease-out`;
+          fgOverlayRef.current.style.opacity = '0';
         }
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
@@ -140,6 +157,10 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
       if (bgRef?.current) {
         bgRef.current.style.transition = `transform ${SPRING_BACK_MS}ms ease-out`;
         bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+      }
+      if (fgOverlayRef?.current) {
+        fgOverlayRef.current.style.transition = `opacity ${SPRING_BACK_MS}ms ease-out`;
+        fgOverlayRef.current.style.opacity = '0';
       }
       timeoutRef.current = setTimeout(() => {
         resetStyles();
