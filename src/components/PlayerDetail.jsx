@@ -1117,7 +1117,7 @@ export const PlayerDetail = ({
         , document.body);
       })()}
 
-      {pickingTeamPokemon && (
+      {pickingTeamPokemon && createPortal(
         <PokemonPicker
           t={t}
           isDark={isDark}
@@ -1128,7 +1128,7 @@ export const PlayerDetail = ({
           onSelect={handleSelectTeamPokemon}
           onClose={() => setPickingTeamPokemon(false)}
         />
-      )}
+      , document.body)}
 
       {/* ── Modal Confirmation suppression équipe ── */}
       {deletingTeam && createPortal(

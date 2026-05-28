@@ -698,7 +698,7 @@ export const Teams = ({
       {pickingPokemon && (() => {
         const owner = players.find((p) => p._id === newTeamData.owner);
         const ownerRoster = (owner?.pokemon || []).map((p) => ({ pokeId: p.pokeId, name: p.name }));
-        return (
+        return createPortal(
           <PokemonPicker
             t={t}
             isDark={isDark}
@@ -709,7 +709,7 @@ export const Teams = ({
             onSelect={handleSelectPokemon}
             onClose={() => setPickingPokemon(false)}
           />
-        );
+        , document.body);
       })()}
     </>
   );

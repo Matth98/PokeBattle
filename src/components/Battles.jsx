@@ -1103,7 +1103,7 @@ export const Battles = ({
       , document.body)}
 
       {/* Modal sélection d'équipe */}
-      {pickerState.mode === 'team' && pickerState.slot && (
+      {pickerState.mode === 'team' && pickerState.slot && createPortal(
         <TeamSelectorModal
           t={t}
           isDark={isDark}
@@ -1113,10 +1113,10 @@ export const Battles = ({
           onSelect={handleSelectTeam}
           onClose={closePicker}
         />
-      )}
+      , document.body)}
 
       {/* Modal recherche/ajout d'un Pokémon */}
-      {pickerState.mode === 'pokemon' && pickerState.slot && (
+      {pickerState.mode === 'pokemon' && pickerState.slot && createPortal(
         <PokemonPicker
           t={t}
           isDark={isDark}
@@ -1127,10 +1127,10 @@ export const Battles = ({
           onSelect={handleAddPokemonToSlot}
           onClose={closePicker}
         />
-      )}
+      , document.body)}
 
       {/* Modale tirage aléatoire */}
-      {randomizePickerSlot && (
+      {randomizePickerSlot && createPortal(
         <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[10000] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
             <div className="flex items-center gap-2 mb-1">
@@ -1164,7 +1164,7 @@ export const Battles = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </>
   );
 };
