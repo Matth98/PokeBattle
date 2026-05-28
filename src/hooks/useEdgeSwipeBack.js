@@ -48,6 +48,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
     const handleTouchStart = (e) => {
       const touch = e.touches[0];
       if (touch.clientX >= EDGE_THRESHOLD) return;
+      clearTimeout(timeoutRef.current);
       startXRef.current = touch.clientX;
       startYRef.current = touch.clientY;
       lockedAxisRef.current = null;
