@@ -520,6 +520,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           teams={teams}
           isDark={isDark}
           t={t}
+          initialScrollY={scrollMemoryRef.current.get('home') || 0}
           setCurrentTab={navigateTo}
           setSelectedBattle={setSelectedBattle}
           onSelectPlayer={(p) => {
@@ -538,6 +539,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           players={players}
           t={t}
           isDark={isDark}
+          initialScrollY={scrollMemoryRef.current.get('players') || 0}
           onSelectPlayer={(p) => {
             setSelectedPlayer(p);
             setPlayerDetailTab('pokemon');
@@ -586,6 +588,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           players={players}
           t={t}
           isDark={isDark}
+          initialScrollY={scrollMemoryRef.current.get('teams') || 0}
           onSelectTeam={(team) => {
             setSelectedTeam(team);
             navigateTo('teamDetail');
@@ -639,6 +642,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           teams={teams}
           t={t}
           isDark={isDark}
+          initialScrollY={scrollMemoryRef.current.get('battles') || 0}
           onSelectBattle={(b) => {
             setSelectedBattle(b);
             navigateTo('battleDetail');

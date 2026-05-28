@@ -506,6 +506,7 @@ export const PlayerDetail = ({
       <div
         aria-hidden="true"
         className="fixed inset-0 -z-10"
+        data-scroll-gradient
         style={{
           background: isDark
             ? 'radial-gradient(130% 75% at 0% 0%, rgba(0,203,255,0.06) 0%, rgba(0,203,255,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(199,255,231,0.05) 0%, rgba(199,255,231,0) 100%), #09090b'

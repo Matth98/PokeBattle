@@ -27,6 +27,9 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
       if (pageRef.current) {
         pageRef.current.style.transition = '';
         pageRef.current.style.transform = '';
+        pageRef.current.querySelectorAll('[data-scroll-gradient]').forEach((el) => {
+          el.style.transform = '';
+        });
       }
       if (bgRef?.current) {
         bgRef.current.style.transition = '';
@@ -71,6 +74,16 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
         if (lockedAxisRef.current === 'y') {
           activeRef.current = false;
           return;
+        }
+        // Axe verrouillé sur X : compenser le décalage de scroll pour que les
+        // gradients position:fixed ne sautent pas quand pageRef reçoit un transform.
+        if (pageRef.current) {
+          const scrollY = window.scrollY;
+          if (scrollY > 0) {
+            pageRef.current.querySelectorAll('[data-scroll-gradient]').forEach((el) => {
+              el.style.transform = `translateY(${scrollY}px)`;
+            });
+          }
         }
       }
 
