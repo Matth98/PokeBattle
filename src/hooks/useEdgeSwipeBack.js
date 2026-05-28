@@ -70,7 +70,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
 
       if (lockedAxisRef.current === null) {
         if (Math.abs(dx) + Math.abs(dy) < 6) return;
-        lockedAxisRef.current = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        lockedAxisRef.current = Math.abs(dx) >= Math.abs(dy) * 2 ? 'x' : 'y';
         if (lockedAxisRef.current === 'y') {
           activeRef.current = false;
           return;

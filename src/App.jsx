@@ -120,7 +120,12 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     if (currentTab === 'playerDetail') setSelectedPlayer(null);
     if (currentTab === 'battleDetail') setSelectedBattle(null);
     if (currentTab === 'teamDetail') setSelectedTeam(null);
-    if (currentTab === 'pokemonDetail') setSelectedPokemon(null);
+    if (currentTab === 'pokemonDetail') {
+      setSelectedPokemon(null);
+      flushSync(() => navigateBack());
+      searchPageRef.current?.focus();
+      return;
+    }
     navigateBack();
   }, [currentTab, navigateBack]);
 
