@@ -159,7 +159,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
       clearTimeout(timeoutRef.current);
       activeRef.current = false;
     };
-  }, [enabled, bgRef]);
+  }, [enabled]); // bgRef est un objet ref stable (useRef) - son identité ne change jamais
 
   return pageRef;
 }
