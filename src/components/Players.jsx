@@ -273,7 +273,7 @@ export const Players = ({
       </div>
 
       {/* ── Modale confirmation suppression multiple ── */}
-      {deletingSelected && (
+      {deletingSelected && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
@@ -296,10 +296,10 @@ export const Players = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* ── Modale confirmation suppression unitaire (swipe) ── */}
-      {confirmingDeleteId && (
+      {confirmingDeleteId && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isConfirmDeleteClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmDeleteClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
@@ -322,7 +322,7 @@ export const Players = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* ── Modale Nouveau joueur (full-height sheet iOS) ── */}
       {showForm && createPortal(

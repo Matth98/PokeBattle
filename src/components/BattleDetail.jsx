@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
@@ -572,7 +573,7 @@ export const BattleDetail = ({
       </div>
 
       {/* ── Modale confirmation ── */}
-      {confirmingDelete && (
+      {confirmingDelete && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isConfirmClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>{tr('battles.deleteTitle')}</p>
@@ -593,7 +594,7 @@ export const BattleDetail = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
 
     {viewingPokemon && (

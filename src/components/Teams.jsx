@@ -460,7 +460,7 @@ export const Teams = ({
       {/* ── Modale confirmation suppression unitaire (swipe) ── */}
       {confirmingDeleteId && (() => {
         const team = teams.find((tt) => tt._id === confirmingDeleteId);
-        return (
+        return createPortal(
           <div className={`fixed inset-0 ${t.overlay} ${isConfirmDeleteClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
             <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmDeleteClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
               <p className={`font-black text-lg ${t.text} mb-1`}>
@@ -486,11 +486,11 @@ export const Teams = ({
               </div>
             </div>
           </div>
-        );
+        , document.body);
       })()}
 
       {/* ── Modale confirmation suppression multiple ── */}
-      {deletingSelected && (
+      {deletingSelected && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
@@ -513,7 +513,7 @@ export const Teams = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
     )}
 

@@ -718,7 +718,7 @@ export const Battles = ({
         const b = battles.find((x) => x._id === confirmingDeleteId);
         const p1 = b ? players.find((p) => p._id === b.player1) : null;
         const p2 = b ? players.find((p) => p._id === b.player2) : null;
-        return (
+        return createPortal(
           <div className={`fixed inset-0 ${t.overlay} ${isConfirmDeleteClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
             <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmDeleteClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
               <p className={`font-black text-lg ${t.text} mb-1`}>
@@ -749,11 +749,11 @@ export const Battles = ({
               </div>
             </div>
           </div>
-        );
+        , document.body);
       })()}
 
       {/* ── Modale confirmation suppression multiple ── */}
-      {deletingSelected && (
+      {deletingSelected && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
@@ -776,7 +776,7 @@ export const Battles = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* ── Formulaire Nouveau / Modifier combat (full-screen sheet iOS) ── */}
       {showForm && createPortal(

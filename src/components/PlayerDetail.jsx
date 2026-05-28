@@ -973,7 +973,7 @@ export const PlayerDetail = ({
         const currentCount = newTeamData.pokemon.length;
         const isAtMax = currentCount >= required;
 
-        return (
+        return createPortal(
           <div className={`fixed inset-0 ${t.overlay} ${isCreateTeamClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
             <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isCreateTeamClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
               <div className={`${t.surface} px-5 pt-3 pb-3 border-b ${t.divider} flex items-center`}>
@@ -1113,7 +1113,7 @@ export const PlayerDetail = ({
               </div>
             </div>
           </div>
-        );
+        , document.body);
       })()}
 
       {pickingTeamPokemon && (
@@ -1130,7 +1130,7 @@ export const PlayerDetail = ({
       )}
 
       {/* ── Modal Confirmation suppression équipe ── */}
-      {deletingTeam && (
+      {deletingTeam && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingTeamClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingTeamClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
@@ -1153,10 +1153,10 @@ export const PlayerDetail = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* ── Modal Confirmation suppression ── */}
-      {deletingPokemon && (
+      {deletingPokemon && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingPokemonClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingPokemonClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-1`}>
@@ -1207,7 +1207,7 @@ export const PlayerDetail = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* ── Modal détail Pokémon ── */}
       {viewingPokemon && (
