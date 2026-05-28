@@ -4,8 +4,13 @@ const EDGE_THRESHOLD = 22;
 const SWIPE_THRESHOLD = 80;
 const SLIDE_OUT_MS = 220;
 const SPRING_BACK_MS = 200;
+const PARALLAX_RATIO = 0.25;
 
-export function useEdgeSwipeBack({ onBack, enabled }) {
+function bgInitialX() {
+  return -window.innerWidth * PARALLAX_RATIO;
+}
+
+export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
   const pageRef = useRef(null);
   const onBackRef = useRef(onBack);
   onBackRef.current = onBack;
@@ -23,6 +28,10 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
       if (pageRef.current) {
         pageRef.current.style.transition = '';
         pageRef.current.style.transform = '';
+      }
+      if (bgRef?.current) {
+        bgRef.current.style.transition = '';
+        bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
       }
       return;
     }
@@ -55,9 +64,14 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
 
       e.preventDefault();
 
+      const clampedDx = Math.max(0, dx);
       if (pageRef.current) {
         pageRef.current.style.transition = 'none';
-        pageRef.current.style.transform = `translateX(${Math.max(0, dx)}px)`;
+        pageRef.current.style.transform = `translateX(${clampedDx}px)`;
+      }
+      if (bgRef?.current) {
+        bgRef.current.style.transition = 'none';
+        bgRef.current.style.transform = `translateX(${bgInitialX() + clampedDx * PARALLAX_RATIO}px)`;
       }
     };
 
@@ -78,6 +92,10 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
           pageRef.current.style.transition = '';
           pageRef.current.style.transform = '';
         }
+        if (bgRef?.current) {
+          bgRef.current.style.transition = '';
+          bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+        }
         return;
       }
 
@@ -86,11 +104,19 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
           pageRef.current.style.transition = `transform ${SLIDE_OUT_MS}ms ease-in`;
           pageRef.current.style.transform = `translateX(${window.innerWidth}px)`;
         }
+        if (bgRef?.current) {
+          bgRef.current.style.transition = `transform ${SLIDE_OUT_MS}ms ease-in`;
+          bgRef.current.style.transform = 'translateX(0px)';
+        }
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
           if (pageRef.current) {
             pageRef.current.style.transition = '';
             pageRef.current.style.transform = '';
+          }
+          if (bgRef?.current) {
+            bgRef.current.style.transition = '';
+            bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
           }
           onBackRef.current();
         }, SLIDE_OUT_MS);
@@ -98,14 +124,22 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
         if (pageRef.current) {
           pageRef.current.style.transition = `transform ${SPRING_BACK_MS}ms ease-out`;
           pageRef.current.style.transform = 'translateX(0)';
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => {
-            if (pageRef.current) {
-              pageRef.current.style.transition = '';
-              pageRef.current.style.transform = '';
-            }
-          }, SPRING_BACK_MS);
         }
+        if (bgRef?.current) {
+          bgRef.current.style.transition = `transform ${SPRING_BACK_MS}ms ease-out`;
+          bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+        }
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+          if (pageRef.current) {
+            pageRef.current.style.transition = '';
+            pageRef.current.style.transform = '';
+          }
+          if (bgRef?.current) {
+            bgRef.current.style.transition = '';
+            bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+          }
+        }, SPRING_BACK_MS);
       }
     };
 
@@ -119,13 +153,21 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
       if (pageRef.current) {
         pageRef.current.style.transition = `transform ${SPRING_BACK_MS}ms ease-out`;
         pageRef.current.style.transform = 'translateX(0)';
-        timeoutRef.current = setTimeout(() => {
-          if (pageRef.current) {
-            pageRef.current.style.transition = '';
-            pageRef.current.style.transform = '';
-          }
-        }, SPRING_BACK_MS);
       }
+      if (bgRef?.current) {
+        bgRef.current.style.transition = `transform ${SPRING_BACK_MS}ms ease-out`;
+        bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+      }
+      timeoutRef.current = setTimeout(() => {
+        if (pageRef.current) {
+          pageRef.current.style.transition = '';
+          pageRef.current.style.transform = '';
+        }
+        if (bgRef?.current) {
+          bgRef.current.style.transition = '';
+          bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+        }
+      }, SPRING_BACK_MS);
     };
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });

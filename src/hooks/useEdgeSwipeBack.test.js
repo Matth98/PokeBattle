@@ -58,3 +58,46 @@ test('ne appelle pas onBack sur un swipe majoritairement vertical', () => {
   swipe(10, 200, 15, 310); // dx=5, dy=110 → vertical
   expect(onBack).not.toHaveBeenCalled();
 });
+
+// ─── Tests avec bgRef ───────────────────────────────────────────────
+
+function TestPageWithBg({ onBack, enabled }) {
+  const bgRef = React.useRef(null);
+  const pageRef = useEdgeSwipeBack({ onBack, enabled, bgRef });
+  return (
+    <>
+      <div ref={pageRef} data-testid="page" />
+      <div ref={bgRef} data-testid="bg" />
+    </>
+  );
+}
+
+test('bgRef reçoit un translateX pendant le drag horizontal', () => {
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPageWithBg onBack={onBack} enabled />);
+  act(() => {
+    fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+    fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 60, clientY: 200 }] }); // dx=50
+  });
+  expect(getByTestId('bg').style.transform).toContain('translateX(');
+});
+
+test('bgRef ne cause pas d\'erreur quand null (paramètre omis)', () => {
+  const onBack = jest.fn();
+  render(<TestPage onBack={onBack} enabled />);
+  expect(() => swipe(10, 200, 100, 200)).not.toThrow();
+  expect(onBack).toHaveBeenCalledTimes(1);
+});
+
+test('bgRef revient en position après spring-back', () => {
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPageWithBg onBack={onBack} enabled />);
+  act(() => {
+    fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+    fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 40, clientY: 200 }] }); // dx=30 < 80
+    fireEvent.touchEnd(document, { changedTouches: [{ identifier: 1, clientX: 40, clientY: 200 }] });
+    jest.runAllTimers();
+  });
+  expect(getByTestId('bg').style.transform).toContain('translateX(');
+  expect(onBack).not.toHaveBeenCalled();
+});
