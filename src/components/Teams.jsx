@@ -329,13 +329,13 @@ export const Teams = ({
               <button
                 key={id}
                 onClick={() => setFormatFilter(id)}
-                className={`inline-flex items-center gap-1.5 rounded-full text-sm font-bold transition-all ${
-                  id === 'all' ? 'pl-2 pr-3.5 py-2' : 'px-4 py-2'
+                className={`inline-flex items-center ${id === 'all' ? 'gap-1' : 'gap-1.5'} rounded-full text-xs font-bold transition-all ${
+                  'px-3.5 h-7'
                 } ${
                   active
                     ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
                     : isDark
-                      ? 'bg-white/10 text-gray-300'
+                      ? 'bg-zinc-800 text-gray-300'
                       : 'bg-white text-gray-600 shadow-sm'
                 }`}
               >
