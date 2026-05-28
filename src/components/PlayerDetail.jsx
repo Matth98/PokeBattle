@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import {
@@ -46,6 +46,7 @@ export const PlayerDetail = ({
   onSelectTeam,
   initialActiveTab = 'pokemon',
   isDark,
+  onViewingPokemonChange = null,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -54,6 +55,9 @@ export const PlayerDetail = ({
 
   const [addingPokemon, setAddingPokemon] = useState(false);
   const [viewingPokemon, setViewingPokemon] = useState(null); // { pokeId, name }
+  useEffect(() => {
+    onViewingPokemonChange?.(viewingPokemon !== null);
+  }, [viewingPokemon, onViewingPokemonChange]);
   const [activeTab, setActiveTab] = useState(initialActiveTab);
   const [editingPlayer, setEditingPlayer] = useState(false);
   const [editName, setEditName] = useState('');

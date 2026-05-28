@@ -146,10 +146,13 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [selectedItems, setSelectedItems] = useState([]);
 
   const bgPageRef = useRef(null);
+  const bgOverlayRef = useRef(null);
+  const [pokemonDetailOpen, setPokemonDetailOpen] = useState(false);
   const pageRef = useEdgeSwipeBack({
     onBack: handleBack,
-    enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm,
+    enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm && !pokemonDetailOpen,
     bgRef: bgPageRef,
+    bgOverlayRef: bgOverlayRef,
   });
 
   // Wrappers de fermeture : si on était venus depuis la fiche détail, on y retourne
@@ -480,7 +483,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             overflow: 'hidden',
           }}
         >
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 1, pointerEvents: 'none' }} />
+          <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 1, pointerEvents: 'none' }} />
           {prevTab === 'home' && <Home players={players} battles={battles} teams={teams} isDark={isDark} t={t} setCurrentTab={() => {}} setSelectedBattle={() => {}} onSelectPlayer={() => {}} onSearchPokemon={() => {}} linkedPlayer={players.find(p => p._id === dbUser?.playerId)} onOpenSettings={() => {}} />}
           {prevTab === 'players' && <Players players={players} t={t} isDark={isDark} onSelectPlayer={() => {}} onAddPlayer={() => {}} onDeletePlayer={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} />}
           {prevTab === 'battles' && <Battles battles={battles} players={players} teams={teams} t={t} isDark={isDark} onSelectBattle={() => {}} onAddBattle={() => {}} onUpdateBattle={() => {}} onUpdatePlayer={() => {}} onSyncPokemon={() => {}} onDeleteBattle={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingBattle={null} clearEditingBattle={() => {}} />}
@@ -557,6 +560,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setSelectedTeam(team);
             navigateTo('teamDetail', { playerDetailTab: activeTab });
           }}
+          onViewingPokemonChange={(isOpen) => setPokemonDetailOpen(isOpen)}
         />
       )}
 
@@ -633,6 +637,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setShowNewTeamForm(true);
           }}
           onUpdate={handleUpdateTeam}
+          onViewingPokemonChange={(isOpen) => setPokemonDetailOpen(isOpen)}
         />
       )}
 

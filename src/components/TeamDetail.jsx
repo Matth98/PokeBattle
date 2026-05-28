@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Pencil, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
@@ -13,6 +13,7 @@ export const TeamDetail = ({
   onBack,
   onEdit,
   backLabel = 'Équipes',
+  onViewingPokemonChange = null,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -23,6 +24,9 @@ export const TeamDetail = ({
   const rosterPokeIds = (team?.pokemon || []).map((p) => p.pokeId);
   const pokemonTypes = usePokemonTypes(rosterPokeIds);
   const [viewingPokemon, setViewingPokemon] = useState(null);
+  useEffect(() => {
+    onViewingPokemonChange?.(viewingPokemon !== null);
+  }, [viewingPokemon, onViewingPokemonChange]);
 
   if (!team) return null;
 
