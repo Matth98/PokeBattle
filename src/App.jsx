@@ -511,8 +511,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       )}
 
       {/* Couche avant : page courante */}
-      {/* zIndex: 25 > Navigation z-20 → les modales internes restent au-dessus de la nav */}
-      <div ref={pageRef} style={{ position: 'relative', zIndex: 25 }}>
+      {/* zIndex: 10 — contenu regular sous Navigation (z-20) ; overlays dans la couche modale z-30 */}
+      <div ref={pageRef} style={{ position: 'relative', zIndex: 10 }}>
       {currentTab === 'home' && (
         <Home
           players={players}
@@ -611,31 +611,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         />
       )}
 
-      {currentTab !== 'teams' && showNewTeamForm && (
-        <Teams
-          teams={teams}
-          players={players}
-          t={t}
-          isDark={isDark}
-          onSelectTeam={(team) => {
-            setSelectedTeam(team);
-            navigateTo('teamDetail');
-          }}
-          onAddTeam={handleAddTeam}
-          onUpdateTeam={handleUpdateTeam}
-          onUpdatePlayer={handleUpdatePlayer}
-          onDeleteTeam={handleDeleteTeam}
-          onDeleteMultiple={handleDeleteMultipleTeams}
-          selectionMode={selectionMode}
-          setSelectionMode={setSelectionMode}
-          selectedItems={selectedItems}
-          setSelectedItems={setSelectedItems}
-          showForm={showNewTeamForm}
-          setShowForm={setShowTeamForm}
-          editingTeam={teamEditOrigin === 'detail' ? selectedTeam : null}
-          renderPage={false}
-        />
-      )}
 
       {currentTab === 'teamDetail' && (
         <TeamDetail
@@ -711,33 +686,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         />
       )}
 
-      {currentTab !== 'battles' && showNewBattleForm && (
-        <Battles
-          battles={battles}
-          players={players}
-          teams={teams}
-          t={t}
-          isDark={isDark}
-          onSelectBattle={(b) => {
-            setSelectedBattle(b);
-            setCurrentTab('battleDetail');
-          }}
-          onAddBattle={handleAddBattle}
-          onUpdateBattle={handleUpdateBattle}
-          onUpdatePlayer={handleUpdatePlayer}
-          onSyncPokemon={handleSyncBattlePokemon}
-          onDeleteBattle={handleDeleteBattle}
-          onDeleteMultiple={handleDeleteMultipleBattles}
-          selectionMode={selectionMode}
-          setSelectionMode={setSelectionMode}
-          selectedItems={selectedItems}
-          setSelectedItems={setSelectedItems}
-          showForm={showNewBattleForm}
-          setShowForm={setShowBattleForm}
-          editingBattle={battleEditOrigin === 'detail' ? selectedBattle : null}
-          renderPage={false}
-        />
-      )}
 
       {(currentTab === 'pokemonSearch' || currentTab === 'pokemonDetail') && (
         <div className={currentTab !== 'pokemonSearch' ? 'hidden' : ''}>
@@ -770,28 +718,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         />
       )}
 
-      {settingsOpen && (
-        <SettingsPage
-          user={user}
-          linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
-          isDark={isDark}
-          themeMode={themeMode}
-          setThemeMode={setThemeMode}
-          t={t}
-          onClose={() => setSettingsOpen(false)}
-          onSignOut={() => { setSettingsOpen(false); signOut(); }}
-          onOpenPlayer={() => {
-            setSettingsOpen(false);
-            const p = players.find(pl => pl._id === dbUser?.playerId);
-            if (!p) return;
-            setTimeout(() => {
-              setSelectedPlayer(p);
-              setPlayerDetailTab('pokemon');
-              navigateTo('playerDetail');
-            }, 350);
-          }}
-        />
-      )}
 
       </div>{/* fin couche avant */}
 
@@ -808,6 +734,84 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           }}
         />
       )}
+
+      {/* Couche modale — z-30 > Navigation z-20, hors du stacking context de pageRef (z-10) */}
+      <div style={{ position: 'relative', zIndex: 30 }}>
+        {settingsOpen && (
+          <SettingsPage
+            user={user}
+            linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
+            isDark={isDark}
+            themeMode={themeMode}
+            setThemeMode={setThemeMode}
+            t={t}
+            onClose={() => setSettingsOpen(false)}
+            onSignOut={() => { setSettingsOpen(false); signOut(); }}
+            onOpenPlayer={() => {
+              setSettingsOpen(false);
+              const p = players.find(pl => pl._id === dbUser?.playerId);
+              if (!p) return;
+              setTimeout(() => {
+                setSelectedPlayer(p);
+                setPlayerDetailTab('pokemon');
+                navigateTo('playerDetail');
+              }, 350);
+            }}
+          />
+        )}
+        {currentTab !== 'teams' && showNewTeamForm && (
+          <Teams
+            teams={teams}
+            players={players}
+            t={t}
+            isDark={isDark}
+            onSelectTeam={(team) => {
+              setSelectedTeam(team);
+              navigateTo('teamDetail');
+            }}
+            onAddTeam={handleAddTeam}
+            onUpdateTeam={handleUpdateTeam}
+            onUpdatePlayer={handleUpdatePlayer}
+            onDeleteTeam={handleDeleteTeam}
+            onDeleteMultiple={handleDeleteMultipleTeams}
+            selectionMode={selectionMode}
+            setSelectionMode={setSelectionMode}
+            selectedItems={selectedItems}
+            setSelectedItems={setSelectedItems}
+            showForm={showNewTeamForm}
+            setShowForm={setShowTeamForm}
+            editingTeam={teamEditOrigin === 'detail' ? selectedTeam : null}
+            renderPage={false}
+          />
+        )}
+        {currentTab !== 'battles' && showNewBattleForm && (
+          <Battles
+            battles={battles}
+            players={players}
+            teams={teams}
+            t={t}
+            isDark={isDark}
+            onSelectBattle={(b) => {
+              setSelectedBattle(b);
+              setCurrentTab('battleDetail');
+            }}
+            onAddBattle={handleAddBattle}
+            onUpdateBattle={handleUpdateBattle}
+            onUpdatePlayer={handleUpdatePlayer}
+            onSyncPokemon={handleSyncBattlePokemon}
+            onDeleteBattle={handleDeleteBattle}
+            onDeleteMultiple={handleDeleteMultipleBattles}
+            selectionMode={selectionMode}
+            setSelectionMode={setSelectionMode}
+            selectedItems={selectedItems}
+            setSelectedItems={setSelectedItems}
+            showForm={showNewBattleForm}
+            setShowForm={setShowBattleForm}
+            editingBattle={battleEditOrigin === 'detail' ? selectedBattle : null}
+            renderPage={false}
+          />
+        )}
+      </div>
     </div>
   );
 }

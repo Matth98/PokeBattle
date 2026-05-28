@@ -1,4 +1,5 @@
 import React, { useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
@@ -249,7 +250,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
     { multVal: 4, label: 4 },
   ]);
 
-  return (
+  return createPortal(
     <motion.div
       className="fixed inset-0 z-[9999] flex flex-col backdrop-blur-md"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)', opacity: overlayOpacity }}
@@ -388,6 +389,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
           </div>
         )}
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 };
