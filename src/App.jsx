@@ -470,6 +470,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       {prevTab && SUB_PAGES.includes(currentTab) && (
         <div
           ref={bgPageRef}
+          className={isDark ? 'dark' : ''}
           style={{
             position: 'fixed',
             inset: 0,
@@ -477,7 +478,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             pointerEvents: 'none',
             transform: 'translateX(-25vw)',
             overflow: 'hidden',
-            contain: 'layout paint',
           }}
         >
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 1, pointerEvents: 'none' }} />
