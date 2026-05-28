@@ -79,6 +79,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     navStack.current = [];
     setBackLabel('');
     scrollMemoryRef.current.set(currentTab, window.scrollY);
+    window.scrollTo({ top: 0, behavior: 'auto' });
     shouldRestoreRef.current = false;
     setPrevTab(null);
     _setCurrentTabState(newTab);
