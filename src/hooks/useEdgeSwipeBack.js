@@ -83,8 +83,9 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
       if (dx >= SWIPE_THRESHOLD) {
         if (pageRef.current) {
           pageRef.current.style.transition = `transform ${SLIDE_OUT_MS}ms ease-in`;
-          pageRef.current.style.transform = 'translateX(100vw)';
+          pageRef.current.style.transform = `translateX(${window.innerWidth}px)`;
         }
+        clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
           if (pageRef.current) {
             pageRef.current.style.transition = '';
@@ -96,6 +97,7 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
         if (pageRef.current) {
           pageRef.current.style.transition = `transform ${SPRING_BACK_MS}ms ease-out`;
           pageRef.current.style.transform = 'translateX(0)';
+          clearTimeout(timeoutRef.current);
           timeoutRef.current = setTimeout(() => {
             if (pageRef.current) {
               pageRef.current.style.transition = '';
@@ -109,11 +111,13 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    document.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchcancel', handleTouchEnd);
       clearTimeout(timeoutRef.current);
       activeRef.current = false;
     };
