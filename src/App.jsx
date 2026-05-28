@@ -36,6 +36,8 @@ if (typeof document !== 'undefined' && !document.querySelector('link[href*="font
   document.head.appendChild(link);
 }
 
+const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
+
 function AppContent({ isDark, themeMode, setThemeMode }) {
   const {
     user,
@@ -58,12 +60,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [backLabel, setBackLabel] = useState('');
   const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
   const [settingsOpen, setSettingsOpen] = useState(false);
-
-  const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
-  const pageRef = useEdgeSwipeBack({
-    onBack: navigateBack,
-    enabled: SUB_PAGES.includes(currentTab),
-  });
 
   // ── Mémoire de scroll par onglet ──
   const scrollMemoryRef = useRef(new Map());
@@ -114,6 +110,19 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     shouldRestoreRef.current = !!prev;
     _setCurrentTabState(target.tab);
   }, [currentTab]);
+
+  const handleBack = useCallback(() => {
+    if (currentTab === 'playerDetail') setSelectedPlayer(null);
+    if (currentTab === 'battleDetail') setSelectedBattle(null);
+    if (currentTab === 'teamDetail') setSelectedTeam(null);
+    if (currentTab === 'pokemonDetail') setSelectedPokemon(null);
+    navigateBack();
+  }, [currentTab, navigateBack]);
+
+  const pageRef = useEdgeSwipeBack({
+    onBack: handleBack,
+    enabled: SUB_PAGES.includes(currentTab),
+  });
 
   useLayoutEffect(() => {
     if (shouldRestoreRef.current) {
