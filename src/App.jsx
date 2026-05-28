@@ -485,6 +485,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           style={{
             position: 'fixed',
             inset: 0,
+            zIndex: 9,
             pointerEvents: 'none',
             transform: 'translateX(-25vw)',
             overflow: 'hidden',
@@ -510,7 +511,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       )}
 
       {/* Couche avant : page courante */}
-      <div ref={pageRef} style={{ position: 'relative' }}>
+      {/* zIndex: 25 > Navigation z-20 → les modales internes restent au-dessus de la nav */}
+      <div ref={pageRef} style={{ position: 'relative', zIndex: 25 }}>
       {currentTab === 'home' && (
         <Home
           players={players}
