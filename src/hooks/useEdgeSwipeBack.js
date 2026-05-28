@@ -18,6 +18,7 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
 
   useEffect(() => {
     if (!enabled) {
+      clearTimeout(timeoutRef.current);
       activeRef.current = false;
       if (pageRef.current) {
         pageRef.current.style.transition = '';
@@ -108,16 +109,35 @@ export function useEdgeSwipeBack({ onBack, enabled }) {
       }
     };
 
+    const handleTouchCancel = () => {
+      if (!activeRef.current) return;
+      clearTimeout(timeoutRef.current);
+      activeRef.current = false;
+      startXRef.current = null;
+      startYRef.current = null;
+      lockedAxisRef.current = null;
+      if (pageRef.current) {
+        pageRef.current.style.transition = `transform ${SPRING_BACK_MS}ms ease-out`;
+        pageRef.current.style.transform = 'translateX(0)';
+        timeoutRef.current = setTimeout(() => {
+          if (pageRef.current) {
+            pageRef.current.style.transition = '';
+            pageRef.current.style.transform = '';
+          }
+        }, SPRING_BACK_MS);
+      }
+    };
+
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    document.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    document.addEventListener('touchcancel', handleTouchCancel, { passive: true });
 
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
-      document.removeEventListener('touchcancel', handleTouchEnd);
+      document.removeEventListener('touchcancel', handleTouchCancel);
       clearTimeout(timeoutRef.current);
       activeRef.current = false;
     };

@@ -121,7 +121,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   const pageRef = useEdgeSwipeBack({
     onBack: handleBack,
-    enabled: SUB_PAGES.includes(currentTab),
+    enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm,
   });
 
   useLayoutEffect(() => {
