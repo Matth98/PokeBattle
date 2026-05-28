@@ -465,7 +465,34 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   }
 
   return (
-    <div ref={pageRef} className={isDark ? 'dark' : ''}>
+    <div className={isDark ? 'dark' : ''}>
+      {/* Couche fond : page précédente, visible pendant le swipe-back */}
+      {prevTab && SUB_PAGES.includes(currentTab) && (
+        <div
+          ref={bgPageRef}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9,
+            pointerEvents: 'none',
+            transform: `translateX(${-window.innerWidth * 0.25}px)`,
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 1, pointerEvents: 'none' }} />
+          {prevTab === 'home' && <Home players={players} battles={battles} teams={teams} isDark={isDark} t={t} setCurrentTab={() => {}} setSelectedBattle={() => {}} onSelectPlayer={() => {}} onSearchPokemon={() => {}} linkedPlayer={players.find(p => p._id === dbUser?.playerId)} onOpenSettings={() => {}} />}
+          {prevTab === 'players' && <Players players={players} t={t} isDark={isDark} onSelectPlayer={() => {}} onAddPlayer={() => {}} onDeletePlayer={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} />}
+          {prevTab === 'battles' && <Battles battles={battles} players={players} teams={teams} t={t} isDark={isDark} onSelectBattle={() => {}} onAddBattle={() => {}} onUpdateBattle={() => {}} onUpdatePlayer={() => {}} onSyncPokemon={() => {}} onDeleteBattle={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingBattle={null} clearEditingBattle={() => {}} />}
+          {prevTab === 'teams' && <Teams teams={teams} players={players} t={t} isDark={isDark} onSelectTeam={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onUpdatePlayer={() => {}} onDeleteTeam={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingTeam={null} clearEditingTeam={() => {}} />}
+          {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={teams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} />}
+          {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} />}
+          {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={players} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} />}
+          {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} />}
+        </div>
+      )}
+
+      {/* Couche avant : page courante */}
+      <div ref={pageRef} style={{ position: 'relative', zIndex: 10 }}>
       {currentTab === 'home' && (
         <Home
           players={players}
@@ -755,6 +782,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           }}
         />
       )}
+      </div>{/* fin couche avant */}
     </div>
   );
 }
