@@ -22,9 +22,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
   const timeoutRef = useRef(null);
 
   useEffect(() => {
-    if (!enabled) {
-      clearTimeout(timeoutRef.current);
-      activeRef.current = false;
+    const resetStyles = () => {
       if (pageRef.current) {
         pageRef.current.style.transition = '';
         pageRef.current.style.transform = '';
@@ -33,6 +31,12 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
         bgRef.current.style.transition = '';
         bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
       }
+    };
+
+    if (!enabled) {
+      clearTimeout(timeoutRef.current);
+      activeRef.current = false;
+      resetStyles();
       return;
     }
 
@@ -88,14 +92,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
       lockedAxisRef.current = null;
 
       if (!wasHorizontal) {
-        if (pageRef.current) {
-          pageRef.current.style.transition = '';
-          pageRef.current.style.transform = '';
-        }
-        if (bgRef?.current) {
-          bgRef.current.style.transition = '';
-          bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
-        }
+        resetStyles();
         return;
       }
 
@@ -110,14 +107,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
         }
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-          if (pageRef.current) {
-            pageRef.current.style.transition = '';
-            pageRef.current.style.transform = '';
-          }
-          if (bgRef?.current) {
-            bgRef.current.style.transition = '';
-            bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
-          }
+          resetStyles();
           onBackRef.current();
         }, SLIDE_OUT_MS);
       } else {
@@ -131,14 +121,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
         }
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-          if (pageRef.current) {
-            pageRef.current.style.transition = '';
-            pageRef.current.style.transform = '';
-          }
-          if (bgRef?.current) {
-            bgRef.current.style.transition = '';
-            bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
-          }
+          resetStyles();
         }, SPRING_BACK_MS);
       }
     };
@@ -159,14 +142,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
         bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
       }
       timeoutRef.current = setTimeout(() => {
-        if (pageRef.current) {
-          pageRef.current.style.transition = '';
-          pageRef.current.style.transform = '';
-        }
-        if (bgRef?.current) {
-          bgRef.current.style.transition = '';
-          bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
-        }
+        resetStyles();
       }, SPRING_BACK_MS);
     };
 
@@ -183,7 +159,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null }) {
       clearTimeout(timeoutRef.current);
       activeRef.current = false;
     };
-  }, [enabled]);
+  }, [enabled, bgRef]);
 
   return pageRef;
 }
