@@ -164,3 +164,69 @@ test('null fgOverlayRef (non fourni) ne provoque pas de crash pendant le swipe',
     });
   }).not.toThrow();
 });
+
+// ─── Tests avec bgOverlayRef ─────────────────────────────────────────
+
+function TestPageWithBgOverlay({ onBack, enabled }) {
+  const bgRef = useRef(null);
+  const bgOverlayRef = useRef(null);
+  const ref = useEdgeSwipeBack({ onBack, enabled, bgRef, bgOverlayRef });
+  return (
+    <div ref={ref} data-testid="page">
+      <div ref={bgRef} data-testid="bg" />
+      <div ref={bgOverlayRef} data-testid="bg-overlay" />
+    </div>
+  );
+}
+
+test('bgOverlayRef opacity diminue pendant le drag', () => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 400 });
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPageWithBgOverlay onBack={onBack} enabled />);
+  act(() => {
+    fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+    fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 90, clientY: 200 }] }); // dx=80
+  });
+  const opacity = parseFloat(getByTestId('bg-overlay').style.opacity);
+  expect(opacity).toBeGreaterThanOrEqual(0);
+  expect(opacity).toBeLessThan(1);
+});
+
+test('bgOverlayRef revient à opacity 1 après spring-back', () => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 400 });
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPageWithBgOverlay onBack={onBack} enabled />);
+  act(() => {
+    fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+    fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 50, clientY: 200 }] }); // dx=40 < 80
+    fireEvent.touchEnd(document, { changedTouches: [{ identifier: 1, clientX: 50, clientY: 200 }] });
+    jest.runAllTimers();
+  });
+  expect(getByTestId('bg-overlay').style.opacity).toBe('1');
+});
+
+test('bgOverlayRef est à opacity 0 pendant la transition slide-out', () => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 400 });
+  const onBack = jest.fn();
+  const { getByTestId } = render(<TestPageWithBgOverlay onBack={onBack} enabled />);
+  act(() => {
+    fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+    fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 100, clientY: 200 }] }); // dx=90 ≥ 80
+    fireEvent.touchEnd(document, { changedTouches: [{ identifier: 1, clientX: 100, clientY: 200 }] });
+    // Ne pas runAllTimers — vérifie juste après touchEnd
+  });
+  expect(parseFloat(getByTestId('bg-overlay').style.opacity)).toBe(0);
+});
+
+test('null bgOverlayRef ne crash pas', () => {
+  const onBack = jest.fn();
+  expect(() => {
+    const { getByTestId } = render(<TestPage onBack={onBack} enabled />);
+    act(() => {
+      fireEvent.touchStart(document, { touches: [{ identifier: 1, clientX: 10, clientY: 200 }] });
+      fireEvent.touchMove(document, { touches: [{ identifier: 1, clientX: 90, clientY: 200 }] });
+      fireEvent.touchEnd(document, { changedTouches: [{ identifier: 1, clientX: 90, clientY: 200 }] });
+      jest.runAllTimers();
+    });
+  }).not.toThrow();
+});
