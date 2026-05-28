@@ -36,7 +36,7 @@ if (typeof document !== 'undefined' && !document.querySelector('link[href*="font
   document.head.appendChild(link);
 }
 
-const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
+const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch'];
 
 function AppContent({ isDark, themeMode, setThemeMode }) {
   const {
@@ -146,10 +146,12 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [selectedItems, setSelectedItems] = useState([]);
 
   const bgPageRef = useRef(null);
+  const fgOverlayRef = useRef(null);
   const pageRef = useEdgeSwipeBack({
     onBack: handleBack,
     enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm,
     bgRef: bgPageRef,
+    fgOverlayRef: fgOverlayRef,
   });
 
   // Wrappers de fermeture : si on était venus depuis la fiche détail, on y retourne
@@ -489,12 +491,22 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} />}
           {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={players} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} />}
           {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} />}
-          {prevTab === 'pokemonDetail' && selectedPokemon && <PokemonDetailPage pokeId={selectedPokemon?.pokeId} pokeName={selectedPokemon?.name} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} />}
         </div>
       )}
 
       {/* Couche avant : page courante */}
       <div ref={pageRef} style={{ position: 'relative', zIndex: 10 }}>
+      <div
+        ref={fgOverlayRef}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'black',
+          opacity: 0,
+          zIndex: 11,
+          pointerEvents: 'none',
+        }}
+      />
       {currentTab === 'home' && (
         <Home
           players={players}
