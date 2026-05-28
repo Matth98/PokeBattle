@@ -59,6 +59,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [playerDetailTab, setPlayerDetailTab] = useState('pokemon');
   const [backLabel, setBackLabel] = useState('');
   const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
+  const [prevTab, setPrevTab] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // ── Mémoire de scroll par onglet ──
@@ -79,6 +80,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     setBackLabel('');
     scrollMemoryRef.current.set(currentTab, window.scrollY);
     shouldRestoreRef.current = false;
+    setPrevTab(null);
     _setCurrentTabState(newTab);
   }, [currentTab]);
 
@@ -90,6 +92,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     setBackLabel(label);
     scrollMemoryRef.current.set(currentTab, window.scrollY);
     shouldRestoreRef.current = false;
+    setPrevTab(currentTab);
     _setCurrentTabState(newTab);
   }, [currentTab, getTabLabel]);
 
@@ -108,6 +111,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     setBackLabel(newTop?.label || '');
     scrollMemoryRef.current.set(currentTab, window.scrollY);
     shouldRestoreRef.current = !!prev;
+    setPrevTab(navStack.current[navStack.current.length - 1]?.tab ?? null);
     _setCurrentTabState(target.tab);
   }, [currentTab]);
 
@@ -141,9 +145,11 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [selectionMode, setSelectionMode] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
 
+  const bgPageRef = useRef(null);
   const pageRef = useEdgeSwipeBack({
     onBack: handleBack,
     enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm,
+    bgRef: bgPageRef,
   });
 
   // Wrappers de fermeture : si on était venus depuis la fiche détail, on y retourne
