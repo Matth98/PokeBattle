@@ -146,6 +146,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [selectedItems, setSelectedItems] = useState([]);
 
   const bgPageRef = useRef(null);
+  const bgScrollRef = useRef(null);
   const bgOverlayRef = useRef(null);
   const [pokemonDetailOpen, setPokemonDetailOpen] = useState(false);
   const pageRef = useEdgeSwipeBack({
@@ -154,6 +155,13 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     bgRef: bgPageRef,
     bgOverlayRef: bgOverlayRef,
   });
+
+  // Restaure la position de scroll dans la couche fond quand prevTab change
+  useEffect(() => {
+    if (bgScrollRef.current && prevTab) {
+      bgScrollRef.current.scrollTop = scrollMemoryRef.current.get(prevTab) || 0;
+    }
+  }, [prevTab]);
 
   // Wrappers de fermeture : si on était venus depuis la fiche détail, on y retourne
   const setShowBattleForm = (val) => {
@@ -482,15 +490,22 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             overflow: 'hidden',
           }}
         >
-          <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 1, pointerEvents: 'none' }} />
-          {prevTab === 'home' && <Home players={players} battles={battles} teams={teams} isDark={isDark} t={t} setCurrentTab={() => {}} setSelectedBattle={() => {}} onSelectPlayer={() => {}} onSearchPokemon={() => {}} linkedPlayer={players.find(p => p._id === dbUser?.playerId)} onOpenSettings={() => {}} />}
-          {prevTab === 'players' && <Players players={players} t={t} isDark={isDark} onSelectPlayer={() => {}} onAddPlayer={() => {}} onDeletePlayer={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} />}
-          {prevTab === 'battles' && <Battles battles={battles} players={players} teams={teams} t={t} isDark={isDark} onSelectBattle={() => {}} onAddBattle={() => {}} onUpdateBattle={() => {}} onUpdatePlayer={() => {}} onSyncPokemon={() => {}} onDeleteBattle={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingBattle={null} clearEditingBattle={() => {}} />}
-          {prevTab === 'teams' && <Teams teams={teams} players={players} t={t} isDark={isDark} onSelectTeam={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onUpdatePlayer={() => {}} onDeleteTeam={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingTeam={null} clearEditingTeam={() => {}} />}
-          {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={teams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} />}
-          {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} />}
-          {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={players} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} />}
-          {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} />}
+          {/* Conteneur scrollable — preserves scroll position, fixed children stay relative to bgPageRef */}
+          <div
+            ref={bgScrollRef}
+            style={{ position: 'absolute', inset: 0, overflowY: 'auto', pointerEvents: 'none' }}
+          >
+            {prevTab === 'home' && <Home players={players} battles={battles} teams={teams} isDark={isDark} t={t} setCurrentTab={() => {}} setSelectedBattle={() => {}} onSelectPlayer={() => {}} onSearchPokemon={() => {}} linkedPlayer={players.find(p => p._id === dbUser?.playerId)} onOpenSettings={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('home') || 0} />}
+            {prevTab === 'players' && <Players players={players} t={t} isDark={isDark} onSelectPlayer={() => {}} onAddPlayer={() => {}} onDeletePlayer={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('players') || 0} />}
+            {prevTab === 'battles' && <Battles battles={battles} players={players} teams={teams} t={t} isDark={isDark} onSelectBattle={() => {}} onAddBattle={() => {}} onUpdateBattle={() => {}} onUpdatePlayer={() => {}} onSyncPokemon={() => {}} onDeleteBattle={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingBattle={null} clearEditingBattle={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('battles') || 0} />}
+            {prevTab === 'teams' && <Teams teams={teams} players={players} t={t} isDark={isDark} onSelectTeam={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onUpdatePlayer={() => {}} onDeleteTeam={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingTeam={null} clearEditingTeam={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('teams') || 0} />}
+            {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={teams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} />}
+            {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} />}
+            {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={players} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} />}
+            {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} />}
+          </div>
+          {/* Overlay d'assombrissement — z-index élevé pour couvrir tout le contenu */}
+          <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 9999, pointerEvents: 'none' }} />
         </div>
       )}
 
@@ -690,6 +705,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setShowNewBattleForm(true);
           }}
           onDelete={handleDeleteBattle}
+          onViewingPokemonChange={(isOpen) => setPokemonDetailOpen(isOpen)}
         />
       )}
 

@@ -22,7 +22,7 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings, isBackground = false, initialScrollY = 0 }) => {
   const tr = useTranslation();
   const recentBattles = sortBattlesDesc(battles).slice(0, 3);
 
@@ -86,14 +86,15 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       }));
   }, [battles, players, pokemonTypes]);
   const { getPokemonImageUrl } = usePokemon();
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(initialScrollY > 20);
   const [viewingPokemon, setViewingPokemon] = useState(null);
 
   useEffect(() => {
+    if (isBackground) return;
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [isBackground]);
 
   return (
     <>

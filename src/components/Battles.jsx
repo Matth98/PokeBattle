@@ -76,6 +76,8 @@ export const Battles = ({
   editingBattle,
   clearEditingBattle,
   renderPage = true,
+  isBackground = false,
+  initialScrollY = 0,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -408,12 +410,13 @@ export const Battles = ({
     });
   };
   const inSelection = selectionMode === 'battles';
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(initialScrollY > 20);
   useEffect(() => {
+    if (isBackground) return;
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [isBackground]);
 
   return (
     <>

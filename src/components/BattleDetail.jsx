@@ -113,6 +113,7 @@ export const BattleDetail = ({
   onEdit,
   onDelete,
   backLabel = 'Combats',
+  onViewingPokemonChange = null,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -125,6 +126,9 @@ export const BattleDetail = ({
   const { getPokemonImageUrl } = usePokemon();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [viewingPokemon, setViewingPokemon] = useState(null);
+  useEffect(() => {
+    onViewingPokemonChange?.(viewingPokemon !== null);
+  }, [viewingPokemon, onViewingPokemonChange]);
   const [showTypeDetail, setShowTypeDetail] = useState(false);
   const [mvpStats, setMvpStats] = useState(null);
   const [mvpArtwork, setMvpArtwork] = useState(null);
