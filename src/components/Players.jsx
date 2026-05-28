@@ -40,7 +40,7 @@ export const Players = ({
 
   const inSelection = selectionMode === 'players';
 
-  const [scrolled, setScrolled] = useState(initialScrollY > 20);
+  const [scrolled, setScrolled] = useState(() => isBackground ? initialScrollY > 20 : window.scrollY > 20);
   useEffect(() => {
     if (isBackground) return;
     const onScroll = () => setScrolled(window.scrollY > 20);

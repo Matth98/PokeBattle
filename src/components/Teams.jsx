@@ -213,7 +213,7 @@ export const Teams = ({
 
   const inSelection = selectionMode === 'teams';
 
-  const [scrolled, setScrolled] = useState(initialScrollY > 20);
+  const [scrolled, setScrolled] = useState(() => isBackground ? initialScrollY > 20 : window.scrollY > 20);
   useEffect(() => {
     if (isBackground) return;
     const onScroll = () => setScrolled(window.scrollY > 20);
