@@ -772,6 +772,9 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         />
       )}
 
+      </div>{/* fin couche avant */}
+
+      {/* Navigation hors du transform — position: fixed z-20 non affecté */}
       {!['pokemonSearch', 'pokemonDetail'].includes(currentTab) && (
         <Navigation
           currentTab={currentTab}
@@ -784,7 +787,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           }}
         />
       )}
-      </div>{/* fin couche avant */}
     </div>
   );
 }
