@@ -588,7 +588,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         />
       )}
 
-      {currentTab === 'teams' && (
+      {(currentTab === 'teams' || currentTab === 'teamDetail') && (
+        <div className={currentTab !== 'teams' ? 'hidden' : ''}>
         <Teams
           teams={teams}
           players={players}
@@ -618,6 +619,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             }
           }}
         />
+        </div>
       )}
 
 
@@ -641,7 +643,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         />
       )}
 
-      {currentTab === 'battles' && (
+      {(currentTab === 'battles' || currentTab === 'battleDetail') && (
+        <div className={currentTab !== 'battles' ? 'hidden' : ''}>
         <Battles
           battles={battles}
           players={players}
@@ -673,6 +676,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             }
           }}
         />
+        </div>
       )}
 
       {currentTab === 'battleDetail' && (
