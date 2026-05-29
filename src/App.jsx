@@ -470,7 +470,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black">
+      <div className={`flex items-center justify-center h-screen ${isDark ? 'bg-[#09090b]' : 'bg-white'}`}>
         <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -486,7 +486,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   if (initialLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className={`flex items-center justify-center h-screen ${isDark ? 'bg-[#09090b]' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
         <img
           src={`${process.env.PUBLIC_URL}/Match-button.svg`}
           alt="Chargement"
@@ -869,11 +869,16 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 function App() {
   const { isDark, themeMode, setThemeMode } = useThemeMode();
 
-  // Synchronise la couleur de la barre de navigation du navigateur avec le thème
+  // Synchronise la couleur de la barre de navigation du navigateur avec le thème.
+  // En mode "système" les deux <meta theme-color media="..."> de l'HTML gèrent déjà
+  // la couleur avant que React s'initialise — on ne touche qu'en mode forcé pour
+  // écraser la media query avec une valeur explicite.
   useEffect(() => {
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', isDark ? '#000000' : '#ffffff');
-  }, [isDark]);
+    if (themeMode === 'system') return; // laissé aux media queries CSS dans index.html
+    document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+      meta.setAttribute('content', isDark ? '#000000' : '#ffffff');
+    });
+  }, [isDark, themeMode]);
 
   return (
     <LanguageProvider>
