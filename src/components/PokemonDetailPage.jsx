@@ -132,19 +132,18 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   return (
     <div className={`min-h-screen ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
 
-      {/* ── Bouton retour sticky (suit la page pendant le swipe-back) ── */}
-      <div
-        className="sticky top-0 z-20 px-4"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
-      >
-        <button
-          onClick={onBack}
-          className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
-          style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-          aria-label={tr('common.back')}
-        >
-          <ChevronLeft size={24} className="-translate-x-px" />
-        </button>
+      {/* ── Bouton retour sticky hauteur 0 — flotte par-dessus la cover sans la pousser ── */}
+      <div className="sticky top-0 z-20" style={{ height: 0, overflow: 'visible' }}>
+        <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.6rem)' }}>
+          <button
+            onClick={onBack}
+            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
+            style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+            aria-label={tr('common.back')}
+          >
+            <ChevronLeft size={24} className="-translate-x-px" />
+          </button>
+        </div>
       </div>
 
       {/* ── États de chargement ── */}
@@ -169,7 +168,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
           <div
             className="flex items-center justify-center overflow-hidden"
             style={{
-              paddingTop: '1.5rem',
+              paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)',
               paddingBottom: '1.5rem',
               background: `linear-gradient(160deg, ${accentHex}ee 0%, ${accentHex}77 60%, ${isDark ? '#1c1c1e' : 'white'} 100%)`,
             }}
