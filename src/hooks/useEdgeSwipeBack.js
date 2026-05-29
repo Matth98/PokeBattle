@@ -21,15 +21,23 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
   const lockedAxisRef = useRef(null);
   const activeRef = useRef(false);
   const timeoutRef = useRef(null);
+  const snapshotRestoreRef = useRef([]);
 
   useEffect(() => {
     const resetStyles = () => {
+      // Restore snapshotted gradient elements to their original styles
+      snapshotRestoreRef.current.forEach(({ el, position, top, left, width, height }) => {
+        el.style.position = position;
+        el.style.top = top;
+        el.style.left = left;
+        el.style.width = width;
+        el.style.height = height;
+      });
+      snapshotRestoreRef.current = [];
+
       if (pageRef.current) {
         pageRef.current.style.transition = '';
         pageRef.current.style.transform = '';
-        pageRef.current.querySelectorAll('[data-scroll-gradient]').forEach((el) => {
-          el.style.transform = '';
-        });
       }
       if (bgRef?.current) {
         bgRef.current.style.transition = '';
@@ -74,15 +82,30 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
           document.removeEventListener('touchmove', handleTouchMove);
           return;
         }
-        // Axe verrouillé sur X : compenser le décalage de scroll pour que les
-        // gradients position:fixed ne sautent pas quand pageRef reçoit un transform.
+        // Axe verrouillé sur X : snapshot des éléments position:fixed pour qu'ils
+        // ne sautent pas quand pageRef reçoit un transform CSS (qui crée un nouveau
+        // containing block). On les bascule en position:absolute avec leurs
+        // coordonnées visuelles actuelles — ils suivront alors naturellement le
+        // déplacement de pageRef sans recalcul.
         if (pageRef.current) {
           const scrollY = window.scrollY;
-          if (scrollY > 0) {
-            pageRef.current.querySelectorAll('[data-scroll-gradient]').forEach((el) => {
-              el.style.transform = `translateY(${scrollY}px)`;
+          snapshotRestoreRef.current = [];
+          pageRef.current.querySelectorAll('[data-scroll-gradient]').forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            snapshotRestoreRef.current.push({
+              el,
+              position: el.style.position,
+              top: el.style.top,
+              left: el.style.left,
+              width: el.style.width,
+              height: el.style.height,
             });
-          }
+            el.style.position = 'absolute';
+            el.style.top = `${rect.top + scrollY}px`;
+            el.style.left = `${rect.left}px`;
+            el.style.width = `${rect.width}px`;
+            el.style.height = `${rect.height}px`;
+          });
         }
       }
 
