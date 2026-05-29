@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, Users, Shield, Zap, ChevronRight, Trophy } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
@@ -24,7 +24,41 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
 
 export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings, isBackground = false, initialScrollY = 0 }) => {
   const tr = useTranslation();
-  const recentBattles = sortBattlesDesc(battles).slice(0, 3);
+  const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
+
+  // ── Animation "nouveau combat" ──────────────────────────────────────────────
+  // displayedBattles est la liste réellement rendue ; elle est mise à jour avec
+  // un délai pour laisser la modale se fermer avant que la carte apparaisse.
+  const [displayedBattles, setDisplayedBattles] = useState(recentBattles);
+  const [enteringId, setEnteringId]       = useState(null);
+  const [exitingBattle, setExitingBattle] = useState(null);
+
+  const prevFirstIdRef  = useRef(recentBattles[0]?._id);
+  const displayedRef    = useRef(recentBattles); // lecture sans dépendance de fermeture
+
+  useEffect(() => { displayedRef.current = displayedBattles; }, [displayedBattles]);
+
+  useEffect(() => {
+    const newFirstId = recentBattles[0]?._id;
+    const oldFirstId = prevFirstIdRef.current;
+    prevFirstIdRef.current = newFirstId;
+
+    if (newFirstId && newFirstId !== oldFirstId && oldFirstId !== undefined) {
+      // Nouveau combat détecté — attendre la fin de fermeture de la modale (~240 ms)
+      const snapshot = recentBattles;
+      const timer = setTimeout(() => {
+        const current = displayedRef.current;
+        const outgoing = current.find(b => !snapshot.some(n => n._id === b._id));
+        if (outgoing) setExitingBattle(outgoing);
+        setDisplayedBattles(snapshot);
+        setEnteringId(newFirstId);
+        setTimeout(() => setEnteringId(null), 500);
+      }, 260);
+      return () => clearTimeout(timer);
+    }
+    // Mise à jour ordinaire (suppression, édition) — sync sans animation
+    if (!enteringId) setDisplayedBattles(recentBattles);
+  }, [recentBattles]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Collecte tous les pokeIds présents dans les combats pour le lookup de types
   const allPokeIds = useMemo(() => {
@@ -192,7 +226,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             )}
           </div>
 
-          {recentBattles.length === 0 ? (
+          {displayedBattles.length === 0 && !exitingBattle ? (
             <div className={`${t.surface} rounded-2xl p-8 text-center shadow-sm`}>
               <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileAmber} flex items-center justify-center mb-3`}>
                 <Zap size={22} />
@@ -200,99 +234,106 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               <p className={`${t.text} font-semibold mb-1`}>{tr('home.noBattles')}</p>
               <p className={`${t.textSecondary} text-sm`}>{tr('home.noBattlesDesc')}</p>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {recentBattles.map((b) => {
-                const p1 = players.find(p => p._id === b.player1);
-                const p2 = players.find(p => p._id === b.player2);
-                const p1Elim = (b.team1 || []).filter(p => p.eliminated).length;
-                const p2Elim = (b.team2 || []).filter(p => p.eliminated).length;
-                return (
-                  <button
-                    key={b._id}
-                    onClick={() => {
-                      setSelectedBattle(b);
-                      setCurrentTab('battleDetail');
-                    }}
-                    className={`w-full ${t.surface} rounded-2xl px-4 py-3 flex items-center gap-3 text-left shadow-sm`}
-                  >
-                    {/* Joueur 1 — avatar + nom + Pokémon */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <div className="relative flex-shrink-0">
-                          <PlayerAvatar player={p1} size={40} textSize="text-sm" />
-                          {b.winner === 'player1' && (
-                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
-                              <Trophy size={8} strokeWidth={2.5} className="text-white" />
-                            </span>
-                          )}
-                        </div>
-                        <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.success : t.text}`}>
-                          {p1?.name || '—'}
-                        </p>
+          ) : (() => {
+            const renderCard = (b, extraClass = '') => {
+              const p1 = players.find(p => p._id === b.player1);
+              const p2 = players.find(p => p._id === b.player2);
+              const p1Elim = (b.team1 || []).filter(p => p.eliminated).length;
+              const p2Elim = (b.team2 || []).filter(p => p.eliminated).length;
+              return (
+                <button
+                  onClick={() => { setSelectedBattle(b); setCurrentTab('battleDetail'); }}
+                  className={`w-full ${t.surface} rounded-2xl px-4 py-3 flex items-center gap-3 text-left shadow-sm${extraClass ? ` ${extraClass}` : ''}`}
+                >
+                  {/* Joueur 1 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="relative flex-shrink-0">
+                        <PlayerAvatar player={p1} size={40} textSize="text-sm" />
+                        {b.winner === 'player1' && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                            <Trophy size={8} strokeWidth={2.5} className="text-white" />
+                          </span>
+                        )}
                       </div>
-                      {(b.team1 || []).length > 0 && (
-                        <div className="flex gap-0.5">
-                          {b.team1.map((pk, i) => (
-                            <img
-                              key={pk.id || i}
-                              src={getPokemonImageUrl(pk.pokeId)}
-                              alt={pk.name}
-                              className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
-                              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Format + score centré */}
-                    <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
-                        {b.format}
-                      </span>
-                      <p className={`font-black text-2xl ${t.text} whitespace-nowrap leading-none`}>
-                        {p2Elim}–{p1Elim}
+                      <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.success : t.text}`}>
+                        {p1?.name || '—'}
                       </p>
-                      {b.date && (
-                        <p className={`text-[10px] ${t.textTertiary}`}>{formatDate(b.date)}</p>
-                      )}
                     </div>
+                    {(b.team1 || []).length > 0 && (
+                      <div className="flex gap-0.5">
+                        {b.team1.map((pk, i) => (
+                          <img key={pk.id || i} src={getPokemonImageUrl(pk.pokeId)} alt={pk.name}
+                            className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
+                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {/* Score */}
+                  <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+                      {b.format}
+                    </span>
+                    <p className={`font-black text-2xl ${t.text} whitespace-nowrap leading-none`}>{p2Elim}–{p1Elim}</p>
+                    {b.date && <p className={`text-[10px] ${t.textTertiary}`}>{formatDate(b.date)}</p>}
+                  </div>
+                  {/* Joueur 2 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-end gap-2 mb-1.5">
+                      <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.success : t.text}`}>
+                        {p2?.name || '—'}
+                      </p>
+                      <div className="relative flex-shrink-0">
+                        <PlayerAvatar player={p2} size={40} textSize="text-sm" />
+                        {b.winner === 'player2' && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                            <Trophy size={8} strokeWidth={2.5} className="text-white" />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {(b.team2 || []).length > 0 && (
+                      <div className="flex gap-0.5 justify-end">
+                        {b.team2.map((pk, i) => (
+                          <img key={pk.id || i} src={getPokemonImageUrl(pk.pokeId)} alt={pk.name}
+                            className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
+                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            };
 
-                    {/* Joueur 2 — Pokémon + nom + avatar */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-end gap-2 mb-1.5">
-                        <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.success : t.text}`}>
-                          {p2?.name || '—'}
-                        </p>
-                        <div className="relative flex-shrink-0">
-                          <PlayerAvatar player={p2} size={40} textSize="text-sm" />
-                          {b.winner === 'player2' && (
-                            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
-                              <Trophy size={8} strokeWidth={2.5} className="text-white" />
-                            </span>
-                          )}
+            return (
+              <div className="space-y-3">
+                {displayedBattles.map((b) => {
+                  if (enteringId === b._id) {
+                    return (
+                      <div key={b._id} className="anim-battle-slot-expand">
+                        <div className="overflow-hidden">
+                          {renderCard(b, 'anim-battle-card-enter')}
                         </div>
                       </div>
-                      {(b.team2 || []).length > 0 && (
-                        <div className="flex gap-0.5 justify-end">
-                          {b.team2.map((pk, i) => (
-                            <img
-                              key={pk.id || i}
-                              src={getPokemonImageUrl(pk.pokeId)}
-                              alt={pk.name}
-                              className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
-                              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                            />
-                          ))}
-                        </div>
-                      )}
+                    );
+                  }
+                  return <div key={b._id}>{renderCard(b)}</div>;
+                })}
+                {exitingBattle && (
+                  <div
+                    className="anim-battle-slot-collapse"
+                    onAnimationEnd={() => setExitingBattle(null)}
+                  >
+                    <div className="overflow-hidden">
+                      {renderCard(exitingBattle)}
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </section>
 
         {/* ── Top joueur ── */}

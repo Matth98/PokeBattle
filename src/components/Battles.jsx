@@ -32,14 +32,18 @@ function PokeBallIcon({ id }) {
   );
 }
 
-const emptyBattle = () => ({
-  format: '1v1',
-  player1: null,
-  player2: null,
-  date: new Date().toISOString().split('T')[0],
-  notes: '',
-  winner: null,
-});
+const emptyBattle = () => {
+  const now = new Date();
+  return {
+    format: '1v1',
+    player1: null,
+    player2: null,
+    date: now.toISOString().split('T')[0],
+    time: now.toTimeString().slice(0, 5),
+    notes: '',
+    winner: null,
+  };
+};
 
 // Nombre requis de Pokémon par joueur selon le format
 // 1v1 = 3 Pokémon (1 actif, 2 en réserve), 2v2 = 4 Pokémon (2 actifs, 2 en réserve)
@@ -126,6 +130,7 @@ export const Battles = ({
         date: editingBattle.date
           ? new Date(editingBattle.date).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0],
+        time: editingBattle.time || '',
         notes: editingBattle.notes || '',
         winner: editingBattle.winner || null,
       });
@@ -1095,14 +1100,24 @@ export const Battles = ({
                 <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                   Date
                 </label>
-                <div className={`${t.inputSoft} rounded-xl px-3 py-2 flex items-center gap-2`}>
-                  <Calendar size={16} className={t.textTertiary} />
-                  <input
-                    type="date"
-                    value={newBattleData.date}
-                    onChange={(e) => setNewBattleData({ ...newBattleData, date: e.target.value })}
-                    className={`flex-1 bg-transparent outline-none ${t.text}`}
-                  />
+                <div className="flex gap-2">
+                  <div className={`${t.inputSoft} rounded-xl px-3 py-2 flex items-center gap-2 flex-1`}>
+                    <Calendar size={16} className={t.textTertiary} />
+                    <input
+                      type="date"
+                      value={newBattleData.date}
+                      onChange={(e) => setNewBattleData({ ...newBattleData, date: e.target.value })}
+                      className={`flex-1 bg-transparent outline-none ${t.text}`}
+                    />
+                  </div>
+                  <div className={`${t.inputSoft} rounded-xl px-3 py-2 flex items-center gap-2`}>
+                    <input
+                      type="time"
+                      value={newBattleData.time}
+                      onChange={(e) => setNewBattleData({ ...newBattleData, time: e.target.value })}
+                      className={`bg-transparent outline-none ${t.text} w-24`}
+                    />
+                  </div>
                 </div>
               </div>
 

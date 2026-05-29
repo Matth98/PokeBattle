@@ -426,7 +426,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const handleAddBattle = async (battleData) => {
     const newBattle = await createBattle(battleData);
     if (newBattle) {
-      setBattles([...battles, newBattle]);
+      setBattles((prev) => [...prev, newBattle]);
       refreshPlayers();
       toast.success('Combat enregistré');
     } else {
@@ -437,7 +437,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const handleUpdateBattle = async (id, data) => {
     const updated = await updateBattle(id, data);
     if (updated) {
-      setBattles(battles.map(b => b._id === id ? updated : b));
+      setBattles((prev) => prev.map(b => b._id === id ? updated : b));
       setSelectedBattle(updated);
       refreshPlayers();
       toast.success('Combat mis à jour');

@@ -5,7 +5,12 @@ export const getBattleDateKey = (battle) => {
 };
 
 export const getBattleSortTime = (battle) => {
-  if (battle?.date) return new Date(`${battle.date}T00:00:00`).getTime();
+  if (battle?.date) {
+    if (battle.time) return new Date(`${battle.date}T${battle.time}:00`).getTime();
+    // Pas d'heure saisie : utiliser le timestamp de création pour départager les combats du même jour
+    if (battle?.timestamp) return new Date(battle.timestamp).getTime();
+    return new Date(`${battle.date}T00:00:00`).getTime();
+  }
   if (battle?.timestamp) return new Date(battle.timestamp).getTime();
   return 0;
 };
@@ -34,9 +39,13 @@ export const groupBattlesByDate = (battles = []) => {
     groupByDate.get(dateKey).battles.push(battle);
   }
 
-  // Dans chaque groupe, trier du plus récent au plus ancien (heure de création)
+  // Dans chaque groupe, trier du plus récent au plus ancien (heure saisie, puis heure de création)
   for (const group of groups) {
-    group.battles.sort((a, b) => getBattleCreatedAt(b) - getBattleCreatedAt(a));
+    group.battles.sort((a, b) => {
+      const timeDiff = getBattleSortTime(b) - getBattleSortTime(a);
+      if (timeDiff !== 0) return timeDiff;
+      return getBattleCreatedAt(b) - getBattleCreatedAt(a);
+    });
   }
 
   return groups;
