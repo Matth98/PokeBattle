@@ -40,7 +40,10 @@ export const Players = ({
 
   const inSelection = selectionMode === 'players';
 
-  const [scrolled, setScrolled] = useState(() => isBackground ? initialScrollY > 20 : window.scrollY > 20);
+  // initialScrollY = position sauvée au départ vers le détail (App.jsx scrollMemoryRef),
+  // ou 0 si arrivée par changement d'onglet (setCurrentTab efface la mémoire).
+  // Évite le flash topbar : window.scrollY au montage reflète encore la page détail.
+  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
     if (isBackground) return;
     const onScroll = () => setScrolled(window.scrollY > 20);

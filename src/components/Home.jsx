@@ -86,7 +86,8 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       }));
   }, [battles, players, pokemonTypes]);
   const { getPokemonImageUrl } = usePokemon();
-  const [scrolled, setScrolled] = useState(() => isBackground ? initialScrollY > 20 : window.scrollY > 20);
+  // Même logique que Players : initialScrollY évite le flash de topbar au retour.
+  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   const [viewingPokemon, setViewingPokemon] = useState(null);
 
   useEffect(() => {

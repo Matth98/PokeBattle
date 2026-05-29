@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useId } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronRight, ChevronDown, Plus, Trash2, X, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -52,6 +52,7 @@ export const Teams = ({
   renderPage = true,
   isBackground = false,
   initialScrollY = 0,
+  isActive = true,
   formatFilter = 'all',
   setFormatFilter = () => {},
 }) => {
@@ -217,9 +218,15 @@ export const Teams = ({
   const inSelection = selectionMode === 'teams';
 
   const [scrolled, setScrolled] = useState(() => isBackground ? initialScrollY > 20 : window.scrollY > 20);
+  // Même logique que Battles : empêcher le listener de polluer scrolled quand caché.
+  const isActiveRef = useRef(isActive);
+  useLayoutEffect(() => { isActiveRef.current = isActive; }, [isActive]);
   useEffect(() => {
     if (isBackground) return;
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      if (!isActiveRef.current) return;
+      setScrolled(window.scrollY > 20);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isBackground]);

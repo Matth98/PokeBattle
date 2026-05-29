@@ -84,6 +84,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     navStack.current = [];
     setBackLabel('');
     scrollMemoryRef.current.set(currentTab, window.scrollY);
+    scrollMemoryRef.current.set(newTab, 0); // reset : pas une navigation retour, l'onglet repart de 0
     window.scrollTo({ top: 0, behavior: 'auto' });
     shouldRestoreRef.current = false;
     setPrevTab(null);
@@ -620,6 +621,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           t={t}
           isDark={isDark}
           initialScrollY={scrollMemoryRef.current.get('teams') || 0}
+          isActive={currentTab === 'teams'}
           formatFilter={teamsFormatFilter}
           setFormatFilter={setTeamsFormatFilter}
           onSelectTeam={(team) => {
@@ -701,6 +703,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
               setSelectedBattle(null);
             }
           }}
+          isActive={currentTab === 'battles'}
           formatFilter={battlesFormatFilter}
           setFormatFilter={setBattlesFormatFilter}
           collapsedGroups={battlesCollapsedGroups}

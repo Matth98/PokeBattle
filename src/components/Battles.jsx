@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useId } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2, Trophy, Dices } from 'lucide-react';
 import { formatDate } from '../utils/dates';
@@ -79,6 +79,7 @@ export const Battles = ({
   renderPage = true,
   isBackground = false,
   initialScrollY = 0,
+  isActive = true,
   formatFilter = 'all',
   setFormatFilter = () => {},
   collapsedGroups = null,
@@ -424,9 +425,18 @@ export const Battles = ({
   };
   const inSelection = selectionMode === 'battles';
   const [scrolled, setScrolled] = useState(() => isBackground ? initialScrollY > 20 : window.scrollY > 20);
+  // isActiveRef mis à jour synchroniquement (useLayoutEffect) avant le paint,
+  // pour que le listener window.scroll ne déclenche pas de mise à jour d'état
+  // quand le composant est caché (hidden div). Sans ça, scroller dans BattleDetail
+  // pollue le state scrolled de Battles → flash de la topbar au retour.
+  const isActiveRef = useRef(isActive);
+  useLayoutEffect(() => { isActiveRef.current = isActive; }, [isActive]);
   useEffect(() => {
     if (isBackground) return;
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      if (!isActiveRef.current) return;
+      setScrolled(window.scrollY > 20);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isBackground]);
