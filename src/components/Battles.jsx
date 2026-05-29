@@ -79,6 +79,10 @@ export const Battles = ({
   renderPage = true,
   isBackground = false,
   initialScrollY = 0,
+  formatFilter = 'all',
+  setFormatFilter = () => {},
+  collapsedGroups = null,
+  setCollapsedGroups = () => {},
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -388,25 +392,33 @@ export const Battles = ({
     setDeletingSelected(false);
   };
 
-  const [formatFilter, setFormatFilter] = useState('all');
-  const uid = useId();
-
-  const sortedBattles = sortBattlesDesc(battles);
-  const filteredBattles = formatFilter === 'all' ? sortedBattles : sortedBattles.filter(b => b.format === formatFilter);
-  const groupedBattles = groupBattlesByDate(filteredBattles);
-  const [collapsedGroups, setCollapsedGroups] = useState(() => {
+  // formatFilter et collapsedGroups sont pilotés depuis App.jsx pour que la couche
+  // de fond (swipe-back) reflète toujours l'état courant sans re-render.
+  // collapsedGroups peut être null si le parent ne gère pas encore l'état (fallback sessionStorage).
+  const [collapsedGroupsFallback, setCollapsedGroupsFallback] = useState(() => {
     try {
       const saved = sessionStorage.getItem('battlesCollapsedGroups');
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch { return new Set(); }
   });
+  const activeCollapsedGroups = collapsedGroups ?? collapsedGroupsFallback;
+  const activeSetCollapsedGroups = collapsedGroups !== null ? setCollapsedGroups : setCollapsedGroupsFallback;
+
+  const uid = useId();
+
+  const sortedBattles = sortBattlesDesc(battles);
+  const filteredBattles = formatFilter === 'all' ? sortedBattles : sortedBattles.filter(b => b.format === formatFilter);
+  const groupedBattles = groupBattlesByDate(filteredBattles);
 
   const toggleGroup = (date) => {
-    setCollapsedGroups((prev) => {
+    activeSetCollapsedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(date)) next.delete(date);
       else next.add(date);
-      try { sessionStorage.setItem('battlesCollapsedGroups', JSON.stringify([...next])); } catch {}
+      // Écriture sessionStorage seulement dans le fallback (App.jsx gère lui-même quand il pilote l'état)
+      if (collapsedGroups === null) {
+        try { sessionStorage.setItem('battlesCollapsedGroups', JSON.stringify([...next])); } catch {}
+      }
       return next;
     });
   };
@@ -573,7 +585,7 @@ export const Battles = ({
         ) : (
           <div className="space-y-4">
             {groupedBattles.map((group) => {
-              const isCollapsed = collapsedGroups.has(group.date);
+              const isCollapsed = activeCollapsedGroups.has(group.date);
               return (
                 <div key={group.date} className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
                   <button

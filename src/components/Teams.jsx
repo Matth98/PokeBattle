@@ -52,6 +52,8 @@ export const Teams = ({
   renderPage = true,
   isBackground = false,
   initialScrollY = 0,
+  formatFilter = 'all',
+  setFormatFilter = () => {},
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -65,7 +67,8 @@ export const Teams = ({
     isSuperAdmin ||
     (dbUser?._id && team.userId && String(team.userId) === String(dbUser._id));
 
-  const [formatFilter, setFormatFilter] = useState('all');
+  // formatFilter est piloté depuis App.jsx pour que la couche de fond (swipe-back)
+  // reflète toujours l'état courant. Le prop a une valeur par défaut 'all'.
   const uid = useId();
 
   const [newTeamData, setNewTeamData] = useState(emptyTeamData());
