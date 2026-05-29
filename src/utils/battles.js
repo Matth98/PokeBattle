@@ -39,6 +39,9 @@ export const groupBattlesByDate = (battles = []) => {
     groupByDate.get(dateKey).battles.push(battle);
   }
 
+  // Trier les groupes du plus récent au plus ancien
+  groups.sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0));
+
   // Dans chaque groupe, trier du plus récent au plus ancien (heure saisie, puis heure de création)
   for (const group of groups) {
     group.battles.sort((a, b) => {

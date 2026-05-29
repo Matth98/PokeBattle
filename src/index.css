@@ -85,8 +85,8 @@ input[type="date"] {
   to   { opacity: 1; transform: scale(1); }
 }
 @keyframes battle-card-delete {
-  from { opacity: 1; transform: translateY(0);     }
-  to   { opacity: 0; transform: translateY(-105%); }
+  from { opacity: 1; transform: scale(1);    }
+  to   { opacity: 0; transform: scale(0.88); }
 }
 @keyframes battle-slot-delete {
   from { grid-template-rows: 1fr; }
@@ -96,8 +96,14 @@ input[type="date"] {
 .anim-battle-exit-fade     { animation: battle-exit-fade  0.25s ease-in both; }
 .anim-battle-card-enter    { animation: battle-card-enter 0.30s ease-out 0.10s both; }
 /* Carte sort par le haut en 220ms, slot se ferme après (délai 200ms + 280ms) */
-.anim-battle-card-delete   { animation: battle-card-delete 0.22s ease-in both; }
-.anim-battle-slot-delete   { display: grid; animation: battle-slot-delete 0.28s cubic-bezier(0.4, 0, 1, 1) 0.20s both; }
+/* Scale+fade et collapse simultanés — cartes du dessous remontent pendant le dézoom */
+.anim-battle-card-delete { animation: battle-card-delete 0.28s ease-in both; }
+.anim-battle-slot-delete { display: grid; animation: battle-slot-delete 0.32s ease-in both; }
+@keyframes battle-card-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-battle-card-rise { animation: battle-card-rise 0.32s cubic-bezier(0.32, 0.72, 0.24, 1) both; }
 
 /* ── Press feedback : tous les boutons réagissent au clic ── */
 button:not(:disabled) {

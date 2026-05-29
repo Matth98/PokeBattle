@@ -33,6 +33,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   const [enteringId, setEnteringId]       = useState(null);
   const [exitingBattle, setExitingBattle] = useState(null);
   const [deletingId, setDeletingId]       = useState(null);
+  const [risingId, setRisingId]           = useState(null);
 
   const prevFirstIdRef  = useRef(recentBattles[0]?._id);
   const displayedRef    = useRef(recentBattles);
@@ -62,12 +63,18 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       // Suppression d'un combat visible — animation de sortie vers le haut
       const removed = displayedRef.current.find(b => !recentBattles.some(n => n._id === b._id));
       if (removed) {
+        // Combat entrant pour combler le vide (ex : 4ème qui remonte en 3ème position)
+        const incoming = recentBattles.find(b => !displayedRef.current.some(d => d._id === b._id));
         setDeletingId(removed._id);
         const snapshot = recentBattles;
         const timer = setTimeout(() => {
           setDeletingId(null);
           setDisplayedBattles(snapshot);
-        }, 520);
+          if (incoming) {
+            setRisingId(incoming._id);
+            setTimeout(() => setRisingId(null), 400);
+          }
+        }, 360);
         return () => clearTimeout(timer);
       }
       setDisplayedBattles(recentBattles);
@@ -413,11 +420,14 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   if (deletingId === b._id) {
                     return (
                       <div key={b._id} className="anim-battle-slot-delete">
-                        <div className="overflow-hidden">
+                        <div style={{ minHeight: 0 }}>
                           {renderCard(b, 'anim-battle-card-delete')}
                         </div>
                       </div>
                     );
+                  }
+                  if (risingId === b._id) {
+                    return <div key={b._id}>{renderCard(b, 'anim-battle-card-rise')}</div>;
                   }
                   return <div key={b._id}>{renderCard(b)}</div>;
                 })}

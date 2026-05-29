@@ -619,6 +619,33 @@ export const Battles = ({
                     </span>
                   </button>
 
+                  {!isCollapsed && (() => {
+                    const summary = {};
+                    for (const b of group.battles) {
+                      const p1id = String(b.player1?._id ?? b.player1 ?? '');
+                      const p2id = String(b.player2?._id ?? b.player2 ?? '');
+                      if (p1id) summary[p1id] ??= { wins: 0, losses: 0 };
+                      if (p2id) summary[p2id] ??= { wins: 0, losses: 0 };
+                      if (b.winner === 'player1') { if (p1id) summary[p1id].wins++; if (p2id) summary[p2id].losses++; }
+                      else if (b.winner === 'player2') { if (p2id) summary[p2id].wins++; if (p1id) summary[p1id].losses++; }
+                    }
+                    const summaryRows = Object.entries(summary)
+                      .map(([id, s]) => ({ ...s, player: players.find(p => String(p._id) === id) }))
+                      .sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+                    return summaryRows.length > 0 && (
+                      <div className={`px-4 py-2.5 flex flex-wrap gap-x-5 gap-y-1.5 border-b ${t.divider}`}>
+                        {summaryRows.map(({ wins, losses, player }, i) => (
+                          <div key={i} className="flex items-center gap-1.5">
+                            <span className={`text-xs font-bold ${t.text}`}>{player?.name || '—'}</span>
+                            <span className={`text-[11px] font-semibold ${t.success}`}>{wins}V</span>
+                            <span className={`text-[11px] ${t.textTertiary}`}>·</span>
+                            <span className={`text-[11px] font-semibold ${isDark ? 'text-red-400' : 'text-red-500'}`}>{losses}D</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
                   {!isCollapsed && group.battles.map((b, idx) => {
                     const p1 = players.find((p) => p._id === b.player1);
                     const p2 = players.find((p) => p._id === b.player2);
