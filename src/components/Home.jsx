@@ -67,7 +67,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         const timer = setTimeout(() => {
           setDeletingId(null);
           setDisplayedBattles(snapshot);
-        }, 420);
+        }, 520);
         return () => clearTimeout(timer);
       }
       setDisplayedBattles(recentBattles);
