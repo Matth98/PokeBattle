@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Search, Users, Shield, Zap, ChevronRight, Trophy } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Search, Users, Shield, Zap, ChevronRight, Trophy, Loader2 } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
@@ -22,7 +22,7 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings, isBackground = false, initialScrollY = 0 }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings, onRefresh, isBackground = false, initialScrollY = 0 }) => {
   const tr = useTranslation();
   const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
 
@@ -131,8 +131,84 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
     return () => window.removeEventListener('scroll', onScroll);
   }, [isBackground]);
 
+  // ── Pull-to-refresh ────────────────────────────────────────────────────────
+  const THRESHOLD = 64;
+  const [pullY, setPullY]         = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const pullYRef   = useRef(0);
+  const startYRef  = useRef(0);
+  const pullingRef = useRef(false);
+
+  const handleRefresh = useCallback(async () => {
+    if (!onRefresh) return;
+    setIsRefreshing(true);
+    try { await onRefresh(); } finally { setIsRefreshing(false); }
+  }, [onRefresh]);
+
+  useEffect(() => {
+    if (isBackground || !onRefresh) return;
+
+    const onTouchStart = (e) => {
+      if (window.scrollY > 0) return;
+      startYRef.current = e.touches[0].clientY;
+      pullingRef.current = true;
+    };
+    const onTouchMove = (e) => {
+      if (!pullingRef.current) return;
+      const delta = e.touches[0].clientY - startYRef.current;
+      if (delta <= 0) { pullingRef.current = false; setPullY(0); pullYRef.current = 0; return; }
+      // Résistance progressive façon iOS
+      const y = Math.min(delta * 0.45, THRESHOLD * 1.1);
+      pullYRef.current = y;
+      setPullY(y);
+    };
+    const onTouchEnd = async () => {
+      if (!pullingRef.current) return;
+      pullingRef.current = false;
+      if (pullYRef.current >= THRESHOLD * 0.85) {
+        setPullY(0); pullYRef.current = 0;
+        await handleRefresh();
+      } else {
+        setPullY(0); pullYRef.current = 0;
+      }
+    };
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove',  onTouchMove,  { passive: true });
+    window.addEventListener('touchend',   onTouchEnd);
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove',  onTouchMove);
+      window.removeEventListener('touchend',   onTouchEnd);
+    };
+  }, [isBackground, onRefresh, handleRefresh]);
+
+  const indicatorY = isRefreshing ? 16 : pullY - 44;
+  const indicatorOpacity = isRefreshing ? 1 : Math.min(pullY / THRESHOLD, 1);
+  const arrowRotation = Math.min(pullY / THRESHOLD, 1) * 180;
+
   return (
     <>
+    {/* Indicateur pull-to-refresh */}
+    {(pullY > 0 || isRefreshing) && !isBackground && (
+      <div
+        className="fixed left-0 right-0 top-0 flex justify-center z-50 pointer-events-none"
+        style={{
+          transform: `translateY(${indicatorY}px)`,
+          opacity: indicatorOpacity,
+          transition: (isRefreshing || pullY === 0) ? 'transform 0.3s cubic-bezier(0.32,0.72,0.24,1), opacity 0.2s ease' : 'none',
+        }}
+      >
+        <div className={`w-9 h-9 rounded-full shadow-md flex items-center justify-center ${isDark ? 'bg-zinc-800' : 'bg-white'}`}>
+          {isRefreshing
+            ? <Loader2 size={16} className={`animate-spin ${isDark ? 'text-zinc-300' : 'text-zinc-500'}`} />
+            : <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ transform: `rotate(${arrowRotation}deg)`, transition: 'none' }}>
+                <path d="M8 2v9M4 7l4 4 4-4" stroke={isDark ? '#a1a1aa' : '#71717a'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+          }
+        </div>
+      </div>
+    )}
     <div className="relative min-h-screen">
       <div
         aria-hidden="true"

@@ -304,22 +304,23 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   useEffect(() => { if (user) loadAllData(); }, [user]);
 
   // Synchronisation multi-appareils : polling toutes les 15 s + refresh au retour en premier plan
+  const refreshAll = useCallback(async () => {
+    const [p, b, t] = await Promise.all([fetchPlayers(), fetchBattles(), fetchTeams()]);
+    if (p) setPlayers(p);
+    if (b) setBattles(b);
+    if (t) setTeams(t);
+  }, [fetchPlayers, fetchBattles, fetchTeams]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!user) return;
-    const refresh = async () => {
-      const [p, b, t] = await Promise.all([fetchPlayers(), fetchBattles(), fetchTeams()]);
-      if (p) setPlayers(p);
-      if (b) setBattles(b);
-      if (t) setTeams(t);
-    };
-    const interval = setInterval(refresh, 15000);
-    const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
+    const interval = setInterval(refreshAll, 15000);
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshAll(); };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, refreshAll]);
 
   const handleAddPlayer = async (data) => {
     // data peut être un string (nom) pour rétro-compat, ou { name, avatar }
@@ -593,6 +594,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           onSearchPokemon={() => navigateTo('pokemonSearch')}
           linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
           onOpenSettings={() => setSettingsOpen(true)}
+          onRefresh={refreshAll}
         />
       )}
 
