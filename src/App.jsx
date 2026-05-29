@@ -88,6 +88,9 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     window.scrollTo({ top: 0, behavior: 'auto' });
     shouldRestoreRef.current = false;
     setPrevTab(null);
+    // Réinitialiser les filtres des onglets à état persistant (préservés seulement via navigateBack)
+    if (newTab === 'battles') { setBattlesFormatFilter('all'); setBattlesCollapsedGroups(new Set()); }
+    if (newTab === 'teams') setTeamsFormatFilter('all');
     _setCurrentTabState(newTab);
   }, [currentTab]);
 
