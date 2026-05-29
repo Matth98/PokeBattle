@@ -75,6 +75,11 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   // Navigation principale (onglets) — réinitialise la pile
   const setCurrentTab = useCallback((newTab) => {
+    // Déjà sur cet onglet exact : scroll animé vers le haut, rien d'autre
+    if (newTab === currentTab) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     setNavDirection(null);
     navStack.current = [];
     setBackLabel('');
