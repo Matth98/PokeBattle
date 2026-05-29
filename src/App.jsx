@@ -510,7 +510,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   }
 
   return (
-    <div className={isDark ? 'dark' : ''}>
+    <div className={isDark ? 'dark' : ''} style={{ overflowX: 'clip' }}>
       {/* Couche fond : page précédente, visible pendant le swipe-back */}
       {prevTab && SUB_PAGES.includes(currentTab) && (
         <div
@@ -540,7 +540,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} isBackground />}
           </div>
           {/* Overlay d'assombrissement — z-index élevé pour couvrir tout le contenu */}
-          <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)', zIndex: 9999, pointerEvents: 'none' }} />
+          <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.18)', zIndex: 9999, pointerEvents: 'none' }} />
         </div>
       )}
 
