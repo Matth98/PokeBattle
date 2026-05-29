@@ -303,6 +303,24 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (user) loadAllData(); }, [user]);
 
+  // Synchronisation multi-appareils : polling toutes les 15 s + refresh au retour en premier plan
+  useEffect(() => {
+    if (!user) return;
+    const refresh = async () => {
+      const [p, b, t] = await Promise.all([fetchPlayers(), fetchBattles(), fetchTeams()]);
+      if (p) setPlayers(p);
+      if (b) setBattles(b);
+      if (t) setTeams(t);
+    };
+    const interval = setInterval(refresh, 15000);
+    const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleAddPlayer = async (data) => {
     // data peut être un string (nom) pour rétro-compat, ou { name, avatar }
     const payload = typeof data === 'string' ? { name: data } : data;
