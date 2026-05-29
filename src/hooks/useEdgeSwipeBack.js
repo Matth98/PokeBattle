@@ -52,18 +52,15 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
       return;
     }
 
-    const handleTouchStart = (e) => {
-      const touch = e.touches[0];
-      if (touch.clientX >= EDGE_THRESHOLD) return;
-      clearTimeout(timeoutRef.current);
-      startXRef.current = touch.clientX;
-      startYRef.current = touch.clientY;
-      lockedAxisRef.current = null;
-      activeRef.current = true;
-    };
-
+    // handleTouchMove est défini ici pour que handleTouchStart/End puissent
+    // l'ajouter/retirer par closure (même référence de fonction garantie).
     const handleTouchMove = (e) => {
-      if (!activeRef.current) return;
+      if (!activeRef.current) {
+        // Sécurité : retirer le listener si on se retrouve dans un état incohérent
+        document.removeEventListener('touchmove', handleTouchMove);
+        return;
+      }
+
       const touch = e.touches[0];
       const dx = touch.clientX - startXRef.current;
       const dy = touch.clientY - startYRef.current;
@@ -72,7 +69,9 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
         if (Math.abs(dx) + Math.abs(dy) < 6) return;
         lockedAxisRef.current = Math.abs(dx) >= Math.abs(dy) * 2 ? 'x' : 'y';
         if (lockedAxisRef.current === 'y') {
+          // Scroll vertical confirmé : libérer immédiatement le scroll natif
           activeRef.current = false;
+          document.removeEventListener('touchmove', handleTouchMove);
           return;
         }
         // Axe verrouillé sur X : compenser le décalage de scroll pour que les
@@ -110,7 +109,22 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
       }
     };
 
+    const handleTouchStart = (e) => {
+      const touch = e.touches[0];
+      if (touch.clientX >= EDGE_THRESHOLD) return;
+      if (activeRef.current) return; // geste déjà en cours, ignorer
+      clearTimeout(timeoutRef.current);
+      startXRef.current = touch.clientX;
+      startYRef.current = touch.clientY;
+      lockedAxisRef.current = null;
+      activeRef.current = true;
+      // Enregistrer passive:false UNIQUEMENT pour ce geste potentiel depuis le bord
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    };
+
     const handleTouchEnd = (e) => {
+      // Toujours retirer le listener touchmove, quel que soit l'état
+      document.removeEventListener('touchmove', handleTouchMove);
       if (!activeRef.current) return;
 
       const touch = e.changedTouches[0];
@@ -174,6 +188,8 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
     };
 
     const handleTouchCancel = () => {
+      // Toujours retirer le listener touchmove, quel que soit l'état
+      document.removeEventListener('touchmove', handleTouchMove);
       if (!activeRef.current) return;
       clearTimeout(timeoutRef.current);
       activeRef.current = false;
@@ -202,13 +218,12 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
     };
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
     document.addEventListener('touchcancel', handleTouchCancel, { passive: true });
 
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchmove', handleTouchMove); // sécurité si encore enregistré
       document.removeEventListener('touchend', handleTouchEnd);
       document.removeEventListener('touchcancel', handleTouchCancel);
       clearTimeout(timeoutRef.current);
