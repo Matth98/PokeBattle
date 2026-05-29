@@ -20,12 +20,28 @@ export const useThemeMode = () => {
   const [themeMode, setThemeModeState] = useState(getSavedMode);
   const [systemDark, setSystemDark] = useState(getSystemDark);
 
-  // Écoute les changements de préférence système
+  // Écoute les changements de préférence système.
+  // Sur iOS, le multitâche peut déclencher un faux événement `change` au moment
+  // où l'app reprend (prefers-color-scheme toggle transitoire → re-render flash).
+  // - On ignore les events quand la page est cachée (app en arrière-plan).
+  // - On resynchronise au retour au premier plan via visibilitychange.
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e) => setSystemDark(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+
+    const onMqChange = () => {
+      if (!document.hidden) setSystemDark(mq.matches);
+    };
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) setSystemDark(mq.matches);
+    };
+
+    mq.addEventListener('change', onMqChange);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      mq.removeEventListener('change', onMqChange);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, []);
 
   const setThemeMode = (mode) => {
