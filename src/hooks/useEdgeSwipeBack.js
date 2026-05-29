@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 
 const EDGE_THRESHOLD = 22;
 const SWIPE_THRESHOLD = 80;
@@ -21,6 +21,22 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
   const lockedAxisRef = useRef(null);
   const activeRef = useRef(false);
   const timeoutRef = useRef(null);
+
+  // Quand le swipe réussit, on ne reset PAS pageRef immédiatement pour éviter un flash.
+  // On le fait depuis App.jsx via useLayoutEffect, après que React a commité le nouveau contenu.
+  const pendingFgResetRef = useRef(false);
+
+  // Appelé depuis App.jsx useLayoutEffect([currentTab]) après chaque commit de navigation.
+  // Nettoie le transform de pageRef seulement après que React a mis le nouveau contenu dedans,
+  // ce qui évite de voir brièvement l'ancienne page revenir à translateX(0) avant le re-render.
+  const resetFg = useCallback(() => {
+    if (!pendingFgResetRef.current) return;
+    pendingFgResetRef.current = false;
+    if (pageRef.current) {
+      pageRef.current.style.transition = '';
+      pageRef.current.style.transform = '';
+    }
+  }, []);
 
   useEffect(() => {
     const resetStyles = () => {
@@ -48,6 +64,7 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
     if (!enabled) {
       clearTimeout(timeoutRef.current);
       activeRef.current = false;
+      pendingFgResetRef.current = false;
       resetStyles();
       return;
     }
@@ -160,7 +177,12 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
         }
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-          resetStyles();
+          // On NE reset PAS bgRef/bgOverlayRef ici : ils vont se démonter via React
+          // juste après onBack(). Les resetter maintenant causerait un flash (bg saute
+          // à -25vw) avant que React ait eu le temps de commiter le nouveau rendu.
+          // pageRef sera resetté par resetFg() appelé dans useLayoutEffect de App.jsx,
+          // APRÈS que React a mis le nouveau contenu dedans.
+          pendingFgResetRef.current = true;
           onBackRef.current();
         }, SLIDE_OUT_MS);
       } else {
@@ -228,8 +250,9 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
       document.removeEventListener('touchcancel', handleTouchCancel);
       clearTimeout(timeoutRef.current);
       activeRef.current = false;
+      pendingFgResetRef.current = false;
     };
   }, [enabled]); // bgRef est un objet ref stable (useRef) - son identité ne change jamais
 
-  return pageRef;
+  return { pageRef, resetFg };
 }

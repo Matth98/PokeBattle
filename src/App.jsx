@@ -135,6 +135,9 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   }, [currentTab, navigateBack]);
 
   useLayoutEffect(() => {
+    // Si un swipe-back vient de se terminer, reset le transform du pageRef maintenant
+    // que React a commité le nouveau contenu dedans (plus de flash de l'ancienne page).
+    resetFg();
     if (shouldRestoreRef.current) {
       const saved = scrollMemoryRef.current.get(currentTab) || 0;
       window.scrollTo({ top: saved, behavior: 'auto' });
@@ -142,7 +145,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     } else {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
-  }, [currentTab]);
+  }, [currentTab, resetFg]);
 
   const [showNewPlayerForm, setShowNewPlayerForm] = useState(false);
   const [showNewBattleForm, setShowNewBattleForm] = useState(false);
@@ -160,7 +163,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const bgScrollRef = useRef(null);
   const bgOverlayRef = useRef(null);
   const [pokemonDetailOpen, setPokemonDetailOpen] = useState(false);
-  const pageRef = useEdgeSwipeBack({
+  const { pageRef, resetFg } = useEdgeSwipeBack({
     onBack: handleBack,
     enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm && !pokemonDetailOpen,
     bgRef: bgPageRef,
