@@ -21,19 +21,25 @@ export const useThemeMode = () => {
   const [systemDark, setSystemDark] = useState(getSystemDark);
 
   // Écoute les changements de préférence système.
-  // Sur iOS, le multitâche peut déclencher un faux événement `change` au moment
-  // où l'app reprend (prefers-color-scheme toggle transitoire → re-render flash).
-  // - On ignore les events quand la page est cachée (app en arrière-plan).
-  // - On resynchronise au retour au premier plan via visibilitychange.
+  // Sur iOS, le multitâche génère un faux event `change` qui peut arriver
+  // APRÈS que la page soit redevenue visible → re-render parasite → flash.
+  // Fix : fenêtre de suppression de 500 ms après chaque retour au premier plan.
+  // Les vrais changements de thème (> 500 ms après la reprise) passent normalement.
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    let suppressUntil = 0;
 
     const onMqChange = () => {
-      if (!document.hidden) setSystemDark(mq.matches);
+      if (Date.now() < suppressUntil) return; // événement transitoire iOS, ignoré
+      setSystemDark(mq.matches);
     };
 
     const onVisibilityChange = () => {
-      if (!document.hidden) setSystemDark(mq.matches);
+      if (document.hidden) return;
+      // Bloque les events change pendant 500 ms après la reprise
+      suppressUntil = Date.now() + 500;
+      // Re-lit immédiatement la préférence réelle (bail-out si identique)
+      setSystemDark(mq.matches);
     };
 
     mq.addEventListener('change', onMqChange);
