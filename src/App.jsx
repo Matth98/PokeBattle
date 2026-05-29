@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import { flushSync } from 'react-dom';
 import { theme } from './utils/theme';
 import { useAPI } from './hooks/useAPI';
@@ -228,6 +228,16 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [battles, setBattles] = useState([]);
   const [teams, setTeams] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
+
+  // Tri alphabétique stable — utilisé partout (pages + modales)
+  const sortedPlayers = useMemo(
+    () => [...players].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })),
+    [players],
+  );
+  const sortedTeams = useMemo(
+    () => [...teams].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })),
+    [teams],
+  );
   const [claimLoading, setClaimLoading] = useState(false);
 
   const handleClaimPlayer = async (playerId) => {
@@ -501,7 +511,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   if (!dbUserLoading && dbUser && dbUser.playerId === null) {
     return (
       <ClaimPlayerScreen
-        availablePlayers={players.filter((p) => !p.userId)}
+        availablePlayers={sortedPlayers.filter((p) => !p.userId)}
         onClaim={handleClaimPlayer}
         onCreatePlayer={handleCreatePlayer}
         loading={claimLoading}
@@ -530,13 +540,13 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             ref={bgScrollRef}
             style={{ position: 'absolute', inset: 0, overflowY: 'auto', pointerEvents: 'none' }}
           >
-            {prevTab === 'home' && <Home players={players} battles={battles} teams={teams} isDark={isDark} t={t} setCurrentTab={() => {}} setSelectedBattle={() => {}} onSelectPlayer={() => {}} onSearchPokemon={() => {}} linkedPlayer={players.find(p => p._id === dbUser?.playerId)} onOpenSettings={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('home') || 0} />}
-            {prevTab === 'players' && <Players players={players} t={t} isDark={isDark} onSelectPlayer={() => {}} onAddPlayer={() => {}} onDeletePlayer={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('players') || 0} />}
-            {prevTab === 'battles' && <Battles battles={battles} players={players} teams={teams} t={t} isDark={isDark} onSelectBattle={() => {}} onAddBattle={() => {}} onUpdateBattle={() => {}} onUpdatePlayer={() => {}} onSyncPokemon={() => {}} onDeleteBattle={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingBattle={null} clearEditingBattle={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('battles') || 0} formatFilter={battlesFormatFilter} collapsedGroups={battlesCollapsedGroups} />}
-            {prevTab === 'teams' && <Teams teams={teams} players={players} t={t} isDark={isDark} onSelectTeam={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onUpdatePlayer={() => {}} onDeleteTeam={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingTeam={null} clearEditingTeam={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('teams') || 0} formatFilter={teamsFormatFilter} />}
-            {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={teams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} />}
+            {prevTab === 'home' && <Home players={sortedPlayers} battles={battles} teams={sortedTeams} isDark={isDark} t={t} setCurrentTab={() => {}} setSelectedBattle={() => {}} onSelectPlayer={() => {}} onSearchPokemon={() => {}} linkedPlayer={players.find(p => p._id === dbUser?.playerId)} onOpenSettings={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('home') || 0} />}
+            {prevTab === 'players' && <Players players={sortedPlayers} t={t} isDark={isDark} onSelectPlayer={() => {}} onAddPlayer={() => {}} onDeletePlayer={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('players') || 0} />}
+            {prevTab === 'battles' && <Battles battles={battles} players={sortedPlayers} teams={sortedTeams} t={t} isDark={isDark} onSelectBattle={() => {}} onAddBattle={() => {}} onUpdateBattle={() => {}} onUpdatePlayer={() => {}} onSyncPokemon={() => {}} onDeleteBattle={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingBattle={null} clearEditingBattle={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('battles') || 0} formatFilter={battlesFormatFilter} collapsedGroups={battlesCollapsedGroups} />}
+            {prevTab === 'teams' && <Teams teams={sortedTeams} players={sortedPlayers} t={t} isDark={isDark} onSelectTeam={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onUpdatePlayer={() => {}} onDeleteTeam={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingTeam={null} clearEditingTeam={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('teams') || 0} formatFilter={teamsFormatFilter} />}
+            {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={sortedTeams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} />}
             {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} />}
-            {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={players} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} />}
+            {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={sortedPlayers} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} />}
             {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} isBackground />}
           </div>
           {/* Overlay d'assombrissement — z-index élevé pour couvrir tout le contenu */}
@@ -549,9 +559,9 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       <div ref={pageRef} style={{ position: 'relative', zIndex: 10 }}>
       {currentTab === 'home' && (
         <Home
-          players={players}
+          players={sortedPlayers}
           battles={battles}
-          teams={teams}
+          teams={sortedTeams}
           isDark={isDark}
           t={t}
           initialScrollY={scrollMemoryRef.current.get('home') || 0}
@@ -570,7 +580,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
       {currentTab === 'players' && (
         <Players
-          players={players}
+          players={sortedPlayers}
           t={t}
           isDark={isDark}
           initialScrollY={scrollMemoryRef.current.get('players') || 0}
@@ -594,7 +604,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       {currentTab === 'playerDetail' && (
         <PlayerDetail
           player={selectedPlayer}
-          teams={teams}
+          teams={sortedTeams}
           battles={battles}
           t={t}
           isDark={isDark}
@@ -619,8 +629,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       {(currentTab === 'teams' || currentTab === 'teamDetail') && (
         <div className={currentTab !== 'teams' ? 'hidden' : ''}>
         <Teams
-          teams={teams}
-          players={players}
+          teams={sortedTeams}
+          players={sortedPlayers}
           t={t}
           isDark={isDark}
           initialScrollY={scrollMemoryRef.current.get('teams') || 0}
@@ -640,7 +650,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           setSelectionMode={setSelectionMode}
           selectedItems={selectedItems}
           setSelectedItems={setSelectedItems}
-          showForm={showNewTeamForm}
+          showForm={currentTab === 'teams' ? showNewTeamForm : false}
           setShowForm={setShowTeamForm}
           editingTeam={selectedTeam}
           clearEditingTeam={() => {
@@ -678,8 +688,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         <div className={currentTab !== 'battles' ? 'hidden' : ''}>
         <Battles
           battles={battles}
-          players={players}
-          teams={teams}
+          players={sortedPlayers}
+          teams={sortedTeams}
           t={t}
           isDark={isDark}
           initialScrollY={scrollMemoryRef.current.get('battles') || 0}
@@ -697,7 +707,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           setSelectionMode={setSelectionMode}
           selectedItems={selectedItems}
           setSelectedItems={setSelectedItems}
-          showForm={showNewBattleForm}
+          showForm={currentTab === 'battles' ? showNewBattleForm : false}
           setShowForm={setShowBattleForm}
           editingBattle={selectedBattle}
           clearEditingBattle={() => {
@@ -718,7 +728,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       {currentTab === 'battleDetail' && (
         <BattleDetail
           battle={selectedBattle}
-          players={players}
+          players={sortedPlayers}
           t={t}
           isDark={isDark}
           backLabel={backLabel}
@@ -811,8 +821,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         )}
         {currentTab !== 'teams' && showNewTeamForm && (
           <Teams
-            teams={teams}
-            players={players}
+            teams={sortedTeams}
+            players={sortedPlayers}
             t={t}
             isDark={isDark}
             onSelectTeam={(team) => {
@@ -837,8 +847,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         {currentTab !== 'battles' && showNewBattleForm && (
           <Battles
             battles={battles}
-            players={players}
-            teams={teams}
+            players={sortedPlayers}
+            teams={sortedTeams}
             t={t}
             isDark={isDark}
             onSelectBattle={(b) => {
