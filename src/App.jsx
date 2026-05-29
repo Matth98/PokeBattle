@@ -145,7 +145,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     } else {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
-  }, [currentTab, resetFg]);
+  }, [currentTab]); // eslint-disable-line react-hooks/exhaustive-deps -- resetFg est un useCallback(fn,[]) stable, ne peut pas figurer dans le tableau (TDZ : déclaré après ce useLayoutEffect)
 
   const [showNewPlayerForm, setShowNewPlayerForm] = useState(false);
   const [showNewBattleForm, setShowNewBattleForm] = useState(false);
