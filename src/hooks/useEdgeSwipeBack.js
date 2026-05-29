@@ -40,6 +40,8 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
 
   useEffect(() => {
     const resetStyles = () => {
+      // Restaure l'overflow horizontal masqué pendant le swipe
+      document.documentElement.style.overflowX = '';
       if (pageRef.current) {
         pageRef.current.style.transition = '';
         pageRef.current.style.transform = '';
@@ -91,7 +93,10 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
           document.removeEventListener('touchmove', handleTouchMove);
           return;
         }
-        // Axe verrouillé sur X : compenser le décalage de scroll pour que les
+        // Axe verrouillé sur X : masquer l'overflow horizontal pour éviter
+        // l'apparition d'une scrollbar pendant que pageRef sort à droite.
+        document.documentElement.style.overflowX = 'hidden';
+        // Compenser le décalage de scroll pour que les
         // gradients position:fixed ne sautent pas quand pageRef reçoit un transform.
         if (pageRef.current) {
           const scrollY = window.scrollY;
@@ -177,6 +182,8 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
         }
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
+          // Restaure l'overflow maintenant que la page est sortie de l'écran
+          document.documentElement.style.overflowX = '';
           // On NE reset PAS bgRef/bgOverlayRef ici : ils vont se démonter via React
           // juste après onBack(). Les resetter maintenant causerait un flash (bg saute
           // à -25vw) avant que React ait eu le temps de commiter le nouveau rendu.
