@@ -32,9 +32,10 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   const [displayedBattles, setDisplayedBattles] = useState(recentBattles);
   const [enteringId, setEnteringId]       = useState(null);
   const [exitingBattle, setExitingBattle] = useState(null);
+  const [deletingId, setDeletingId]       = useState(null);
 
   const prevFirstIdRef  = useRef(recentBattles[0]?._id);
-  const displayedRef    = useRef(recentBattles); // lecture sans dépendance de fermeture
+  const displayedRef    = useRef(recentBattles);
 
   useEffect(() => { displayedRef.current = displayedBattles; }, [displayedBattles]);
 
@@ -44,7 +45,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
     prevFirstIdRef.current = newFirstId;
 
     if (newFirstId && newFirstId !== oldFirstId && oldFirstId !== undefined) {
-      // Nouveau combat détecté — attendre la fin de fermeture de la modale (~240 ms)
+      // Nouveau combat en tête — attendre la fermeture de la modale
       const snapshot = recentBattles;
       const timer = setTimeout(() => {
         const current = displayedRef.current;
@@ -56,8 +57,21 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       }, 260);
       return () => clearTimeout(timer);
     }
-    // Mise à jour ordinaire (suppression, édition) — sync sans animation
-    if (!enteringId) setDisplayedBattles(recentBattles);
+
+    if (!enteringId) {
+      // Suppression d'un combat visible — animation de sortie vers le haut
+      const removed = displayedRef.current.find(b => !recentBattles.some(n => n._id === b._id));
+      if (removed) {
+        setDeletingId(removed._id);
+        const snapshot = recentBattles;
+        const timer = setTimeout(() => {
+          setDeletingId(null);
+          setDisplayedBattles(snapshot);
+        }, 420);
+        return () => clearTimeout(timer);
+      }
+      setDisplayedBattles(recentBattles);
+    }
   }, [recentBattles]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Collecte tous les pokeIds présents dans les combats pour le lookup de types
@@ -385,7 +399,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             };
 
             return (
-              <div className="space-y-3">
+              <div className="relative space-y-3">
                 {displayedBattles.map((b) => {
                   if (enteringId === b._id) {
                     return (
@@ -396,16 +410,24 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                       </div>
                     );
                   }
+                  if (deletingId === b._id) {
+                    return (
+                      <div key={b._id} className="anim-battle-slot-delete">
+                        <div className="overflow-hidden">
+                          {renderCard(b, 'anim-battle-card-delete')}
+                        </div>
+                      </div>
+                    );
+                  }
                   return <div key={b._id}>{renderCard(b)}</div>;
                 })}
                 {exitingBattle && (
                   <div
-                    className="anim-battle-slot-collapse"
+                    className="absolute left-0 right-0 anim-battle-exit-fade pointer-events-none"
+                    style={{ top: 'calc(100% + 0.75rem)' }}
                     onAnimationEnd={() => setExitingBattle(null)}
                   >
-                    <div className="overflow-hidden">
-                      {renderCard(exitingBattle)}
-                    </div>
+                    {renderCard(exitingBattle)}
                   </div>
                 )}
               </div>
