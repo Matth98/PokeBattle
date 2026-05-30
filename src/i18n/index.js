@@ -65,9 +65,9 @@ const fr = {
     deleteTitle: 'Supprimer cette équipe ?',
     deleteMultipleTitle: (n) => `Supprimer ${n} équipe${n > 1 ? 's' : ''} ?`,
     missingPokemon: (n, cur, req, fmt) =>
-      `Il manque ${n} Pokémon (${cur}/${req}) pour le format ${fmt}`,
+      `Il manque ${n} Pokémon (${cur}/${req}) pour le format ${fmt}.`,
     tooManyPokemon: (cur, req, fmt) =>
-      `Trop de Pokémon (${cur}/${req}) pour le format ${fmt}`,
+      `Trop de Pokémon (${cur}/${req}) pour le format ${fmt}.`,
     owner: 'Propriétaire',
     format: 'Format',
   },
@@ -199,9 +199,9 @@ const en = {
     deleteTitle: 'Delete this team?',
     deleteMultipleTitle: (n) => `Delete ${n} team${n > 1 ? 's' : ''}?`,
     missingPokemon: (n, cur, req, fmt) =>
-      `Missing ${n} Pokémon (${cur}/${req}) for ${fmt} format`,
+      `Missing ${n} Pokémon (${cur}/${req}) for ${fmt} format.`,
     tooManyPokemon: (cur, req, fmt) =>
-      `Too many Pokémon (${cur}/${req}) for ${fmt} format`,
+      `Too many Pokémon (${cur}/${req}) for ${fmt} format.`,
     owner: 'Owner',
     format: 'Format',
   },
@@ -325,9 +325,9 @@ const es = {
     deleteTitle: '¿Eliminar este equipo?',
     deleteMultipleTitle: (n) => `¿Eliminar ${n} equipo${n > 1 ? 's' : ''}?`,
     missingPokemon: (n, cur, req, fmt) =>
-      `Faltan ${n} Pokémon (${cur}/${req}) para el formato ${fmt}`,
+      `Faltan ${n} Pokémon (${cur}/${req}) para el formato ${fmt}.`,
     tooManyPokemon: (cur, req, fmt) =>
-      `Demasiados Pokémon (${cur}/${req}) para el formato ${fmt}`,
+      `Demasiados Pokémon (${cur}/${req}) para el formato ${fmt}.`,
     owner: 'Propietario', format: 'Formato',
   },
   pokemon: {
@@ -450,9 +450,9 @@ const de = {
     deleteTitle: 'Dieses Team löschen?',
     deleteMultipleTitle: (n) => `${n} Teams löschen?`,
     missingPokemon: (n, cur, req, fmt) =>
-      `${n} Pokémon fehlen (${cur}/${req}) für Format ${fmt}`,
+      `${n} Pokémon fehlen (${cur}/${req}) für Format ${fmt}.`,
     tooManyPokemon: (cur, req, fmt) =>
-      `Zu viele Pokémon (${cur}/${req}) für Format ${fmt}`,
+      `Zu viele Pokémon (${cur}/${req}) für Format ${fmt}.`,
     owner: 'Besitzer', format: 'Format',
   },
   pokemon: {
@@ -575,9 +575,9 @@ const ja = {
     deleteTitle: 'このチームを削除しますか？',
     deleteMultipleTitle: (n) => `${n}チームを削除しますか？`,
     missingPokemon: (n, cur, req, fmt) =>
-      `${fmt}フォーマットにはあと${n}匹必要です (${cur}/${req})`,
+      `${fmt}フォーマットにはあと${n}匹必要です (${cur}/${req})。`,
     tooManyPokemon: (cur, req, fmt) =>
-      `ポケモン数が多すぎます (${cur}/${req}) フォーマット${fmt}`,
+      `ポケモン数が多すぎます (${cur}/${req}) フォーマット${fmt}。`,
     owner: 'オーナー', format: 'フォーマット',
   },
   pokemon: {
