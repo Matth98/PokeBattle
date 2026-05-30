@@ -133,7 +133,7 @@ export const Battles = ({
         date: editingBattle.date
           ? new Date(editingBattle.date).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0],
-        time: editingBattle.time || '',
+        time: editingBattle.time || '00:00',
         notes: editingBattle.notes || '',
         winner: editingBattle.winner || null,
       });
@@ -1127,14 +1127,7 @@ export const Battles = ({
                       className={`flex-1 bg-transparent outline-none ${t.text}`}
                     />
                   </div>
-                  <div className={`${t.inputSoft} rounded-xl px-3 py-2 flex items-center gap-2`}>
-                    <input
-                      type="time"
-                      value={newBattleData.time}
-                      onChange={(e) => setNewBattleData({ ...newBattleData, time: e.target.value })}
-                      className={`bg-transparent outline-none ${t.text} w-24`}
-                    />
-                  </div>
+                  <input type="hidden" value={newBattleData.time} />
                 </div>
               </div>
 
