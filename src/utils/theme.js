@@ -23,7 +23,7 @@ export const theme = {
     surfaceElevated: 'bg-white',
     surfaceMuted: 'bg-gray-100',
     surfaceInset: 'bg-white',
-    surfaceBlur: 'bg-white/55 backdrop-blur-xl',
+    surfaceBlur: 'bg-white/75 backdrop-blur-xl',
     overlay: 'bg-black/30 backdrop-blur-sm',
 
     // Texte
