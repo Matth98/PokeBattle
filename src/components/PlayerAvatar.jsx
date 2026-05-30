@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const AVATAR_PALETTE = [
   'bg-indigo-500',
@@ -28,14 +28,16 @@ export const PlayerAvatar = ({ player, size = 44, textSize = 'text-base', classN
   const name = player?.name || '';
   const avatar = player?.avatar;
   const style = { width: size, height: size };
+  const [imgError, setImgError] = useState(false);
 
-  if (avatar) {
+  if (avatar && !imgError) {
     return (
       <img
         src={avatar}
         alt={name}
         style={style}
         className={`rounded-full object-cover ${className}`}
+        onError={() => setImgError(true)}
       />
     );
   }

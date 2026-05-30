@@ -44,6 +44,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   const phase2FiredRef      = useRef(false);
   const deletePhase2Ref      = useRef(null);
   const deletePhase2FiredRef = useRef(false);
+  const deleteAnimActiveRef  = useRef(false); // animation de suppression en cours
   const pendingDeleteRef     = useRef(null); // suppression reçue en background
 
   useEffect(() => { displayedRef.current = displayedBattles; }, [displayedBattles]);
@@ -61,14 +62,17 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
     }
     setShiftOffset(offset);
     deletePhase2FiredRef.current = false;
+    deleteAnimActiveRef.current = true;
     deletePhase2Ref.current = () => {
+      deleteAnimActiveRef.current = false;
       setDeletingId(null);
       setSlidingUpIds(new Set());
       setDisplayedBattles(snapshot);
       if (incoming) setRisingId(incoming._id);
     };
     setDeletingId(removed._id);
-    setSlidingUpIds(new Set(displayedRef.current.filter(b => b._id !== removed._id).map(b => b._id)));
+    const removedIndex = displayedRef.current.findIndex(b => b._id === removed._id);
+    setSlidingUpIds(new Set(displayedRef.current.slice(removedIndex + 1).map(b => b._id)));
   }, []);
 
   // Déclenche l'animation en attente quand on revient au foreground
@@ -85,7 +89,11 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
     const oldFirstId = prevFirstIdRef.current;
     prevFirstIdRef.current = newFirstId;
 
-    if (newFirstId && newFirstId !== oldFirstId && oldFirstId !== undefined) {
+    // Si le nouveau premier ID était déjà dans la liste, c'est une suppression du 1er combat
+    // (pas un ajout) — laisser la logique de suppression ci-dessous gérer ça.
+    const newFirstWasPresent = newFirstId && displayedRef.current.some(b => b._id === newFirstId);
+
+    if (newFirstId && newFirstId !== oldFirstId && oldFirstId !== undefined && !newFirstWasPresent) {
       // Nouveau combat en tête — attendre la fermeture de la modale
       const snapshot = recentBattles;
       const timer = setTimeout(() => {
@@ -125,6 +133,14 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           return;
         }
 
+        if (deleteAnimActiveRef.current) {
+          // Animation déjà en cours : mise à jour directe sans animation
+          setDeletingId(null);
+          setSlidingUpIds(new Set());
+          deleteAnimActiveRef.current = false;
+          setDisplayedBattles(snapshot);
+          return;
+        }
         triggerDeleteAnim(removed, incoming, snapshot);
         return;
       }
