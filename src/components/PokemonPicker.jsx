@@ -206,7 +206,7 @@ export const PokemonPicker = ({
               className={`w-full py-3.5 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition ${t.accentBg} text-white ${selectedPokeIds.length === 0 ? 'opacity-30' : ''}`}
             >
               <Plus size={18} />
-              {selectedPokeIds.length === 0 ? 'Sélectionner des Pokémon' : `Ajouter (${selectedPokeIds.length})`}
+              {`Ajouter${selectedPokeIds.length > 0 ? ` (${selectedPokeIds.length})` : ''}`}
             </button>
           </div>
         )}

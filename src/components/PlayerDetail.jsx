@@ -26,6 +26,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { AlertModal } from './AlertModal';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { PokemonPicker } from './PokemonPicker';
@@ -97,6 +98,7 @@ export const PlayerDetail = ({
   const [selectionMode, setSelectionMode] = useState(null); // 'pokemon' | 'teams'
   const [selectedItems, setSelectedItems] = useState([]);
   const [footerMounted, setFooterMounted] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
   const { isClosing: isFooterClosing, handleClose: closeFooter } = useAnimatedClose(() => setFooterMounted(false), 280);
   useEffect(() => {
     if (selectionMode) setFooterMounted(true);
@@ -160,7 +162,7 @@ export const PlayerDetail = ({
       const dataUrl = await resizeImageToDataUrl(file);
       await onUpdate(player._id, { ...player, avatar: dataUrl });
     } catch (err) {
-      alert('Image invalide : ' + err.message);
+      setAlertMessage({ title: 'Image invalide', message: err.message });
     } finally {
       e.target.value = '';
     }
@@ -179,7 +181,7 @@ export const PlayerDetail = ({
       const dataUrl = await resizeImageToDataUrl(file);
       setEditAvatar(dataUrl);
     } catch (err) {
-      alert('Image invalide : ' + err.message);
+      setAlertMessage({ title: 'Image invalide', message: err.message });
     } finally {
       e.target.value = '';
     }
@@ -212,9 +214,7 @@ export const PlayerDetail = ({
   const handleSelectTeamPokemon = (pokemonOrArray) => {
     const toAdd = Array.isArray(pokemonOrArray) ? pokemonOrArray : [pokemonOrArray];
     setNewTeamData((prev) => {
-      const max = requiredPokemonForFormat(prev.format);
-      const remaining = max - prev.pokemon.length;
-      const entries = toAdd.slice(0, remaining).map((p, i) => ({
+      const entries = toAdd.map((p, i) => ({
         id: `${Date.now()}-${i}-${p.pokeId}`,
         pokeId: p.pokeId,
         name: p.name,
@@ -233,12 +233,15 @@ export const PlayerDetail = ({
 
   const handleSaveTeam = async () => {
     const required = requiredPokemonForFormat(newTeamData.format);
-    const errors = {
-      name: !newTeamData.name.trim(),
-      pokemon: newTeamData.pokemon.length !== required,
-    };
+    const errors = { name: !newTeamData.name.trim() };
     setTeamFormErrors(errors);
-    if (errors.name || errors.pokemon || !onAddTeam) return;
+    if (errors.name || !onAddTeam) return;
+    if (newTeamData.pokemon.length !== required) {
+      setAlertMessage({ title: 'Format invalide', message: newTeamData.pokemon.length < required
+        ? tr('teams.missingPokemon', required - newTeamData.pokemon.length, newTeamData.pokemon.length, required, newTeamData.format)
+        : tr('teams.tooManyPokemon', newTeamData.pokemon.length, required, newTeamData.format) });
+      return;
+    }
 
     const payload = {
       ...newTeamData,
@@ -1263,8 +1266,8 @@ export const PlayerDetail = ({
                     </label>
                     <button
                       onClick={() => setPickingTeamPokemon(true)}
-                      disabled={isAtMax}
-                      className={`${t.accent} text-sm font-semibold flex items-center gap-1 ${isAtMax ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      
+                      className={`${t.accent} text-sm font-semibold flex items-center gap-1`}
                     >
                       <Plus size={16} />
                       {tr('common.add')}
@@ -1302,13 +1305,6 @@ export const PlayerDetail = ({
                     </div>
                   )}
 
-                  {teamFormErrors.pokemon && currentCount !== required && (
-                    <p className={`${t.danger} text-xs mt-2 ml-1`}>
-                      {currentCount < required
-                        ? tr('teams.missingPokemon', required - currentCount, currentCount, required, newTeamData.format)
-                        : tr('teams.tooManyPokemon', currentCount, required, newTeamData.format)}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
@@ -1327,7 +1323,6 @@ export const PlayerDetail = ({
           onSelect={handleSelectTeamPokemon}
           onClose={() => setPickingTeamPokemon(false)}
           multiSelect
-          maxSelect={requiredPokemonForFormat(newTeamData.format) - newTeamData.pokemon.length}
         />
       , document.body)}
 
@@ -1636,6 +1631,7 @@ export const PlayerDetail = ({
           onClose={() => setViewingPokemon(null)}
         />
       )}
+      <AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
     </div>
   );
 };

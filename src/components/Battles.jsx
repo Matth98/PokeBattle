@@ -13,6 +13,7 @@ import { SwipeableRow } from './SwipeableRow';
 import { DraggableList } from './DraggableList';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
+import { AlertModal } from './AlertModal';
 
 function PokeBallIcon({ id }) {
   const clipId = `pb-${id}`;
@@ -185,6 +186,7 @@ export const Battles = ({
   // Fermeture animée du formulaire (Cancel ou après sauvegarde)
   const [isFormClosing, setIsFormClosing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
   const [openPlayerDropdown, setOpenPlayerDropdown] = useState(null);
   const [openWinnerDropdown, setOpenWinnerDropdown] = useState(false);
   const closeFormWithAnimation = useCallback(() => {
@@ -249,9 +251,7 @@ export const Battles = ({
     const slot = pickerState.slot;
     const toAdd = Array.isArray(pokemonOrArray) ? pokemonOrArray : [pokemonOrArray];
     setBattleSelectedPokemon((prev) => {
-      const needed = requiredPokemonForFormat(newBattleData.format);
-      const remaining = needed - (prev[slot] || []).length;
-      const entries = toAdd.slice(0, remaining).map((p, i) => ({
+      const entries = toAdd.map((p, i) => ({
         id: `${Date.now()}-${i}-${p.pokeId}`,
         pokeId: p.pokeId,
         name: p.name,
@@ -341,15 +341,15 @@ export const Battles = ({
 
   const handleSaveBattle = async () => {
     if (!newBattleData.player1 || !newBattleData.player2) {
-      alert('Sélectionne les deux joueurs');
+      setAlertMessage({ title: 'Joueurs manquants', message: 'Sélectionne les deux joueurs avant d\'enregistrer le combat.' });
       return;
     }
     if (battleSelectedPokemon.player1.length !== required || battleSelectedPokemon.player2.length !== required) {
-      alert(`Chaque joueur doit avoir exactement ${required} Pokémon pour le format ${newBattleData.format}`);
+      setAlertMessage({ title: 'Équipe incomplète', message: `Chaque joueur doit avoir exactement ${required} Pokémon pour le format ${newBattleData.format}.` });
       return;
     }
     if (!newBattleData.winner) {
-      alert('Le gagnant n\'a pas pu être déterminé. Coche les Pokémon éliminés ou choisis le gagnant manuellement.');
+      setAlertMessage({ title: 'Gagnant non déterminé', message: 'Coche les Pokémon éliminés ou choisis le gagnant manuellement.' });
       return;
     }
     const payload = {
@@ -1174,7 +1174,6 @@ export const Battles = ({
           onSelect={handleAddPokemonToSlot}
           onClose={closePicker}
           multiSelect
-          maxSelect={requiredPokemonForFormat(newBattleData.format) - (battleSelectedPokemon[pickerState.slot] || []).length}
         />
       , document.body)}
 
@@ -1251,6 +1250,7 @@ export const Battles = ({
           </div>
         </div>
       , document.body)}
+      <AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
     </>
   );
 };

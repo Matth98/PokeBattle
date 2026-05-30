@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Users, Camera, Loader2 } from 'lucide-react';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
+import { AlertModal } from './AlertModal';
 import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useAuth } from '../hooks/useAuth';
@@ -59,6 +60,7 @@ export const Players = ({
     setNewPlayerAvatar(null);
   };
 
+  const [alertMessage, setAlertMessage] = useState(null);
   const [isFormClosing, setIsFormClosing] = useState(false);
   const closeFormWithAnimation = useCallback(() => {
     setIsFormClosing(true);
@@ -98,7 +100,7 @@ export const Players = ({
       const dataUrl = await resizeImageToDataUrl(file);
       setNewPlayerAvatar(dataUrl);
     } catch (err) {
-      alert('Image invalide : ' + err.message);
+      setAlertMessage({ title: 'Image invalide', message: err.message });
     } finally {
       e.target.value = ''; // permet de re-choisir le même fichier
     }
@@ -434,6 +436,7 @@ export const Players = ({
           </div>
         </div>
       , document.body)}
+      <AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
     </div>
   );
 };
