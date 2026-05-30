@@ -34,7 +34,7 @@ export const PokemonPicker = ({
   maxSelect = Infinity,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPokeIds, setSelectedPokeIds] = useState([]);
+  const [selectedPokemon, setSelectedPokemon] = useState([]);
   const inputRef = useRef(null);
   const { searchResults, searchLoading, error, searchPokemon, getPokemonImageUrl } = usePokemon();
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
@@ -55,26 +55,22 @@ export const PokemonPicker = ({
       onSelect(p);
       return;
     }
-    setSelectedPokeIds((prev) => {
-      if (prev.includes(p.pokeId)) return prev.filter((id) => id !== p.pokeId);
+    setSelectedPokemon((prev) => {
+      if (prev.some((sp) => sp.pokeId === p.pokeId)) return prev.filter((sp) => sp.pokeId !== p.pokeId);
       if (prev.length >= maxSelect) return prev;
-      return [...prev, p.pokeId];
+      return [...prev, p];
     });
   };
 
   const handleConfirm = () => {
-    if (selectedPokeIds.length === 0) return;
-    const allPokemon = useGrouped
-      ? POKEMON_BY_GENERATION.flatMap((g) => g.pokemon)
-      : flatDisplayed;
-    const selected = selectedPokeIds.map((id) => allPokemon.find((p) => p.pokeId === id)).filter(Boolean);
-    onSelect(selected);
+    if (selectedPokemon.length === 0) return;
+    onSelect(selectedPokemon);
   };
 
   const PokemonRow = ({ p, idx, total }) => {
     const isPicked = alreadyPickedIds.includes(p.pokeId);
-    const isSelected = multiSelect && selectedPokeIds.includes(p.pokeId);
-    const isAtMax = multiSelect && selectedPokeIds.length >= maxSelect && !isSelected;
+    const isSelected = multiSelect && selectedPokemon.some((sp) => sp.pokeId === p.pokeId);
+    const isAtMax = multiSelect && selectedPokemon.length >= maxSelect && !isSelected;
     const isLast = idx === total - 1;
     const disabled = isPicked || isAtMax;
     return (
@@ -202,11 +198,11 @@ export const PokemonPicker = ({
           >
             <button
               onClick={handleConfirm}
-              disabled={selectedPokeIds.length === 0}
-              className={`w-full py-3.5 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition ${t.accentBg} text-white ${selectedPokeIds.length === 0 ? 'opacity-30' : ''}`}
+              disabled={selectedPokemon.length === 0}
+              className={`w-full py-3.5 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition ${t.accentBg} text-white ${selectedPokemon.length === 0 ? 'opacity-30' : ''}`}
             >
               <Plus size={18} />
-              {`Ajouter${selectedPokeIds.length > 0 ? ` (${selectedPokeIds.length})` : ''}`}
+              {`Ajouter${selectedPokemon.length > 0 ? ` (${selectedPokemon.length})` : ''}`}
             </button>
           </div>
         )}

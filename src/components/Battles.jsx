@@ -1185,7 +1185,7 @@ export const Battles = ({
               <Dices size={20} className={t.accent} />
               <p className={`font-black text-lg ${t.text}`}>Tirage aléatoire</p>
             </div>
-            <p className={`${t.textSecondary} text-sm mb-5`}>
+            <p className={`${t.textSecondary} text-base mb-5`}>
               Génère une équipe aléatoire à partir du roster du joueur.
             </p>
             <div className="flex flex-col gap-2">
