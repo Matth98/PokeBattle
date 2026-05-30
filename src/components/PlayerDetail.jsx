@@ -120,6 +120,11 @@ export const PlayerDetail = ({
   const { isClosing: isDeletingSelectedTeamsClosing, handleClose: cancelDeletingSelectedTeams } = useAnimatedClose(
     () => setDeletingSelectedTeams(false), 180,
   );
+  const [showAllPokemonSheet, setShowAllPokemonSheet] = useState(false);
+  const { isClosing: isAllPokemonSheetClosing, handleClose: closeAllPokemonSheet } = useAnimatedClose(() => setShowAllPokemonSheet(false), 280);
+  const [showAllTeamsSheet, setShowAllTeamsSheet] = useState(false);
+  const { isClosing: isAllTeamsSheetClosing, handleClose: closeAllTeamsSheet } = useAnimatedClose(() => setShowAllTeamsSheet(false), 280);
+  useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet);
 
   // Fermeture animée "Modifier joueur"
   const [isEditPlayerClosing, setIsEditPlayerClosing] = useState(false);
@@ -1317,9 +1322,36 @@ export const PlayerDetail = ({
         return createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedPokemonClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedPokemonClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
-            <p className={`font-black text-lg ${t.text} mb-1`}>
+            <p className={`font-black text-lg ${t.text} mb-3`}>
               Supprimer {selectedItems.length} Pokémon ?
             </p>
+            {(() => {
+              const selectedPokemon = (player.pokemon || []).filter((p) => selectedItems.includes(p.id));
+              if (selectedPokemon.length === 0) return null;
+              const MAX = 12;
+              const visible = selectedPokemon.slice(0, MAX);
+              const overflow = selectedPokemon.length - MAX;
+              return (
+                <div className="mb-4">
+                  <div className="grid grid-cols-6 gap-1">
+                    {visible.map((p) => (
+                      <img
+                        key={p.id}
+                        src={getPokemonImageUrl(p.pokeId)}
+                        alt={p.name}
+                        className="w-full aspect-square object-contain"
+                      />
+                    ))}
+                  </div>
+                  {overflow > 0 && (
+                    <button
+                      onClick={() => setShowAllPokemonSheet(true)}
+                      className={`mt-2 text-sm font-semibold ${t.accent}`}
+                    >+ {overflow} Pokémon</button>
+                  )}
+                </div>
+              );
+            })()}
             {affectedTeams.length > 0 && (
               <div className={`mt-3 mb-4 p-3 rounded-xl ${t.warningSoftBg}`}>
                 <div className="flex items-start gap-2">
@@ -1329,14 +1361,22 @@ export const PlayerDetail = ({
                       Présent dans {affectedTeams.length === 1 ? 'une équipe' : `${affectedTeams.length} ${tr('teams.title').toLowerCase()}`}
                     </p>
                     <ul className={`text-sm ${t.text} space-y-0.5`}>
-                      {affectedTeams.map((team) => (
+                      {affectedTeams.slice(0, 4).map((team) => (
                         <li key={team._id} className="flex items-center gap-1.5">
-                          <span className="font-semibold">{team.name}</span>
                           <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
                             {team.format}
                           </span>
+                          <span className="font-semibold">{team.name}</span>
                         </li>
                       ))}
+                      {affectedTeams.length > 4 && (
+                        <li>
+                          <button
+                            onClick={() => setShowAllTeamsSheet(true)}
+                            className={`text-sm font-semibold ${t.accent}`}
+                          >+ {affectedTeams.length - 4} autres</button>
+                        </li>
+                      )}
                     </ul>
                     <p className={`text-xs ${t.textSecondary} mt-2`}>
                       Ils seront également retirés de {affectedTeams.length === 1 ? 'cette équipe' : 'ces équipes'}.
@@ -1366,6 +1406,61 @@ export const PlayerDetail = ({
         </div>
         , document.body);
       })()}
+
+      {/* ── Bottom sheet : tous les Pokémon sélectionnés ── */}
+      {showAllPokemonSheet && createPortal(
+        <div className={`fixed inset-0 z-[10000] flex flex-col justify-end ${isAllPokemonSheetClosing ? 'anim-fade-out' : 'anim-fade-in'}`}>
+          <div className="absolute inset-0 bg-black/40" onClick={closeAllPokemonSheet} />
+          <div className={`relative ${t.surfaceModal} rounded-t-3xl flex flex-col ${isAllPokemonSheetClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ paddingBottom: 'env(safe-area-inset-bottom)', maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 1.5rem)' }}>
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
+              <p className={`font-black text-base ${t.text}`}>Pokémon sélectionnés ({selectedItems.length})</p>
+              <button onClick={closeAllPokemonSheet} className={`w-8 h-8 rounded-full ${t.surfaceMuted} flex items-center justify-center`}><X size={16} /></button>
+            </div>
+            <div className="overflow-y-auto px-5 pb-5 flex-1">
+              <div className="grid grid-cols-6 gap-1">
+                {(player.pokemon || []).filter((p) => selectedItems.includes(p.id)).map((p) => (
+                  <div key={p.id} className="flex flex-col items-center gap-0.5">
+                    <img src={getPokemonImageUrl(p.pokeId)} alt={p.name} className="w-full aspect-square object-contain" />
+                    <span className={`text-[10px] ${t.textSecondary} text-center w-full truncate text-center`}>{p.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      , document.body)}
+
+      {/* ── Bottom sheet : toutes les équipes affectées ── */}
+      {showAllTeamsSheet && createPortal(
+        <div className={`fixed inset-0 z-[10000] flex flex-col justify-end ${isAllTeamsSheetClosing ? 'anim-fade-out' : 'anim-fade-in'}`}>
+          <div className="absolute inset-0 bg-black/40" onClick={closeAllTeamsSheet} />
+          <div className={`relative ${t.surfaceModal} rounded-t-3xl flex flex-col ${isAllTeamsSheetClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ paddingBottom: 'env(safe-area-inset-bottom)', maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 1.5rem)' }}>
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
+              <p className={`font-black text-base ${t.text}`}>Équipes affectées</p>
+              <button onClick={closeAllTeamsSheet} className={`w-8 h-8 rounded-full ${t.surfaceMuted} flex items-center justify-center`}><X size={16} /></button>
+            </div>
+            <div className="overflow-y-auto px-5 pb-5 flex-1">
+              <ul className={`space-y-2 text-sm ${t.text}`}>
+                {(() => {
+                  const selectedPokeIds = new Set(
+                    (player.pokemon || []).filter((p) => selectedItems.includes(p.id)).map((p) => p.pokeId)
+                  );
+                  return playerTeams
+                    .filter((team) => (team.pokemon || []).some((p) => selectedPokeIds.has(p.pokeId)))
+                    .map((team) => (
+                      <li key={team._id} className="flex items-center gap-1.5">
+                        <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+                          {team.format}
+                        </span>
+                        <span className="font-semibold">{team.name}</span>
+                      </li>
+                    ));
+                })()}
+              </ul>
+            </div>
+          </div>
+        </div>
+      , document.body)}
 
       {/* ── Modal Confirmation suppression multiple Équipes ── */}
       {deletingSelectedTeams && createPortal(
@@ -1440,10 +1535,10 @@ export const PlayerDetail = ({
                     <ul className={`text-sm ${t.text} space-y-0.5`}>
                       {teamsContainingDeleted.map((team) => (
                         <li key={team._id} className="flex items-center gap-1.5">
-                          <span className="font-semibold">{team.name}</span>
                           <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
                             {team.format}
                           </span>
+                          <span className="font-semibold">{team.name}</span>
                         </li>
                       ))}
                     </ul>
@@ -1481,7 +1576,7 @@ export const PlayerDetail = ({
           className={`fixed bottom-0 left-0 right-0 z-30 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-          <div className="grid grid-cols-3 items-center px-4 gap-2" style={{ height: '76px' }}>
+          <div className="grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
             {(() => {
               const allIds = selectionMode === 'pokemon'
                 ? filteredPokemon.map((p) => p.id)
@@ -1499,9 +1594,6 @@ export const PlayerDetail = ({
                 </button>
               );
             })()}
-            <span className={`text-sm font-semibold ${t.textSecondary} tabular-nums text-center`}>
-              {selectedItems.length} / {selectionMode === 'pokemon' ? filteredPokemon.length : filteredTeams.length}
-            </span>
             <button
               onClick={() => selectionMode === 'pokemon' ? setDeletingSelectedPokemon(true) : setDeletingSelectedTeams(true)}
               disabled={selectedItems.length === 0}

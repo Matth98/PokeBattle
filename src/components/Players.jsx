@@ -328,7 +328,7 @@ export const Players = ({
           className={`fixed bottom-0 left-0 right-0 z-30 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-          <div className="grid grid-cols-3 items-center px-4 gap-2" style={{ height: '76px' }}>
+          <div className="grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
             {/* Tout sélectionner / Tout déselectionner */}
             {(() => {
               const allIds = players.map((p) => p._id);
@@ -345,9 +345,6 @@ export const Players = ({
                 </button>
               );
             })()}
-            <span className={`text-sm font-semibold ${t.textSecondary} tabular-nums text-center`}>
-              {selectedItems.length} / {players.length}
-            </span>
             <button
               onClick={() => setDeletingSelected(true)}
               disabled={selectedItems.length === 0}
