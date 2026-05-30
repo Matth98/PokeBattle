@@ -76,6 +76,8 @@ export const Teams = ({
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, owner: false, pokemon: false });
   const [deletingSelected, setDeletingSelected] = useState(false);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [isDeletingSingle, setIsDeletingSingle] = useState(false);
+  const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
   const [pickingPokemon, setPickingPokemon] = useState(false);
   const { getPokemonImageUrl } = usePokemon();
 
@@ -209,7 +211,9 @@ export const Teams = ({
   };
 
   const handleDeleteMultiple = async () => {
+    setIsDeletingMultiple(true);
     await onDeleteMultiple(selectedItems);
+    setIsDeletingMultiple(false);
     setSelectionMode(null);
     setSelectedItems([]);
     setDeletingSelected(false);
@@ -480,18 +484,22 @@ export const Teams = ({
               <div className="flex gap-2">
                 <button
                   onClick={cancelConfirmDelete}
-                  className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+                  disabled={isDeletingSingle}
+                  className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text} disabled:opacity-50`}
                 >
                   {tr('common.cancel')}
                 </button>
                 <button
                   onClick={async () => {
+                    setIsDeletingSingle(true);
                     await onDeleteTeam(confirmingDeleteId);
+                    setIsDeletingSingle(false);
                     setConfirmingDeleteId(null);
                   }}
-                  className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+                  disabled={isDeletingSingle}
+                  className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white disabled:opacity-50 flex items-center justify-center gap-2`}
                 >
-                  {tr('common.delete')}
+                  {isDeletingSingle ? <Loader2 size={16} className="animate-spin" /> : tr('common.delete')}
                 </button>
               </div>
             </div>
@@ -510,15 +518,17 @@ export const Teams = ({
             <div className="flex gap-2">
               <button
                 onClick={cancelDeletingSelected}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+                disabled={isDeletingMultiple}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text} disabled:opacity-50`}
               >
                 {tr('common.cancel')}
               </button>
               <button
                 onClick={handleDeleteMultiple}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+                disabled={isDeletingMultiple}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white disabled:opacity-50 flex items-center justify-center gap-2`}
               >
-                {tr('common.delete')}
+                {isDeletingMultiple ? <Loader2 size={16} className="animate-spin" /> : tr('common.delete')}
               </button>
             </div>
           </div>

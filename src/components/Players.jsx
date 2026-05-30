@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Users, Camera } from 'lucide-react';
+import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Users, Camera, Loader2 } from 'lucide-react';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
@@ -36,6 +36,8 @@ export const Players = ({
   const [newPlayerAvatar, setNewPlayerAvatar] = useState(null); // data URL
   const [deletingSelected, setDeletingSelected] = useState(false);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [isDeletingSingle, setIsDeletingSingle] = useState(false);
+  const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
   const fileInputRef = useRef(null);
 
   const inSelection = selectionMode === 'players';
@@ -94,7 +96,9 @@ export const Players = ({
   };
 
   const handleDeleteMultiple = async () => {
+    setIsDeletingMultiple(true);
     await onDeleteMultiple(selectedItems);
+    setIsDeletingMultiple(false);
     setSelectionMode(null);
     setSelectedItems([]);
     setDeletingSelected(false);
@@ -106,7 +110,9 @@ export const Players = ({
 
   const handleConfirmSingleDelete = async () => {
     if (confirmingDeleteId) {
+      setIsDeletingSingle(true);
       await onDeletePlayer(confirmingDeleteId);
+      setIsDeletingSingle(false);
       setConfirmingDeleteId(null);
     }
   };
@@ -286,15 +292,17 @@ export const Players = ({
             <div className="flex gap-2">
               <button
                 onClick={cancelDeletingSelected}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+                disabled={isDeletingMultiple}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text} disabled:opacity-50`}
               >
                 {tr('common.cancel')}
               </button>
               <button
                 onClick={handleDeleteMultiple}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+                disabled={isDeletingMultiple}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white disabled:opacity-50 flex items-center justify-center gap-2`}
               >
-                {tr('common.delete')}
+                {isDeletingMultiple ? <Loader2 size={16} className="animate-spin" /> : tr('common.delete')}
               </button>
             </div>
           </div>
@@ -312,15 +320,17 @@ export const Players = ({
             <div className="flex gap-2">
               <button
                 onClick={cancelConfirmDelete}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+                disabled={isDeletingSingle}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text} disabled:opacity-50`}
               >
                 {tr('common.cancel')}
               </button>
               <button
                 onClick={handleConfirmSingleDelete}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+                disabled={isDeletingSingle}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white disabled:opacity-50 flex items-center justify-center gap-2`}
               >
-                {tr('common.delete')}
+                {isDeletingSingle ? <Loader2 size={16} className="animate-spin" /> : tr('common.delete')}
               </button>
             </div>
           </div>
