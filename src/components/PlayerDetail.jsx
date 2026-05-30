@@ -19,6 +19,11 @@ import {
   Target,
   TrendingUp,
   Trophy,
+  Search,
+  Trash2,
+  Check,
+  CheckSquare,
+  X,
   Zap,
 } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
@@ -48,6 +53,7 @@ export const PlayerDetail = ({
   initialActiveTab = 'pokemon',
   isDark,
   onViewingPokemonChange = null,
+  onSelectionModeChange = null,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -60,6 +66,7 @@ export const PlayerDetail = ({
     onViewingPokemonChange?.(viewingPokemon !== null);
   }, [viewingPokemon, onViewingPokemonChange]);
   const [activeTab, setActiveTab] = useState(initialActiveTab);
+  useEffect(() => { setPokemonSearch(''); setTeamsSearch(''); exitSelection(); }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
   const [editingPlayer, setEditingPlayer] = useState(false);
   const [editName, setEditName] = useState('');
   const [editAvatar, setEditAvatar] = useState(null);
@@ -83,12 +90,35 @@ export const PlayerDetail = ({
   }, [player, battles]);
   const pokemonTypes = usePokemonTypes(allPokeIdsForTypes);
   const [deletingPokemon, setDeletingPokemon] = useState(null);
+  const [pokemonSearch, setPokemonSearch] = useState('');
+  const pokemonSearchRef = useRef(null);
+  const [teamsSearch, setTeamsSearch] = useState('');
+  const teamsSearchRef = useRef(null);
+  const [selectionMode, setSelectionMode] = useState(null); // 'pokemon' | 'teams'
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [footerMounted, setFooterMounted] = useState(false);
+  const { isClosing: isFooterClosing, handleClose: closeFooter } = useAnimatedClose(() => setFooterMounted(false), 280);
+  useEffect(() => {
+    if (selectionMode) setFooterMounted(true);
+    else closeFooter();
+  }, [selectionMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { onSelectionModeChange?.(!!selectionMode); }, [selectionMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [deletingSelectedPokemon, setDeletingSelectedPokemon] = useState(false);
+  const [deletingSelectedTeams, setDeletingSelectedTeams] = useState(false);
+  const [isDeletingSelectedPokemon, setIsDeletingSelectedPokemon] = useState(false);
+  const [isDeletingSelectedTeams, setIsDeletingSelectedTeams] = useState(false);
   const [deletingTeam, setDeletingTeam] = useState(null);
   const { isClosing: isDeletingTeamClosing, handleClose: cancelDeletingTeam } = useAnimatedClose(
     () => setDeletingTeam(null), 180,
   );
   const { isClosing: isDeletingPokemonClosing, handleClose: cancelDeletingPokemon } = useAnimatedClose(
     () => setDeletingPokemon(null), 180,
+  );
+  const { isClosing: isDeletingSelectedPokemonClosing, handleClose: cancelDeletingSelectedPokemon } = useAnimatedClose(
+    () => setDeletingSelectedPokemon(false), 180,
+  );
+  const { isClosing: isDeletingSelectedTeamsClosing, handleClose: cancelDeletingSelectedTeams } = useAnimatedClose(
+    () => setDeletingSelectedTeams(false), 180,
   );
 
   // Fermeture animée "Modifier joueur"
@@ -284,6 +314,28 @@ export const PlayerDetail = ({
     setDeletingTeam(null);
   };
 
+  const exitSelection = () => { setSelectionMode(null); setSelectedItems([]); };
+
+  const handleDeleteSelectedPokemon = async () => {
+    setIsDeletingSelectedPokemon(true);
+    await onUpdate(player._id, {
+      ...player,
+      pokemon: player.pokemon.filter((p) => !selectedItems.includes(p.id)),
+    });
+    setIsDeletingSelectedPokemon(false);
+    setDeletingSelectedPokemon(false);
+    exitSelection();
+  };
+
+  const handleDeleteSelectedTeams = async () => {
+    if (!onDeleteTeam) return;
+    setIsDeletingSelectedTeams(true);
+    for (const id of selectedItems) await onDeleteTeam(id);
+    setIsDeletingSelectedTeams(false);
+    setDeletingSelectedTeams(false);
+    exitSelection();
+  };
+
   if (!player) return null;
 
   const wins = player.stats?.wins || 0;
@@ -380,6 +432,16 @@ export const PlayerDetail = ({
     ? [...playerTeams].sort((a, b) => (teamPlayCounts.get(b._id) || 0) - (teamPlayCounts.get(a._id) || 0))[0]
     : undefined;
   const rosterSize = player.pokemon?.length || 0;
+  const filteredPokemon = pokemonSearch
+    ? (player.pokemon || []).filter((p) => p.name.toLowerCase().includes(pokemonSearch.toLowerCase()) || String(p.pokeId).includes(pokemonSearch.trim()))
+    : (player.pokemon || []);
+  const filteredTeams = teamsSearch
+    ? playerTeams.filter((team) => {
+        const q = teamsSearch.toLowerCase();
+        if (team.name.toLowerCase().includes(q)) return true;
+        return (team.pokemon || []).some((p) => p.name.toLowerCase().includes(q) || String(p.pokeId).includes(teamsSearch.trim()));
+      })
+    : playerTeams;
   const teamPokemonCount = playerTeams.reduce((sum, team) => sum + (team.pokemon?.length || 0), 0);
   const uniqueBattlePokemonCount = countPokemon(playerBattlePokemon).size;
   const opponentEliminatedCount = playerBattles.reduce((sum, battle) => {
@@ -521,22 +583,45 @@ export const PlayerDetail = ({
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
+            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} transition-all duration-200 ${selectionMode ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
             style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label="Retour"
           >
             <ChevronLeft size={24} className="-translate-x-px" />
           </button>
-          {canEdit && (
-            <button
-              onClick={openEditPlayer}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
-            style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-              aria-label="Modifier"
-            >
-              <Pencil size={20} />
-            </button>
-          )}
+          <div className="relative flex items-center gap-2">
+            {canEdit && (activeTab === 'pokemon' || activeTab === 'teams') && (
+              <button
+                onClick={() => setSelectionMode(activeTab)}
+                disabled={(activeTab === 'pokemon' ? (player.pokemon?.length || 0) : playerTeams.length) === 0}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} disabled:opacity-40 ${selectionMode ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+                aria-label="Sélectionner"
+              >
+                <CheckSquare size={20} />
+              </button>
+            )}
+            {canEdit && (
+              <button
+                onClick={openEditPlayer}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${selectionMode ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+                aria-label="Modifier"
+              >
+                <Pencil size={20} />
+              </button>
+            )}
+            {canEdit && (activeTab === 'pokemon' || activeTab === 'teams') && (
+              <button
+                onClick={exitSelection}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${selectionMode ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
+                style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+                aria-label="Terminer la sélection"
+              >
+                <Check size={20} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -614,18 +699,52 @@ export const PlayerDetail = ({
               </button>
             </div>
 
+            {player.pokemon && player.pokemon.length > 0 && (
+              <div className={`flex items-center gap-2 ${t.surface} rounded-xl px-3 py-2 mb-3`}>
+                <Search size={15} className={t.textTertiary} aria-hidden="true" />
+                <input
+                  ref={pokemonSearchRef}
+                  type="text"
+                  value={pokemonSearch}
+                  onChange={(e) => setPokemonSearch(e.target.value)}
+                  placeholder="Rechercher…"
+                  className={`flex-1 bg-transparent outline-none ${t.text} text-base`}
+                />
+                {pokemonSearch && (
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => { setPokemonSearch(''); pokemonSearchRef.current?.focus(); }}
+                    className={t.textTertiary}
+                    aria-label="Effacer"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            )}
+
             {!player.pokemon || player.pokemon.length === 0 ? (
               <div className={`${t.surface} rounded-2xl p-8 text-center`}>
                 <p className={`${t.textSecondary} text-sm`}>{tr('teams.noPokemon')}</p>
               </div>
-            ) : (
+            ) : (() => {
+              const filtered = [...filteredPokemon].sort((a, b) => a.pokeId - b.pokeId);
+              if (filtered.length === 0) return (
+                <div className={`${t.surface} rounded-2xl p-8 text-center`}>
+                  <p className={`${t.textSecondary} text-sm`}>Aucun résultat</p>
+                </div>
+              );
+              return (
               <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
-                {[...player.pokemon].sort((a, b) => a.pokeId - b.pokeId).map((p, idx) => {
-                  const isLast = idx === player.pokemon.length - 1;
+                {filtered.map((p, idx) => {
+                  const isLast = idx === filtered.length - 1;
+                  const isSelected = selectedItems.includes(p.id);
+                  const inPokemonSelection = selectionMode === 'pokemon';
                   return (
                     <SwipeableRow
                       key={p.id}
-                      onDelete={canEdit ? () => setDeletingPokemon(p.id) : undefined}
+                      onDelete={canEdit && !inPokemonSelection ? () => setDeletingPokemon(p.id) : undefined}
+                      disabled={inPokemonSelection}
                       surfaceClass={t.surface}
                       className={[
                         !isLast ? `border-b ${t.divider}` : '',
@@ -634,9 +753,17 @@ export const PlayerDetail = ({
                       ].filter(Boolean).join(' ')}
                     >
                       <button
-                        onClick={() => setViewingPokemon({ pokeId: p.pokeId, name: p.name })}
+                        onClick={() => inPokemonSelection
+                          ? setSelectedItems(isSelected ? selectedItems.filter((id) => id !== p.id) : [...selectedItems, p.id])
+                          : setViewingPokemon({ pokeId: p.pokeId, name: p.name })
+                        }
                         className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left`}
                       >
+                        {inPokemonSelection && (
+                          <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}>
+                            {isSelected && <Check size={14} className="text-white" />}
+                          </span>
+                        )}
                         <img
                           src={getPokemonImageUrl(p.pokeId)}
                           alt={p.name}
@@ -677,7 +804,8 @@ export const PlayerDetail = ({
                   );
                 })}
               </div>
-            )}
+              );
+            })()}
           </section>
         )}
 
@@ -696,19 +824,58 @@ export const PlayerDetail = ({
                 {tr('common.create')}
               </button>
             </div>
-            {playerTeams.length === 0 ? (
+            {playerTeams.length > 0 && (
+              <div className={`flex items-center gap-2 ${t.surface} rounded-xl px-3 py-2 mb-3`}>
+                <Search size={15} className={t.textTertiary} aria-hidden="true" />
+                <input
+                  ref={teamsSearchRef}
+                  type="text"
+                  value={teamsSearch}
+                  onChange={(e) => setTeamsSearch(e.target.value)}
+                  placeholder="Rechercher…"
+                  className={`flex-1 bg-transparent outline-none ${t.text} text-base`}
+                />
+                {teamsSearch && (
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => { setTeamsSearch(''); teamsSearchRef.current?.focus(); }}
+                    className={t.textTertiary}
+                    aria-label="Effacer"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {(() => {
+              const filtered = filteredTeams;
+              if (playerTeams.length === 0) return (
               <div className={`${t.surface} rounded-2xl p-8 text-center`}>
                 <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileIndigo} flex items-center justify-center mb-3`}>
                   <Shield size={22} />
                 </div>
                 <p className={`${t.textSecondary} text-sm`}>{tr('teams.none')}</p>
               </div>
-            ) : (
+            );
+              if (filtered.length === 0) return (
+              <div className={`${t.surface} rounded-2xl p-8 text-center`}>
+                <p className={`${t.textSecondary} text-sm`}>Aucun résultat</p>
+              </div>
+            );
+              return (
               <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
-                {playerTeams.map((team, idx) => {
-                  const isLast = idx === playerTeams.length - 1;
+                {filtered.map((team, idx) => {
+                  const isLast = idx === filtered.length - 1;
+                  const isSelected = selectedItems.includes(team._id);
+                  const inTeamsSelection = selectionMode === 'teams';
                   const rowContent = (
                     <>
+                      {inTeamsSelection && (
+                        <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}>
+                          {isSelected && <Check size={14} className="text-white" />}
+                        </span>
+                      )}
                       <div className={`w-12 h-12 rounded-2xl ${t.surfaceMuted} p-1 grid grid-cols-2 grid-rows-2 gap-0.5 flex-shrink-0`}>
                         {[0, 1, 2, 3].map((slot) => {
                           const pokemon = (team.pokemon || [])[slot];
@@ -739,7 +906,14 @@ export const PlayerDetail = ({
                     </>
                   );
 
-                  const inner = onSelectTeam ? (
+                  const inner = inTeamsSelection ? (
+                    <button
+                      onClick={() => setSelectedItems(isSelected ? selectedItems.filter((id) => id !== team._id) : [...selectedItems, team._id])}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface}`}
+                    >
+                      {rowContent}
+                    </button>
+                  ) : onSelectTeam ? (
                     <button
                       onClick={() => onSelectTeam(team, activeTab)}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface}`}
@@ -755,7 +929,8 @@ export const PlayerDetail = ({
                   return (
                     <SwipeableRow
                       key={team._id}
-                      onDelete={canEdit && onDeleteTeam ? () => setDeletingTeam(team._id) : undefined}
+                      onDelete={canEdit && onDeleteTeam && !inTeamsSelection ? () => setDeletingTeam(team._id) : undefined}
+                      disabled={inTeamsSelection}
                       surfaceClass={t.surface}
                       className={[
                         !isLast ? `border-b ${t.divider}` : '',
@@ -768,7 +943,8 @@ export const PlayerDetail = ({
                   );
                 })}
               </div>
-            )}
+              );
+            })()}
           </section>
         )}
 
@@ -1130,6 +1306,95 @@ export const PlayerDetail = ({
         />
       , document.body)}
 
+      {/* ── Modal Confirmation suppression multiple Pokémon ── */}
+      {deletingSelectedPokemon && (() => {
+        const selectedPokeIds = new Set(
+          (player.pokemon || []).filter((p) => selectedItems.includes(p.id)).map((p) => p.pokeId)
+        );
+        const affectedTeams = playerTeams.filter((team) =>
+          (team.pokemon || []).some((p) => selectedPokeIds.has(p.pokeId))
+        );
+        return createPortal(
+        <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedPokemonClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedPokemonClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
+            <p className={`font-black text-lg ${t.text} mb-1`}>
+              Supprimer {selectedItems.length} Pokémon ?
+            </p>
+            {affectedTeams.length > 0 && (
+              <div className={`mt-3 mb-4 p-3 rounded-xl ${t.warningSoftBg}`}>
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={16} className={`${t.warningSoftText} flex-shrink-0 mt-0.5`} />
+                  <div>
+                    <p className={`text-sm font-semibold ${t.warningSoftText} mb-1`}>
+                      Présent dans {affectedTeams.length === 1 ? 'une équipe' : `${affectedTeams.length} ${tr('teams.title').toLowerCase()}`}
+                    </p>
+                    <ul className={`text-sm ${t.text} space-y-0.5`}>
+                      {affectedTeams.map((team) => (
+                        <li key={team._id} className="flex items-center gap-1.5">
+                          <span className="font-semibold">{team.name}</span>
+                          <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+                            {team.format}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className={`text-xs ${t.textSecondary} mt-2`}>
+                      Ils seront également retirés de {affectedTeams.length === 1 ? 'cette équipe' : 'ces équipes'}.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={cancelDeletingSelectedPokemon}
+                disabled={isDeletingSelectedPokemon}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text} disabled:opacity-50`}
+              >
+                {tr('common.cancel')}
+              </button>
+              <button
+                onClick={handleDeleteSelectedPokemon}
+                disabled={isDeletingSelectedPokemon}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white disabled:opacity-50 flex items-center justify-center gap-2`}
+              >
+                {isDeletingSelectedPokemon ? <Loader2 size={16} className="animate-spin" /> : tr('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+        , document.body);
+      })()}
+
+      {/* ── Modal Confirmation suppression multiple Équipes ── */}
+      {deletingSelectedTeams && createPortal(
+        <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedTeamsClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedTeamsClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
+            <p className={`font-black text-lg ${t.text} mb-1`}>
+              {tr('teams.deleteMultipleTitle', selectedItems.length)}
+            </p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={cancelDeletingSelectedTeams}
+                disabled={isDeletingSelectedTeams}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text} disabled:opacity-50`}
+              >
+                {tr('common.cancel')}
+              </button>
+              <button
+                onClick={handleDeleteSelectedTeams}
+                disabled={isDeletingSelectedTeams}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white disabled:opacity-50 flex items-center justify-center gap-2`}
+              >
+                {isDeletingSelectedTeams ? <Loader2 size={16} className="animate-spin" /> : tr('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
+
       {/* ── Modal Confirmation suppression équipe ── */}
       {deletingTeam && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingTeamClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
@@ -1206,6 +1471,45 @@ export const PlayerDetail = ({
                 {tr('common.delete')}
               </button>
             </div>
+          </div>
+        </div>
+      , document.body)}
+
+      {/* ── Footer multi-sélection ── */}
+      {footerMounted && createPortal(
+        <div
+          className={`fixed bottom-0 left-0 right-0 z-30 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <div className="grid grid-cols-3 items-center px-4 gap-2" style={{ height: '76px' }}>
+            {(() => {
+              const allIds = selectionMode === 'pokemon'
+                ? filteredPokemon.map((p) => p.id)
+                : filteredTeams.map((t) => t._id);
+              const allSelected = allIds.length > 0 && allIds.every((id) => selectedItems.includes(id));
+              return (
+                <button
+                  onClick={() => setSelectedItems(allSelected
+                    ? selectedItems.filter((id) => !allIds.includes(id))
+                    : [...new Set([...selectedItems, ...allIds])]
+                  )}
+                  className={`text-sm font-semibold ${t.accent} justify-self-start`}
+                >
+                  {allSelected ? 'Tout déselectionner' : 'Tout sélectionner'}
+                </button>
+              );
+            })()}
+            <span className={`text-sm font-semibold ${t.textSecondary} tabular-nums text-center`}>
+              {selectedItems.length} / {selectionMode === 'pokemon' ? filteredPokemon.length : filteredTeams.length}
+            </span>
+            <button
+              onClick={() => selectionMode === 'pokemon' ? setDeletingSelectedPokemon(true) : setDeletingSelectedTeams(true)}
+              disabled={selectedItems.length === 0}
+              className={`justify-self-end h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${selectedItems.length === 0 ? `${isDark ? 'bg-white/10 text-white/40' : 'bg-white/60 text-gray-400'} ${isDark ? '' : 'border border-white/20'} shadow-sm` : `${t.dangerBg} text-white`}`}
+              style={selectedItems.length === 0 && isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+            >
+              {selectedItems.length === 0 ? 'Supprimer' : `Supprimer (${selectedItems.length})`}
+            </button>
           </div>
         </div>
       , document.body)}

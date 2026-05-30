@@ -62,6 +62,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
   const [prevTab, setPrevTab] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [hideNav, setHideNav] = useState(false);
   // Snapshot du top 3 avant une suppression depuis BattleDetail → permet l'animation sur Home
   const homeDeleteSnapshotRef = useRef(null);
 
@@ -628,6 +629,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           setSelectedItems={setSelectedItems}
           showForm={showNewPlayerForm}
           setShowForm={setShowNewPlayerForm}
+          onSelectionModeChange={(active) => setHideNav(active)}
         />
       )}
 
@@ -653,6 +655,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             navigateTo('teamDetail', { playerDetailTab: activeTab });
           }}
           onViewingPokemonChange={(isOpen) => setPokemonDetailOpen(isOpen)}
+          onSelectionModeChange={(active) => setHideNav(active)}
         />
       )}
 
@@ -682,6 +685,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           setSelectedItems={setSelectedItems}
           showForm={currentTab === 'teams' ? showNewTeamForm : false}
           setShowForm={setShowTeamForm}
+          onSelectionModeChange={(active) => setHideNav(active)}
           editingTeam={selectedTeam}
           clearEditingTeam={() => {
             // Si on revient sur la fiche détail, on garde selectedTeam pour que la page se rende
@@ -739,6 +743,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           setSelectedItems={setSelectedItems}
           showForm={currentTab === 'battles' ? showNewBattleForm : false}
           setShowForm={setShowBattleForm}
+          onSelectionModeChange={(active) => setHideNav(active)}
           editingBattle={selectedBattle}
           clearEditingBattle={() => {
             // Si on revient sur la fiche détail, on garde selectedBattle pour que la page se rende
@@ -814,6 +819,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       {/* Navigation hors du transform — position: fixed z-20 non affecté */}
       {!['pokemonSearch', 'pokemonDetail'].includes(currentTab) && (
         <Navigation
+          hidden={hideNav}
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
           isDark={isDark}

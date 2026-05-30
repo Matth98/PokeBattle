@@ -9,7 +9,7 @@ const TABS = [
   { id: 'teams', Icon: Shield, key: 'nav.teams' },
 ];
 
-export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle }) => {
+export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle, hidden = false }) => {
   const tr = useTranslation();
   // On considère qu'on est dans une "section" même quand on est dans la fiche détail
   const activeFor = (tab) => {
@@ -22,7 +22,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-20 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)]`}
+      className={`fixed bottom-0 left-0 right-0 z-20 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] transition-transform duration-[280ms] ease-in-out ${hidden ? 'translate-y-full pointer-events-none' : 'translate-y-0'}`}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="grid grid-cols-5 items-end px-3 pt-2 pb-2">
