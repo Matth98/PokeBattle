@@ -1220,8 +1220,9 @@ export const Battles = ({
           className={`fixed bottom-0 left-0 right-0 z-30 pointer-events-none ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
           style={{
             background: isDark ? 'linear-gradient(to top, rgba(9,9,11,0.95) 0%, transparent 100%)' : 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
-            paddingBottom: 'env(safe-area-inset-bottom)',
             paddingTop: '48px',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 90px)',
+            marginBottom: '-90px',
           }}
         >
           <div className="pointer-events-auto grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
@@ -1237,8 +1238,8 @@ export const Battles = ({
                     ? selectedItems.filter((id) => !allIds.includes(id))
                     : [...new Set([...selectedItems, ...allIds])]
                   )}
-                  className={`justify-self-start h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${isDark ? 'bg-white/15 text-white' : 'bg-white/60 text-gray-900 border border-white/20 shadow-sm'}`}
-                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+                  className={`justify-self-start h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900 border border-white/20 shadow-sm'}`}
+                  style={isDark ? { borderTop: '1px solid #ffffff36' } : undefined}
                 >
                   {allSelected ? 'Tout déselectionner' : 'Tout sélectionner'}
                 </button>
@@ -1247,7 +1248,7 @@ export const Battles = ({
             <button
               onClick={() => setDeletingSelected(true)}
               className={`justify-self-end h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 bg-red-500/90 text-white border border-red-400/60 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-              style={{ boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' }}
+              style={isDark ? { borderTop: '1px solid #ffffff36' } : undefined}
             >
               {`Supprimer (${selectedItems.length})`}
             </button>
