@@ -719,7 +719,8 @@ export const Teams = ({
         >
           <div className="grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
             {(() => {
-              const allIds = myTeams.map((team) => team._id);
+              const visibleTeams = formatFilter === 'all' ? myTeams : myTeams.filter((t) => t.format === formatFilter);
+              const allIds = visibleTeams.map((team) => team._id);
               const allSelected = allIds.length > 0 && allIds.every((id) => selectedItems.includes(id));
               return (
                 <button

@@ -1228,7 +1228,10 @@ export const Battles = ({
         >
           <div className="grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
             {(() => {
-              const allIds = myBattles.map((b) => b._id);
+              const visibleBattles = groupedBattles
+                .filter((group) => !activeCollapsedGroups.has(group.date))
+                .flatMap((group) => group.battles);
+              const allIds = visibleBattles.filter((b) => canDeleteBattle(b)).map((b) => b._id);
               const allSelected = allIds.length > 0 && allIds.every((id) => selectedItems.includes(id));
               return (
                 <button
