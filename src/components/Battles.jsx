@@ -701,7 +701,7 @@ export const Battles = ({
 
                           {/* Format + score centré */}
                           <div className="flex-shrink-0 flex flex-col items-center gap-2">
-                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
                               {b.format}
                             </span>
                             <p className={`font-black text-2xl ${t.text} whitespace-nowrap leading-none`}>

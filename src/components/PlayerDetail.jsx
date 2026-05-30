@@ -319,6 +319,20 @@ export const PlayerDetail = ({
 
   const handleDeleteSelectedPokemon = async () => {
     setIsDeletingSelectedPokemon(true);
+    const removedPokeIds = new Set(
+      (player.pokemon || []).filter((p) => selectedItems.includes(p.id)).map((p) => p.pokeId)
+    );
+    if (onUpdateTeam) {
+      const affectedTeams = playerTeams.filter((team) =>
+        (team.pokemon || []).some((p) => removedPokeIds.has(p.pokeId))
+      );
+      for (const team of affectedTeams) {
+        await onUpdateTeam(team._id, {
+          ...team,
+          pokemon: (team.pokemon || []).filter((p) => !removedPokeIds.has(p.pokeId)),
+        });
+      }
+    }
     await onUpdate(player._id, {
       ...player,
       pokemon: player.pokemon.filter((p) => !selectedItems.includes(p.id)),
@@ -900,9 +914,16 @@ export const PlayerDetail = ({
                           {(team.pokemon || []).length} Pokémon
                         </p>
                       </div>
-                      <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
-                        {team.format}
-                      </span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {(team.pokemon || []).length < (team.format === '2v2' ? 4 : 3) && (
+                          <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-500'}`}>
+                            À compléter
+                          </span>
+                        )}
+                        <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
+                          {team.format}
+                        </span>
+                      </div>
                       {onSelectTeam ? <ChevronRight size={18} className={t.textTertiary} /> : null}
                     </>
                   );
@@ -1362,7 +1383,7 @@ export const PlayerDetail = ({
                     <ul className={`text-sm ${t.text} space-y-0.5`}>
                       {affectedTeams.slice(0, 4).map((team) => (
                         <li key={team._id} className="flex items-center gap-1.5">
-                          <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+                          <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
                             {team.format}
                           </span>
                           <span className="font-semibold">{team.name}</span>
@@ -1448,7 +1469,7 @@ export const PlayerDetail = ({
                     .filter((team) => (team.pokemon || []).some((p) => selectedPokeIds.has(p.pokeId)))
                     .map((team) => (
                       <li key={team._id} className="flex items-center gap-1.5">
-                        <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+                        <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
                           {team.format}
                         </span>
                         <span className="font-semibold">{team.name}</span>
@@ -1534,7 +1555,7 @@ export const PlayerDetail = ({
                     <ul className={`text-sm ${t.text} space-y-0.5`}>
                       {teamsContainingDeleted.map((team) => (
                         <li key={team._id} className="flex items-center gap-1.5">
-                          <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+                          <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
                             {team.format}
                           </span>
                           <span className="font-semibold">{team.name}</span>

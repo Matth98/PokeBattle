@@ -242,6 +242,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     () => [...teams].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })),
     [teams],
   );
+  const incompleteTeamsCount = useMemo(
+    () => teams.filter((team) => (team.pokemon || []).length < (team.format === '2v2' ? 4 : 3)).length,
+    [teams],
+  );
   const [claimLoading, setClaimLoading] = useState(false);
 
   const handleClaimPlayer = async (playerId) => {
@@ -764,6 +768,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         <BattleDetail
           battle={selectedBattle}
           players={sortedPlayers}
+          teams={sortedTeams}
           t={t}
           isDark={isDark}
           backLabel={backLabel}
@@ -777,6 +782,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setShowNewBattleForm(true);
           }}
           onDelete={handleDeleteBattle}
+          onAddTeam={handleAddTeam}
           onViewingPokemonChange={(isOpen) => setPokemonDetailOpen(isOpen)}
         />
       )}
@@ -824,6 +830,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           setCurrentTab={setCurrentTab}
           isDark={isDark}
           t={t}
+          badgeCounts={{ teams: incompleteTeamsCount }}
           onCreateBattle={() => {
             setBattleEditOrigin(null);
             setShowNewBattleForm(true);

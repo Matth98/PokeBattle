@@ -97,7 +97,7 @@ export const TeamDetail = ({
           <div className="flex items-center gap-2 mt-2">
             <p className={`${t.textSecondary} text-sm`}>{team.owner}</p>
             <span className={`${t.textSecondary} text-sm`}>·</span>
-            <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${team.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+            <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
               {team.format}
             </span>
           </div>

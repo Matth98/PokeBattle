@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle, BookmarkPlus, Loader2 } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -108,11 +108,13 @@ const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, tr, onP
 export const BattleDetail = ({
   battle,
   players,
+  teams = [],
   t,
   isDark,
   onBack,
   onEdit,
   onDelete,
+  onAddTeam,
   backLabel = 'Combats',
   onViewingPokemonChange = null,
 }) => {
@@ -126,6 +128,9 @@ export const BattleDetail = ({
 
   const { getPokemonImageUrl } = usePokemon();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [savingTeamSlot, setSavingTeamSlot] = useState(null); // 'player1' | 'player2'
+  const [namingTeamSlot, setNamingTeamSlot] = useState(null); // slot en cours de nommage
+  const [teamNameInput, setTeamNameInput] = useState('');
   const [viewingPokemon, setViewingPokemon] = useState(null);
   useEffect(() => {
     onViewingPokemonChange?.(viewingPokemon !== null);
@@ -185,6 +190,61 @@ export const BattleDetail = ({
       })
       .catch(() => { setMvpStats(null); setMvpArtwork(null); });
   }, [mvpPokemon?.pokeId]);
+
+  // Vérifie si une équipe identique (mêmes pokeIds) existe déjà pour un joueur
+  const teamAlreadyExists = (playerId, battleTeam) => {
+    const battlePokeIds = new Set((battleTeam || []).map((p) => p.pokeId));
+    if (battlePokeIds.size === 0) return true;
+    return teams.some((team) => {
+      if (team.ownerId !== playerId) return false;
+      const teamPokeIds = new Set((team.pokemon || []).map((p) => p.pokeId));
+      if (teamPokeIds.size !== battlePokeIds.size) return false;
+      return [...battlePokeIds].every((id) => teamPokeIds.has(id));
+    });
+  };
+
+  // Peut sauvegarder l'équipe d'un slot donné
+  const canSaveTeam = (slot) => {
+    if (!onAddTeam) return false;
+    const playerId = slot === 'player1' ? battle.player1 : battle.player2;
+    const battleTeam = slot === 'player1' ? battle.team1 : battle.team2;
+    if (!playerId || !battleTeam?.length) return false;
+    if (teamAlreadyExists(playerId, battleTeam)) return false;
+    if (isSuperAdmin) return true;
+    return dbUser?.playerId && String(dbUser.playerId) === String(playerId);
+  };
+
+  const openNamingModal = (slot) => {
+    setTeamNameInput('');
+    setNamingTeamSlot(slot);
+  };
+
+  const handleSaveTeam = async () => {
+    const slot = namingTeamSlot;
+    const name = teamNameInput.trim();
+    if (!name || !slot) return;
+    const playerId = slot === 'player1' ? battle.player1 : battle.player2;
+    const battleTeam = slot === 'player1' ? battle.team1 : battle.team2;
+    const player = players.find((p) => p._id === playerId);
+    if (!player || !battleTeam?.length) return;
+    setNamingTeamSlot(null);
+    setSavingTeamSlot(slot);
+    try {
+      await onAddTeam({
+        name,
+        format: battle.format,
+        ownerId: playerId,
+        owner: player.name,
+        pokemon: battleTeam.map((p) => ({
+          id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
+          pokeId: p.pokeId,
+          name: p.name,
+        })),
+      });
+    } finally {
+      setSavingTeamSlot(null);
+    }
+  };
 
   if (!battle) return null;
 
@@ -279,7 +339,7 @@ export const BattleDetail = ({
           </div>
           {/* Format + Score + Date */}
           <div className="flex-shrink-0 flex flex-col items-center gap-1">
-            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${battle.format === '1v1' ? (isDark ? 'bg-pink-300/10 text-pink-300' : 'bg-pink-600/10 text-pink-600') : (isDark ? 'bg-indigo-300/10 text-indigo-300' : 'bg-indigo-600/10 text-indigo-600')}`}>
+            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${battle.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
               {battle.format}
             </span>
             <p className={`font-black text-4xl ${t.text} whitespace-nowrap leading-none`}>
@@ -316,6 +376,16 @@ export const BattleDetail = ({
           tr={tr}
           onPokemonClick={(p) => setViewingPokemon(p)}
         />
+        {canSaveTeam('player1') && (
+          <button
+            onClick={() => openNamingModal('player1')}
+            disabled={savingTeamSlot === 'player1'}
+            className={`w-full ${t.surface} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 shadow-sm ${t.accent} disabled:opacity-50 -mt-3`}
+          >
+            {savingTeamSlot === 'player1' ? <Loader2 size={18} className="animate-spin" /> : <BookmarkPlus size={18} />}
+            Enregistrer l'équipe de {p1?.name}
+          </button>
+        )}
         <TeamSection
           player={p2}
           isWinner={battle.winner === 'player2'}
@@ -325,6 +395,16 @@ export const BattleDetail = ({
           tr={tr}
           onPokemonClick={(p) => setViewingPokemon(p)}
         />
+        {canSaveTeam('player2') && (
+          <button
+            onClick={() => openNamingModal('player2')}
+            disabled={savingTeamSlot === 'player2'}
+            className={`w-full ${t.surface} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 shadow-sm ${t.accent} disabled:opacity-50 -mt-3`}
+          >
+            {savingTeamSlot === 'player2' ? <Loader2 size={18} className="animate-spin" /> : <BookmarkPlus size={18} />}
+            Enregistrer l'équipe de {p2?.name}
+          </button>
+        )}
 
         {/* ── Statistiques ── */}
         <section>
@@ -572,6 +652,41 @@ export const BattleDetail = ({
           </button>
         )}
       </div>
+
+      {/* ── Modale nommage équipe ── */}
+      {namingTeamSlot && createPortal(
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+            <p className={`font-black text-lg ${t.text} mb-4`}>
+              Enregistrer l'équipe de {namingTeamSlot === 'player1' ? p1?.name : p2?.name}
+            </p>
+            <input
+              type="text"
+              value={teamNameInput}
+              onChange={(e) => setTeamNameInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && teamNameInput.trim()) handleSaveTeam(); }}
+              autoFocus
+              className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 outline-none focus:ring-2 ${t.accentRing} mb-5`}
+              placeholder="Nom de l'équipe"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setNamingTeamSlot(null)}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+              >
+                {tr('common.cancel')}
+              </button>
+              <button
+                onClick={handleSaveTeam}
+                disabled={!teamNameInput.trim()}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.accentBg} text-white disabled:opacity-40`}
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
 
       {/* ── Modale confirmation ── */}
       {confirmingDelete && createPortal(

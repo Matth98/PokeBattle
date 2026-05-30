@@ -9,7 +9,7 @@ const TABS = [
   { id: 'teams', Icon: Shield, key: 'nav.teams' },
 ];
 
-export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle, hidden = false }) => {
+export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle, hidden = false, badgeCounts = {} }) => {
   const tr = useTranslation();
   // On considère qu'on est dans une "section" même quand on est dans la fiche détail
   const activeFor = (tab) => {
@@ -29,6 +29,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
         {TABS.slice(0, 2).map(({ id, key, Icon }) => {
           const isActive = activeFor(id);
           const label = tr(key);
+          const badge = badgeCounts[id] || 0;
           return (
             <button
               key={id}
@@ -39,15 +40,16 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
               aria-pressed={isActive}
               aria-label={label}
             >
-              <Icon
-                size={24}
-                strokeWidth={isActive ? 2.4 : 1.8}
-                aria-hidden="true"
-              />
-              <span
-                className={`text-[10px] tracking-wide ${isActive ? 'font-semibold' : 'font-medium'}`}
-              >
-              {label}
+              <span className="relative">
+                <Icon size={24} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden="true" />
+                {badge > 0 && (
+                  <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] px-[3px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+                    {badge}
+                  </span>
+                )}
+              </span>
+              <span className={`text-[10px] tracking-wide ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                {label}
               </span>
             </button>
           );
@@ -72,6 +74,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
         {TABS.slice(2).map(({ id, key, Icon }) => {
           const isActive = activeFor(id);
           const label = tr(key);
+          const badge = badgeCounts[id] || 0;
           return (
             <button
               key={id}
@@ -82,14 +85,15 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
               aria-pressed={isActive}
               aria-label={label}
             >
-              <Icon
-                size={24}
-                strokeWidth={isActive ? 2.4 : 1.8}
-                aria-hidden="true"
-              />
-              <span
-                className={`text-[10px] tracking-wide ${isActive ? 'font-semibold' : 'font-medium'}`}
-              >
+              <span className="relative">
+                <Icon size={24} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden="true" />
+                {badge > 0 && (
+                  <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] px-[3px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+                    {badge}
+                  </span>
+                )}
+              </span>
+              <span className={`text-[10px] tracking-wide ${isActive ? 'font-semibold' : 'font-medium'}`}>
                 {label}
               </span>
             </button>

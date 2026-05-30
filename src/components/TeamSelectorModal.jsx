@@ -93,6 +93,11 @@ export const TeamSelectorModal = ({
                         {(team.pokemon || []).length} Pokémon
                       </p>
                     </div>
+                    {(team.pokemon || []).length < (team.format === '2v2' ? 4 : 3) && (
+                      <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-500'}`}>
+                        À compléter
+                      </span>
+                    )}
                   </button>
                 );
               })}
