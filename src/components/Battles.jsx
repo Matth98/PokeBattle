@@ -88,6 +88,7 @@ export const Battles = ({
   setFormatFilter = () => {},
   collapsedGroups = null,
   setCollapsedGroups = () => {},
+  onSelectionModeChange = null,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -172,6 +173,14 @@ export const Battles = ({
     setRandomizePickerSlot(null);
     if (clearEditingBattle) clearEditingBattle();
   };
+
+  const [footerMounted, setFooterMounted] = useState(false);
+  const { isClosing: isFooterClosing, handleClose: closeFooter } = useAnimatedClose(() => setFooterMounted(false), 280);
+  useEffect(() => {
+    if (selectionMode === 'battles') setFooterMounted(true);
+    else closeFooter();
+  }, [selectionMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { onSelectionModeChange?.(selectionMode === 'battles'); }, [selectionMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fermeture animée du formulaire (Cancel ou après sauvegarde)
   const [isFormClosing, setIsFormClosing] = useState(false);
@@ -486,66 +495,37 @@ export const Battles = ({
       >
         <div className="flex justify-between items-center">
           <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>{tr('battles.title')}</h1>
-          <div className="flex items-center gap-2">
-            {inSelection ? (
-              <>
-                {myBattles.length > 0 && (
-                  <button
-                    onClick={() => setSelectedItems(myBattles.map((b) => b._id))}
-                    className={`px-5 h-11 rounded-full backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} text-sm font-semibold`}
-                    style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                  >
-                    {tr('common.all')}
-                  </button>
-                )}
-                <button
-                  onClick={() => setDeletingSelected(true)}
-                  disabled={selectedItems.length === 0}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} ${t.dangerBg} text-white ${selectedItems.length === 0 ? 'opacity-40' : ''}`}
-                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                  aria-label="Supprimer la sélection"
-                >
-                  <Trash2 size={18} />
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectionMode(null);
-                    setSelectedItems([]);
-                  }}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')}`}
-                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                  aria-label="Annuler"
-                >
-                  <X size={20} />
-                </button>
-              </>
-            ) : (
-              <>
-                {myBattles.length > 0 && (
-                  <button
-                    onClick={() => setSelectionMode('battles')}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')}`}
-                    style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                    aria-label="Sélectionner"
-                  >
-                    <CheckSquare size={20} />
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    if (clearEditingBattle) clearEditingBattle();
-                    setNewBattleData(emptyBattle());
-                    setBattleSelectedPokemon({ player1: [], player2: [] });
-                    setShowForm(true);
-                  }}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} ${t.accentBg} text-white`}
-                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                  aria-label="Nouveau combat"
-                >
-                  <Plus size={22} />
-                </button>
-              </>
-            )}
+          <div className="relative flex items-center gap-2">
+            <button
+              onClick={() => { setSelectionMode(null); setSelectedItems([]); }}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} ${inSelection ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
+              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+              aria-label="Quitter la sélection"
+            >
+              <Check size={20} />
+            </button>
+            <button
+              onClick={() => setSelectionMode('battles')}
+              disabled={myBattles.length === 0}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+              aria-label="Sélectionner"
+            >
+              <CheckSquare size={20} />
+            </button>
+            <button
+              onClick={() => {
+                if (clearEditingBattle) clearEditingBattle();
+                setNewBattleData(emptyBattle());
+                setBattleSelectedPokemon({ player1: [], player2: [] });
+                setShowForm(true);
+              }}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} ${t.accentBg} text-white ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+              aria-label="Nouveau combat"
+            >
+              <Plus size={22} />
+            </button>
           </div>
         </div>
       </div>
@@ -1236,6 +1216,43 @@ export const Battles = ({
                 Annuler
               </button>
             </div>
+          </div>
+        </div>
+      , document.body)}
+
+      {/* ── Footer sélection multiple (portal animé) ── */}
+      {footerMounted && createPortal(
+        <div
+          className={`fixed bottom-0 left-0 right-0 z-30 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <div className="grid grid-cols-3 items-center px-4 gap-2" style={{ height: '76px' }}>
+            {(() => {
+              const allIds = myBattles.map((b) => b._id);
+              const allSelected = allIds.length > 0 && allIds.every((id) => selectedItems.includes(id));
+              return (
+                <button
+                  onClick={() => setSelectedItems(allSelected
+                    ? selectedItems.filter((id) => !allIds.includes(id))
+                    : [...new Set([...selectedItems, ...allIds])]
+                  )}
+                  className={`text-sm font-semibold ${t.accent} justify-self-start`}
+                >
+                  {allSelected ? 'Tout déselectionner' : 'Tout sélectionner'}
+                </button>
+              );
+            })()}
+            <span className={`text-sm font-semibold ${t.textSecondary} tabular-nums text-center`}>
+              {selectedItems.length} / {myBattles.length}
+            </span>
+            <button
+              onClick={() => setDeletingSelected(true)}
+              disabled={selectedItems.length === 0}
+              className={`justify-self-end h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${selectedItems.length === 0 ? `${isDark ? 'bg-white/10 text-white/40' : 'bg-white/60 text-gray-400'} ${isDark ? '' : 'border border-white/20'} shadow-sm` : `${t.dangerBg} text-white`}`}
+              style={selectedItems.length === 0 && isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+            >
+              {selectedItems.length === 0 ? 'Supprimer' : `Supprimer (${selectedItems.length})`}
+            </button>
           </div>
         </div>
       , document.body)}
