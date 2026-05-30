@@ -56,11 +56,11 @@ const calcTypeAdvantage = (myTeam, oppTeam, pokemonTypes) => {
   return score;
 };
 
-const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, tr, onPokemonClick }) => (
+const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, tr, onPokemonClick, saveButton }) => (
   <section>
     <div className="flex items-center gap-3 mb-3 px-1">
       <PlayerAvatar player={player} size={32} textSize="text-xs" className="flex-shrink-0" />
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         <h2 className={`font-black truncate ${t.text}`}>{player?.name || '—'}</h2>
         {isWinner && (
           <span className="inline-flex flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white">
@@ -68,6 +68,7 @@ const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, tr, onP
           </span>
         )}
       </div>
+      {saveButton}
     </div>
     {!pokemon || pokemon.length === 0 ? (
       <div className={`${t.surface} rounded-2xl p-6 text-center ${t.textSecondary} text-sm`}>
@@ -375,17 +376,17 @@ export const BattleDetail = ({
           t={t}
           tr={tr}
           onPokemonClick={(p) => setViewingPokemon(p)}
+          saveButton={canSaveTeam('player1') && (
+            <button
+              onClick={() => openNamingModal('player1')}
+              disabled={savingTeamSlot === 'player1'}
+              className={`flex items-center gap-1.5 text-xs font-semibold ${t.accent} disabled:opacity-50 flex-shrink-0`}
+            >
+              {savingTeamSlot === 'player1' ? <Loader2 size={14} className="animate-spin" /> : <BookmarkPlus size={14} />}
+              Enregistrer
+            </button>
+          )}
         />
-        {canSaveTeam('player1') && (
-          <button
-            onClick={() => openNamingModal('player1')}
-            disabled={savingTeamSlot === 'player1'}
-            className={`w-full ${t.surface} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 shadow-sm ${t.accent} disabled:opacity-50 -mt-3`}
-          >
-            {savingTeamSlot === 'player1' ? <Loader2 size={18} className="animate-spin" /> : <BookmarkPlus size={18} />}
-            Enregistrer l'équipe de {p1?.name}
-          </button>
-        )}
         <TeamSection
           player={p2}
           isWinner={battle.winner === 'player2'}
@@ -394,17 +395,17 @@ export const BattleDetail = ({
           t={t}
           tr={tr}
           onPokemonClick={(p) => setViewingPokemon(p)}
+          saveButton={canSaveTeam('player2') && (
+            <button
+              onClick={() => openNamingModal('player2')}
+              disabled={savingTeamSlot === 'player2'}
+              className={`flex items-center gap-1.5 text-xs font-semibold ${t.accent} disabled:opacity-50 flex-shrink-0`}
+            >
+              {savingTeamSlot === 'player2' ? <Loader2 size={14} className="animate-spin" /> : <BookmarkPlus size={14} />}
+              Enregistrer
+            </button>
+          )}
         />
-        {canSaveTeam('player2') && (
-          <button
-            onClick={() => openNamingModal('player2')}
-            disabled={savingTeamSlot === 'player2'}
-            className={`w-full ${t.surface} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 shadow-sm ${t.accent} disabled:opacity-50 -mt-3`}
-          >
-            {savingTeamSlot === 'player2' ? <Loader2 size={18} className="animate-spin" /> : <BookmarkPlus size={18} />}
-            Enregistrer l'équipe de {p2?.name}
-          </button>
-        )}
 
         {/* ── Statistiques ── */}
         <section>
