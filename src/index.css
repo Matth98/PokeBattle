@@ -72,17 +72,13 @@ input[type="date"] {
 .anim-toast-in   { animation: toast-in 0.22s ease-out both; }
 .anim-toast-out  { animation: toast-out 0.18s ease-in both; }
 /* ── Entrée / sortie d'une carte combat sur la homepage ── */
-@keyframes battle-slot-expand {
-  from { grid-template-rows: 0fr; }
-  to   { grid-template-rows: 1fr; }
-}
-@keyframes battle-exit-fade {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(0.97); }
-}
 @keyframes battle-card-enter {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.82); }
   to   { opacity: 1; transform: scale(1); }
+}
+@keyframes battle-card-exit-scale {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.82); }
 }
 @keyframes battle-card-delete {
   from { opacity: 1; transform: scale(1);    }
@@ -92,10 +88,17 @@ input[type="date"] {
   from { grid-template-rows: 1fr; }
   to   { grid-template-rows: 0fr; }
 }
-.anim-battle-slot-expand   { display: grid; animation: battle-slot-expand   0.38s cubic-bezier(0.32, 0.72, 0.24, 1) both; }
-.anim-battle-exit-fade     { animation: battle-exit-fade  0.25s ease-in both; }
-.anim-battle-card-enter    { animation: battle-card-enter 0.30s ease-out 0.10s both; }
-/* Carte sort par le haut en 220ms, slot se ferme après (délai 200ms + 280ms) */
+@keyframes battle-card-slide-down {
+  from { transform: translateY(0); }
+  to   { transform: translateY(var(--shift-offset, 88px)); }
+}
+@keyframes battle-card-slide-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(-1 * var(--shift-offset, 88px))); }
+}
+.anim-battle-card-enter  { animation: battle-card-enter      0.30s ease-out both; }
+.anim-battle-slide-down  { animation: battle-card-slide-down 0.30s cubic-bezier(0.32, 0.72, 0.24, 1) both; }
+.anim-battle-slide-up    { animation: battle-card-slide-up   0.30s cubic-bezier(0.32, 0.72, 0.24, 1) both; }
 /* Scale+fade et collapse simultanés — cartes du dessous remontent pendant le dézoom */
 .anim-battle-card-delete { animation: battle-card-delete 0.28s ease-in both; }
 .anim-battle-slot-delete { display: grid; animation: battle-slot-delete 0.32s ease-in both; }

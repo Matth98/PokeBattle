@@ -22,23 +22,63 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings, onRefresh, isBackground = false, initialScrollY = 0 }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings, onRefresh, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0 }) => {
   const tr = useTranslation();
   const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
 
   // ── Animation "nouveau combat" ──────────────────────────────────────────────
   // displayedBattles est la liste réellement rendue ; elle est mise à jour avec
   // un délai pour laisser la modale se fermer avant que la carte apparaisse.
-  const [displayedBattles, setDisplayedBattles] = useState(recentBattles);
-  const [enteringId, setEnteringId]       = useState(null);
-  const [exitingBattle, setExitingBattle] = useState(null);
-  const [deletingId, setDeletingId]       = useState(null);
-  const [risingId, setRisingId]           = useState(null);
+  const [displayedBattles, setDisplayedBattles] = useState(deleteAnimSnapshot ?? recentBattles);
+  const [enteringId, setEnteringId]         = useState(null);
+  const [deletingId, setDeletingId]         = useState(null);
+  const [risingId, setRisingId]             = useState(null);
+  const [slidingDownIds, setSlidingDownIds] = useState(new Set());
+  const [slidingUpIds, setSlidingUpIds]     = useState(new Set());
+  const [shiftOffset, setShiftOffset]       = useState(88);
 
-  const prevFirstIdRef  = useRef(recentBattles[0]?._id);
-  const displayedRef    = useRef(recentBattles);
+  const prevFirstIdRef      = useRef(recentBattles[0]?._id);
+  const displayedRef        = useRef(deleteAnimSnapshot ?? recentBattles);
+  const battleListRef       = useRef(null);
+  const phase2Ref           = useRef(null);
+  const phase2FiredRef      = useRef(false);
+  const deletePhase2Ref      = useRef(null);
+  const deletePhase2FiredRef = useRef(false);
+  const pendingDeleteRef     = useRef(null); // suppression reçue en background
 
   useEffect(() => { displayedRef.current = displayedBattles; }, [displayedBattles]);
+
+  // Signale à App que le snapshot a été consommé (évite de rejouer l'animation au prochain montage)
+  useEffect(() => {
+    if (deleteAnimSnapshot) onDeleteAnimConsumed?.();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const triggerDeleteAnim = useCallback((removed, incoming, snapshot) => {
+    let offset = 88;
+    if (battleListRef.current) {
+      const removedEl = battleListRef.current.querySelector(`[data-battle-id="${removed._id}"]`);
+      if (removedEl) offset = removedEl.offsetHeight + 12;
+    }
+    setShiftOffset(offset);
+    deletePhase2FiredRef.current = false;
+    deletePhase2Ref.current = () => {
+      setDeletingId(null);
+      setSlidingUpIds(new Set());
+      setDisplayedBattles(snapshot);
+      if (incoming) setRisingId(incoming._id);
+    };
+    setDeletingId(removed._id);
+    setSlidingUpIds(new Set(displayedRef.current.filter(b => b._id !== removed._id).map(b => b._id)));
+  }, []);
+
+  // Déclenche l'animation en attente quand on revient au foreground
+  useEffect(() => {
+    if (!isBackground && pendingDeleteRef.current) {
+      const { removed, incoming, snapshot } = pendingDeleteRef.current;
+      pendingDeleteRef.current = null;
+      triggerDeleteAnim(removed, incoming, snapshot);
+    }
+  }, [isBackground, triggerDeleteAnim]);
 
   useEffect(() => {
     const newFirstId = recentBattles[0]?._id;
@@ -50,32 +90,43 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       const snapshot = recentBattles;
       const timer = setTimeout(() => {
         const current = displayedRef.current;
-        const outgoing = current.find(b => !snapshot.some(n => n._id === b._id));
-        if (outgoing) setExitingBattle(outgoing);
-        setDisplayedBattles(snapshot);
-        setEnteringId(newFirstId);
-        setTimeout(() => setEnteringId(null), 500);
+
+        // Mesure la hauteur du premier slot (carte + gap space-y-3) avant la mise à jour
+        let offset = 88;
+        if (battleListRef.current) {
+          const firstChild = battleListRef.current.querySelector(':scope > div:first-child');
+          if (firstChild) offset = firstChild.offsetHeight + 12;
+        }
+        setShiftOffset(offset);
+
+        // Phase 2 sera déclenchée par animationEnd sur les cartes glissantes
+        phase2FiredRef.current = false;
+        phase2Ref.current = () => {
+          setSlidingDownIds(new Set());
+          setDisplayedBattles(snapshot);
+          setEnteringId(newFirstId);
+        };
+
+        // Phase 1 : toutes les cartes actuelles glissent vers le bas
+        setSlidingDownIds(new Set(current.map(b => b._id)));
       }, 260);
       return () => clearTimeout(timer);
     }
 
     if (!enteringId) {
-      // Suppression d'un combat visible — animation de sortie vers le haut
       const removed = displayedRef.current.find(b => !recentBattles.some(n => n._id === b._id));
       if (removed) {
-        // Combat entrant pour combler le vide (ex : 4ème qui remonte en 3ème position)
         const incoming = recentBattles.find(b => !displayedRef.current.some(d => d._id === b._id));
-        setDeletingId(removed._id);
         const snapshot = recentBattles;
-        const timer = setTimeout(() => {
-          setDeletingId(null);
-          setDisplayedBattles(snapshot);
-          if (incoming) {
-            setRisingId(incoming._id);
-            setTimeout(() => setRisingId(null), 400);
-          }
-        }, 360);
-        return () => clearTimeout(timer);
+
+        if (isBackground) {
+          // Mémorise la suppression, la homepage affichera l'animation au retour
+          pendingDeleteRef.current = { removed, incoming, snapshot };
+          return;
+        }
+
+        triggerDeleteAnim(removed, incoming, snapshot);
+        return;
       }
       setDisplayedBattles(recentBattles);
     }
@@ -324,7 +375,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             )}
           </div>
 
-          {displayedBattles.length === 0 && !exitingBattle ? (
+          {displayedBattles.length === 0 ? (
             <div className={`${t.surface} rounded-2xl p-8 text-center shadow-sm`}>
               <div className={`w-12 h-12 mx-auto rounded-2xl ${t.iconTileAmber} flex items-center justify-center mb-3`}>
                 <Zap size={22} />
@@ -406,40 +457,66 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             };
 
             return (
-              <div className="relative space-y-3">
+              <div ref={battleListRef} className="relative space-y-3 overflow-hidden">
                 {displayedBattles.map((b) => {
                   if (enteringId === b._id) {
                     return (
-                      <div key={b._id} className="anim-battle-slot-expand">
-                        <div className="overflow-hidden">
-                          {renderCard(b, 'anim-battle-card-enter')}
-                        </div>
+                      <div key={b._id} onAnimationEnd={() => setEnteringId(null)}>
+                        {renderCard(b, 'anim-battle-card-enter')}
+                      </div>
+                    );
+                  }
+                  if (slidingDownIds.has(b._id)) {
+                    return (
+                      <div
+                        key={b._id}
+                        className="anim-battle-slide-down"
+                        style={{ '--shift-offset': `${shiftOffset}px` }}
+                        onAnimationEnd={() => {
+                          if (phase2FiredRef.current) return;
+                          phase2FiredRef.current = true;
+                          phase2Ref.current?.();
+                        }}
+                      >
+                        {renderCard(b)}
                       </div>
                     );
                   }
                   if (deletingId === b._id) {
                     return (
-                      <div key={b._id} className="anim-battle-slot-delete">
-                        <div style={{ minHeight: 0 }}>
-                          {renderCard(b, 'anim-battle-card-delete')}
-                        </div>
+                      <div
+                        key={b._id}
+                        data-battle-id={b._id}
+                        onAnimationEnd={() => {
+                          if (deletePhase2FiredRef.current) return;
+                          deletePhase2FiredRef.current = true;
+                          deletePhase2Ref.current?.();
+                        }}
+                      >
+                        {renderCard(b, 'anim-battle-card-delete')}
+                      </div>
+                    );
+                  }
+                  if (slidingUpIds.has(b._id)) {
+                    return (
+                      <div
+                        key={b._id}
+                        className="anim-battle-slide-up"
+                        style={{ '--shift-offset': `${shiftOffset}px` }}
+                      >
+                        {renderCard(b)}
                       </div>
                     );
                   }
                   if (risingId === b._id) {
-                    return <div key={b._id}>{renderCard(b, 'anim-battle-card-rise')}</div>;
+                    return (
+                      <div key={b._id} onAnimationEnd={() => setRisingId(null)}>
+                        {renderCard(b, 'anim-battle-card-rise')}
+                      </div>
+                    );
                   }
-                  return <div key={b._id}>{renderCard(b)}</div>;
+                  return <div key={b._id} data-battle-id={b._id}>{renderCard(b)}</div>;
                 })}
-                {exitingBattle && (
-                  <div
-                    className="absolute left-0 right-0 anim-battle-exit-fade pointer-events-none"
-                    style={{ top: 'calc(100% + 0.75rem)' }}
-                    onAnimationEnd={() => setExitingBattle(null)}
-                  >
-                    {renderCard(exitingBattle)}
-                  </div>
-                )}
               </div>
             );
           })()}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import { flushSync } from 'react-dom';
 import { theme } from './utils/theme';
+import { sortBattlesDesc } from './utils/battles';
 import { useAPI } from './hooks/useAPI';
 import { Home } from './components/Home';
 import { Players } from './components/Players';
@@ -61,6 +62,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
   const [prevTab, setPrevTab] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Snapshot du top 3 avant une suppression depuis BattleDetail → permet l'animation sur Home
+  const homeDeleteSnapshotRef = useRef(null);
 
   // ── Mémoire de scroll par onglet ──
   const scrollMemoryRef = useRef(new Map());
@@ -466,12 +469,17 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   };
 
   const handleDeleteBattle = async (id) => {
+    // Si on supprime depuis BattleDetail avec Home en fond, capturer le top 3 avant suppression
+    if (currentTab === 'battleDetail') {
+      homeDeleteSnapshotRef.current = sortBattlesDesc(battles).slice(0, 3);
+    }
     const result = await deleteBattle(id);
     if (result === true) {
       setBattles((prev) => prev.filter(b => b._id !== id));
       refreshPlayers();
       toast.success('Combat supprimé');
     } else {
+      homeDeleteSnapshotRef.current = null;
       toast.error(typeof result === 'string' ? result : 'Erreur lors de la suppression');
     }
   };
@@ -595,6 +603,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
           onOpenSettings={() => setSettingsOpen(true)}
           onRefresh={refreshAll}
+          deleteAnimSnapshot={homeDeleteSnapshotRef.current}
+          onDeleteAnimConsumed={() => { homeDeleteSnapshotRef.current = null; }}
         />
       )}
 
