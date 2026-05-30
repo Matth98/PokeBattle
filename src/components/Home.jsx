@@ -341,7 +341,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               onClick={onSearchPokemon}
               className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${
                 scrolled
-                  ? `${t.surfaceMuted} ${t.text}`
+                  ? `${isDark ? t.surfaceMuted : 'bg-gray-200'} ${t.text}`
                   : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
               }`}
               style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
@@ -353,7 +353,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               onClick={onOpenSettings}
               className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden backdrop-blur-xl ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${
                 scrolled
-                  ? `${t.surfaceMuted} ${t.text}`
+                  ? `${isDark ? t.surfaceMuted : 'bg-gray-200'} ${t.text}`
                   : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
               }`}
               style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
