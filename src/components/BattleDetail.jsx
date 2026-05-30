@@ -395,10 +395,10 @@ export const BattleDetail = ({
                       {p1Matchups.weaknesses.map(({ oppType, oppPokName, myType, myPokName }, i) => (
                         <div key={`weak-${i}`} className="flex items-center gap-1.5 text-xs">
                           <TypeBadge type={oppType} />
-                          <span className={`font-semibold ${t.text}`}>{oppPokName}</span>
+                          <span className={t.textSecondary}>{oppPokName}</span>
                           <span className={t.textTertiary}>›</span>
                           <TypeBadge type={myType} />
-                          <span className={t.textSecondary}>{myPokName}</span>
+                          <span className={`font-semibold ${t.text}`}>{myPokName}</span>
                           <span className="ml-auto font-bold text-red-500">−1</span>
                         </div>
                       ))}
@@ -421,10 +421,10 @@ export const BattleDetail = ({
                       {p2Matchups.weaknesses.map(({ oppType, oppPokName, myType, myPokName }, i) => (
                         <div key={`weak-${i}`} className="flex items-center gap-1.5 text-xs">
                           <TypeBadge type={oppType} />
-                          <span className={`font-semibold ${t.text}`}>{oppPokName}</span>
+                          <span className={t.textSecondary}>{oppPokName}</span>
                           <span className={t.textTertiary}>›</span>
                           <TypeBadge type={myType} />
-                          <span className={t.textSecondary}>{myPokName}</span>
+                          <span className={`font-semibold ${t.text}`}>{myPokName}</span>
                           <span className="ml-auto font-bold text-red-500">−1</span>
                         </div>
                       ))}
