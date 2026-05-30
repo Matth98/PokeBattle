@@ -24,6 +24,7 @@ export const Players = ({
   setShowForm,
   isBackground = false,
   initialScrollY = 0,
+  onSelectionModeChange = null,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -74,6 +75,14 @@ export const Players = ({
   const { isClosing: isConfirmDeleteClosing, handleClose: cancelConfirmDelete } = useAnimatedClose(
     () => setConfirmingDeleteId(null), 180,
   );
+
+  const [footerMounted, setFooterMounted] = useState(false);
+  const { isClosing: isFooterClosing, handleClose: closeFooter } = useAnimatedClose(() => setFooterMounted(false), 280);
+  useEffect(() => {
+    if (selectionMode === 'players') setFooterMounted(true);
+    else closeFooter();
+  }, [selectionMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { onSelectionModeChange?.(selectionMode === 'players'); }, [selectionMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAddPlayer = async () => {
     if (!newPlayerName.trim()) return;
@@ -151,60 +160,37 @@ export const Players = ({
       >
         <div className="flex justify-between items-center">
           <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>{tr('players.title')}</h1>
-          <div className="flex items-center gap-2">
-            {inSelection ? (
-              <>
-                <button
-                  onClick={() => setSelectedItems(players.map((p) => p._id))}
-                  className={`px-5 h-11 rounded-full backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} text-sm font-semibold`}
-                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                >
-                  Tout
-                </button>
-                <button
-                  onClick={() => setDeletingSelected(true)}
-                  disabled={selectedItems.length === 0}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} ${t.dangerBg} text-white ${selectedItems.length === 0 ? 'opacity-40' : ''}`}
-                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                  aria-label="Supprimer la sélection"
-                >
-                  <Trash2 size={18} />
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectionMode(null);
-                    setSelectedItems([]);
-                  }}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')}`}
-                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                  aria-label="Annuler"
-                >
-                  <X size={20} />
-                </button>
-              </>
-            ) : (
-              <>
-                {isSuperAdmin && (
-                  <button
-                    onClick={() => setSelectionMode('players')}
-                    disabled={players.length === 0}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} ${players.length === 0 ? 'opacity-40' : ''}`}
-                    style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                    aria-label="Sélectionner"
-                  >
-                    <CheckSquare size={20} />
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowForm(true)}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} ${t.accentBg} text-white`}
-                  style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-                  aria-label="Nouveau joueur"
-                >
-                  <Plus size={22} />
-                </button>
-              </>
+          <div className="relative flex items-center gap-2">
+            {/* Bouton Check — quitter sélection */}
+            <button
+              onClick={() => { setSelectionMode(null); setSelectedItems([]); }}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} ${inSelection ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
+              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+              aria-label="Quitter la sélection"
+            >
+              <Check size={20} />
+            </button>
+            {/* Bouton CheckSquare — entrer sélection (superAdmin uniquement) */}
+            {isSuperAdmin && (
+              <button
+                onClick={() => setSelectionMode('players')}
+                disabled={players.length === 0}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${scrolled ? `${t.surfaceMuted} ${t.text}` : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')} ${players.length === 0 ? 'opacity-40' : ''} ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+                aria-label="Sélectionner"
+              >
+                <CheckSquare size={20} />
+              </button>
             )}
+            {/* Bouton Plus — toujours visible */}
+            <button
+              onClick={() => setShowForm(true)}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} ${t.accentBg} text-white`}
+              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+              aria-label="Nouveau joueur"
+            >
+              <Plus size={22} />
+            </button>
           </div>
         </div>
       </div>
@@ -333,6 +319,44 @@ export const Players = ({
                 {isDeletingSingle ? <Loader2 size={16} className="animate-spin" /> : tr('common.delete')}
               </button>
             </div>
+          </div>
+        </div>
+      , document.body)}
+
+      {/* ── Footer sélection ── */}
+      {footerMounted && createPortal(
+        <div
+          className={`fixed bottom-0 left-0 right-0 z-30 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <div className="grid grid-cols-3 items-center px-4 gap-2" style={{ height: '76px' }}>
+            {/* Tout sélectionner / Tout déselectionner */}
+            {(() => {
+              const allIds = players.map((p) => p._id);
+              const allSelected = allIds.length > 0 && allIds.every((id) => selectedItems.includes(id));
+              return (
+                <button
+                  onClick={() => setSelectedItems(allSelected
+                    ? selectedItems.filter((id) => !allIds.includes(id))
+                    : [...new Set([...selectedItems, ...allIds])]
+                  )}
+                  className={`text-sm font-semibold ${t.accent} justify-self-start`}
+                >
+                  {allSelected ? 'Tout déselectionner' : 'Tout sélectionner'}
+                </button>
+              );
+            })()}
+            <span className={`text-sm font-semibold ${t.textSecondary} tabular-nums text-center`}>
+              {selectedItems.length} / {players.length}
+            </span>
+            <button
+              onClick={() => setDeletingSelected(true)}
+              disabled={selectedItems.length === 0}
+              className={`justify-self-end h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${selectedItems.length === 0 ? `${isDark ? 'bg-white/10 text-white/40' : 'bg-white/60 text-gray-400'} ${isDark ? '' : 'border border-white/20'} shadow-sm` : `${t.dangerBg} text-white`}`}
+              style={selectedItems.length === 0 && isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+            >
+              {selectedItems.length === 0 ? 'Supprimer' : `Supprimer (${selectedItems.length})`}
+            </button>
           </div>
         </div>
       , document.body)}
