@@ -164,7 +164,7 @@ export const SwipeableRow = ({
           transform: `translateX(${translateX}px)`,
           transition: isDragging ? 'none' : 'transform 0.2s ease-out',
           touchAction: 'pan-y',
-          willChange: 'transform',
+          willChange: isDragging || isOpen ? 'transform' : 'auto',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
