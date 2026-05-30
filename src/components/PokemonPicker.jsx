@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Search, X, Check } from 'lucide-react';
+import { Search, X, Check, Plus } from 'lucide-react';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -10,11 +10,13 @@ import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
  * Props :
  * - t, isDark : thème
  * - title : titre de la sheet
- * - onSelect(pokemon) : appelé quand l'utilisateur choisit un Pokémon
+ * - onSelect(pokemon | pokemon[]) : appelé avec un tableau si multiSelect, sinon un seul Pokémon
  * - onClose() : fermeture
  * - alreadyPickedIds : tableau de pokeId déjà sélectionnés (grisés)
  * - defaultResults : liste affichée quand la recherche est vide (ex: roster du joueur)
  * - defaultLabel : libellé au-dessus de defaultResults
+ * - multiSelect : active la sélection multiple (défaut: false)
+ * - maxSelect : nombre max de Pokémon sélectionnables (multiSelect uniquement)
  *
  * Quand defaultResults est absent et la recherche est vide, affiche tous les
  * Pokémon groupés par génération.
@@ -28,8 +30,11 @@ export const PokemonPicker = ({
   alreadyPickedIds = [],
   defaultResults = null,
   defaultLabel = null,
+  multiSelect = false,
+  maxSelect = Infinity,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPokeIds, setSelectedPokeIds] = useState([]);
   const inputRef = useRef(null);
   const { searchResults, searchLoading, error, searchPokemon, getPokemonImageUrl } = usePokemon();
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
@@ -45,18 +50,47 @@ export const PokemonPicker = ({
     ? searchResults
     : (defaultResults ? [...defaultResults].sort((a, b) => a.pokeId - b.pokeId) : []);
 
+  const handleRowClick = (p) => {
+    if (!multiSelect) {
+      onSelect(p);
+      return;
+    }
+    setSelectedPokeIds((prev) => {
+      if (prev.includes(p.pokeId)) return prev.filter((id) => id !== p.pokeId);
+      if (prev.length >= maxSelect) return prev;
+      return [...prev, p.pokeId];
+    });
+  };
+
+  const handleConfirm = () => {
+    if (selectedPokeIds.length === 0) return;
+    const allPokemon = useGrouped
+      ? POKEMON_BY_GENERATION.flatMap((g) => g.pokemon)
+      : flatDisplayed;
+    const selected = selectedPokeIds.map((id) => allPokemon.find((p) => p.pokeId === id)).filter(Boolean);
+    onSelect(selected);
+  };
+
   const PokemonRow = ({ p, idx, total }) => {
     const isPicked = alreadyPickedIds.includes(p.pokeId);
+    const isSelected = multiSelect && selectedPokeIds.includes(p.pokeId);
+    const isAtMax = multiSelect && selectedPokeIds.length >= maxSelect && !isSelected;
     const isLast = idx === total - 1;
+    const disabled = isPicked || isAtMax;
     return (
       <button
         key={p.pokeId}
-        onClick={() => !isPicked && onSelect(p)}
-        disabled={isPicked}
+        onClick={() => !disabled && handleRowClick(p)}
+        disabled={disabled}
         className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition ${
           !isLast ? `border-b ${t.divider}` : ''
-        } ${isPicked ? 'opacity-40 cursor-not-allowed' : 'active:bg-black/5 dark:active:bg-white/5'}`}
+        } ${disabled ? 'opacity-40 cursor-not-allowed' : 'active:bg-black/5 dark:active:bg-white/5'}`}
       >
+        {multiSelect && (
+          <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}>
+            {isSelected && <Check size={14} className="text-white" />}
+          </span>
+        )}
         <img
           src={getPokemonImageUrl(p.pokeId)}
           alt={p.name}
@@ -65,7 +99,7 @@ export const PokemonPicker = ({
         />
         <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</span>
         <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
-        {isPicked && <span className={t.accent}><Check size={16} /></span>}
+        {!multiSelect && isPicked && <span className={t.accent}><Check size={16} /></span>}
       </button>
     );
   };
@@ -118,7 +152,7 @@ export const PokemonPicker = ({
         </div>
 
         {/* Liste */}
-        <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }} data-scroll-lock-ignore>
+        <div className="flex-1 overflow-y-auto px-5 pt-4" style={{ paddingBottom: multiSelect ? '5rem' : 'calc(env(safe-area-inset-bottom) + 1.5rem)' }} data-scroll-lock-ignore>
           {error && <p className={`${t.danger} text-sm text-center mb-2`}>Erreur : {error}</p>}
           {searchLoading && <p className={`${t.textSecondary} text-sm text-center`}>Recherche...</p>}
           {!searchLoading && hasQuery && searchResults.length === 0 && !error && (
@@ -159,6 +193,23 @@ export const PokemonPicker = ({
             </div>
           )}
         </div>
+
+        {/* Bouton de confirmation multi-sélection */}
+        {multiSelect && (
+          <div
+            className={`flex-shrink-0 px-5 pb-safe ${t.surface} border-t ${t.divider}`}
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)', paddingTop: '0.75rem' }}
+          >
+            <button
+              onClick={handleConfirm}
+              disabled={selectedPokeIds.length === 0}
+              className={`w-full py-3.5 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition ${t.accentBg} text-white ${selectedPokeIds.length === 0 ? 'opacity-30' : ''}`}
+            >
+              <Plus size={18} />
+              {selectedPokeIds.length === 0 ? 'Sélectionner des Pokémon' : `Ajouter (${selectedPokeIds.length})`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

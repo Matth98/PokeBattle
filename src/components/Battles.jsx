@@ -244,21 +244,21 @@ export const Battles = ({
     closePicker();
   };
 
-  // Ajout d'un Pokémon individuel au slot
-  const handleAddPokemonToSlot = (pokemon) => {
+  // Ajout d'un ou plusieurs Pokémon au slot
+  const handleAddPokemonToSlot = (pokemonOrArray) => {
     const slot = pickerState.slot;
-    setBattleSelectedPokemon((prev) => ({
-      ...prev,
-      [slot]: [
-        ...prev[slot],
-        {
-          id: `${Date.now()}-${pokemon.pokeId}`,
-          pokeId: pokemon.pokeId,
-          name: pokemon.name,
-          eliminated: false,
-        },
-      ],
-    }));
+    const toAdd = Array.isArray(pokemonOrArray) ? pokemonOrArray : [pokemonOrArray];
+    setBattleSelectedPokemon((prev) => {
+      const needed = requiredPokemonForFormat(newBattleData.format);
+      const remaining = needed - (prev[slot] || []).length;
+      const entries = toAdd.slice(0, remaining).map((p, i) => ({
+        id: `${Date.now()}-${i}-${p.pokeId}`,
+        pokeId: p.pokeId,
+        name: p.name,
+        eliminated: false,
+      }));
+      return { ...prev, [slot]: [...(prev[slot] || []), ...entries] };
+    });
     closePicker();
   };
 
@@ -1173,6 +1173,8 @@ export const Battles = ({
           defaultLabel={`Pokémon de ${players.find((p) => p._id === newBattleData[pickerState.slot])?.name || 'joueur'}`}
           onSelect={handleAddPokemonToSlot}
           onClose={closePicker}
+          multiSelect
+          maxSelect={requiredPokemonForFormat(newBattleData.format) - (battleSelectedPokemon[pickerState.slot] || []).length}
         />
       , document.body)}
 

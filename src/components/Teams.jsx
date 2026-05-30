@@ -145,21 +145,17 @@ export const Teams = ({
   const currentCount = newTeamData.pokemon.length;
   const isAtMax = currentCount >= required;
 
-  const handleSelectPokemon = (pokemon) => {
+  const handleSelectPokemon = (pokemonOrArray) => {
+    const toAdd = Array.isArray(pokemonOrArray) ? pokemonOrArray : [pokemonOrArray];
     setNewTeamData((prev) => {
-      // Sécurité : ne dépasse jamais la limite du format
-      if (prev.pokemon.length >= requiredPokemonForFormat(prev.format)) return prev;
-      return {
-        ...prev,
-        pokemon: [
-          ...prev.pokemon,
-          {
-            id: `${Date.now()}-${pokemon.pokeId}`,
-            pokeId: pokemon.pokeId,
-            name: pokemon.name,
-          },
-        ],
-      };
+      const max = requiredPokemonForFormat(prev.format);
+      const remaining = max - prev.pokemon.length;
+      const entries = toAdd.slice(0, remaining).map((p, i) => ({
+        id: `${Date.now()}-${i}-${p.pokeId}`,
+        pokeId: p.pokeId,
+        name: p.name,
+      }));
+      return { ...prev, pokemon: [...prev.pokemon, ...entries] };
     });
     setPickingPokemon(false);
   };
@@ -708,6 +704,8 @@ export const Teams = ({
             defaultLabel={owner ? `Pokémon de ${owner.name}` : null}
             onSelect={handleSelectPokemon}
             onClose={() => setPickingPokemon(false)}
+            multiSelect
+            maxSelect={required - currentCount}
           />
         , document.body);
       })()}

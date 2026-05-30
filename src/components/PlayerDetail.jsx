@@ -209,20 +209,17 @@ export const PlayerDetail = ({
     setCreatingTeam(true);
   };
 
-  const handleSelectTeamPokemon = (pokemon) => {
+  const handleSelectTeamPokemon = (pokemonOrArray) => {
+    const toAdd = Array.isArray(pokemonOrArray) ? pokemonOrArray : [pokemonOrArray];
     setNewTeamData((prev) => {
-      if (prev.pokemon.length >= requiredPokemonForFormat(prev.format)) return prev;
-      return {
-        ...prev,
-        pokemon: [
-          ...prev.pokemon,
-          {
-            id: `${Date.now()}-${pokemon.pokeId}`,
-            pokeId: pokemon.pokeId,
-            name: pokemon.name,
-          },
-        ],
-      };
+      const max = requiredPokemonForFormat(prev.format);
+      const remaining = max - prev.pokemon.length;
+      const entries = toAdd.slice(0, remaining).map((p, i) => ({
+        id: `${Date.now()}-${i}-${p.pokeId}`,
+        pokeId: p.pokeId,
+        name: p.name,
+      }));
+      return { ...prev, pokemon: [...prev.pokemon, ...entries] };
     });
     setPickingTeamPokemon(false);
   };
@@ -271,15 +268,14 @@ export const PlayerDetail = ({
     setActiveTab('teams');
   };
 
-  const handleAddPokemon = async (pokemon) => {
-    const updated = {
-      ...player,
-      pokemon: [
-        ...(player.pokemon || []),
-        { id: Date.now().toString(), pokeId: pokemon.pokeId, name: pokemon.name, level: 50 },
-      ],
-    };
-    await onUpdate(player._id, updated);
+  const handleAddPokemon = async (pokemonOrArray) => {
+    const toAdd = Array.isArray(pokemonOrArray) ? pokemonOrArray : [pokemonOrArray];
+    const existingIds = new Set((player.pokemon || []).map((p) => p.pokeId));
+    const newEntries = toAdd
+      .filter((p) => !existingIds.has(p.pokeId))
+      .map((p, i) => ({ id: `${Date.now()}-${i}-${p.pokeId}`, pokeId: p.pokeId, name: p.name, level: 50 }));
+    if (newEntries.length === 0) { setAddingPokemon(false); return; }
+    await onUpdate(player._id, { ...player, pokemon: [...(player.pokemon || []), ...newEntries] });
     setAddingPokemon(false);
   };
 
@@ -1069,6 +1065,7 @@ export const PlayerDetail = ({
           alreadyPickedIds={(player.pokemon || []).map((p) => p.pokeId)}
           onSelect={handleAddPokemon}
           onClose={() => setAddingPokemon(false)}
+          multiSelect
         />,
         document.body
       )}
@@ -1308,6 +1305,8 @@ export const PlayerDetail = ({
           defaultLabel={`Pokémon de ${player.name}`}
           onSelect={handleSelectTeamPokemon}
           onClose={() => setPickingTeamPokemon(false)}
+          multiSelect
+          maxSelect={requiredPokemonForFormat(newTeamData.format) - newTeamData.pokemon.length}
         />
       , document.body)}
 
