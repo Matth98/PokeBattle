@@ -325,25 +325,32 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
 
       {/* ── En-tête ── */}
       <div
-        className={`sticky top-0 z-10 px-5 pb-3 transition-all duration-200 ${
-          scrolled
-            ? `${t.surfaceBlur} border-b ${t.divider}`
-            : 'bg-transparent border-b border-transparent'
+        className={`sticky top-0 z-10 px-5 pb-3 transition-all duration-200 relative ${
+          scrolled ? '' : ''
         }`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
       >
-        <div className="flex justify-between items-center">
+        <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
+          opacity: scrolled ? 1 : 0,
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+        }} />
+        <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
+          opacity: scrolled ? 1 : 0,
+          background: isDark
+            ? 'linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, transparent 100%)'
+            : 'linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, transparent 100%)',
+        }} />
+        <div className="flex justify-between items-center relative">
           <div>
-            <h1 className={`text-3xl font-black tracking-tight ${t.text}`}>PokéScores</h1>
+            <h1 className={`${scrolled ? 'text-xl' : 'text-3xl'} font-black tracking-tight transition-all duration-300 ${t.text}`}>PokéScores</h1>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={onSearchPokemon}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark || scrolled ? '' : 'border border-white/20'} ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${
-                scrolled
-                  ? `${isDark ? t.surfaceMuted : 'bg-gray-200'} ${t.text}`
-                  : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
-              }`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
               style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Rechercher un Pokémon"
             >
@@ -351,11 +358,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             </button>
 <button
               onClick={onOpenSettings}
-              className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden backdrop-blur-xl ${!scrolled ? 'shadow-sm' : ''} transition-all duration-200 ${
-                scrolled
-                  ? `${isDark ? t.surfaceMuted : 'bg-gray-200'} ${t.text}`
-                  : (isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900')
-              }`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden backdrop-blur-xl shadow-sm transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
               style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Paramètres"
             >
