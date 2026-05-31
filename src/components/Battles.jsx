@@ -1218,8 +1218,7 @@ export const Battles = ({
           className={`fixed bottom-0 left-0 right-0 z-30 pointer-events-none ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
           style={{
             paddingTop: '48px',
-            paddingBottom: 'calc(env(safe-area-inset-bottom) + 90px)',
-            marginBottom: '-90px',
+            paddingBottom: 'env(safe-area-inset-bottom)',
           }}
         >
           <div className="absolute inset-0" style={{
@@ -1231,7 +1230,7 @@ export const Battles = ({
           <div className="absolute inset-0" style={{
             background: isDark
               ? 'linear-gradient(to top, rgba(9,9,11,0.35) 0%, transparent 70%)'
-              : 'linear-gradient(to top, rgba(9,9,11,0.35) 0%, transparent 70%)',
+              : 'linear-gradient(to top, rgba(9,9,11,0.65) 0%, transparent 70%)',
           }} />
           <div className="pointer-events-auto grid grid-cols-2 items-center px-4 gap-2 relative" style={{ height: '76px' }}>
             {(() => {

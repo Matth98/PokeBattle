@@ -729,7 +729,7 @@ export const Teams = ({
           <div className="absolute inset-0" style={{
             background: isDark
               ? 'linear-gradient(to top, rgba(9,9,11,0.35) 0%, transparent 70%)'
-              : 'linear-gradient(to top, rgba(9,9,11,0.35) 0%, transparent 70%)',
+              : 'linear-gradient(to top, rgba(9,9,11,0.65) 0%, transparent 70%)',
           }} />
           <div className="pointer-events-auto grid grid-cols-2 items-center px-4 gap-2 relative" style={{ height: '76px' }}>
             {(() => {
