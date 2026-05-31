@@ -1217,13 +1217,23 @@ export const Battles = ({
         <div
           className={`fixed bottom-0 left-0 right-0 z-30 pointer-events-none ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
           style={{
-            background: isDark ? 'linear-gradient(to top, rgba(9,9,11,0.95) 0%, transparent 100%)' : 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
             paddingTop: '48px',
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 90px)',
             marginBottom: '-90px',
           }}
         >
-          <div className="pointer-events-auto grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
+          <div className="absolute inset-0" style={{
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            maskImage: 'linear-gradient(to top, black 0%, transparent 80%)',
+            WebkitMaskImage: 'linear-gradient(to top, black 0%, transparent 80%)',
+          }} />
+          <div className="absolute inset-0" style={{
+            background: isDark
+              ? 'linear-gradient(to top, rgba(9,9,11,0.35) 0%, transparent 70%)'
+              : 'linear-gradient(to top, rgba(9,9,11,0.35) 0%, transparent 70%)',
+          }} />
+          <div className="pointer-events-auto grid grid-cols-2 items-center px-4 gap-2 relative" style={{ height: '76px' }}>
             {(() => {
               const visibleBattles = groupedBattles
                 .filter((group) => !activeCollapsedGroups.has(group.date))
