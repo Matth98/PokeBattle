@@ -327,12 +327,22 @@ export const Players = ({
         <div
           className={`fixed bottom-0 left-0 right-0 z-30 pointer-events-none ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
           style={{
-            background: 'linear-gradient(to top, rgba(9,9,11,0.95) 0%, transparent 100%)',
             paddingTop: '48px',
             paddingBottom: 'env(safe-area-inset-bottom)',
           }}
         >
-          <div className="pointer-events-auto grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
+          <div className="absolute inset-0" style={{
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            maskImage: 'linear-gradient(to top, black 0%, transparent 85%)',
+            WebkitMaskImage: 'linear-gradient(to top, black 0%, transparent 85%)',
+          }} />
+          <div className="absolute inset-0" style={{
+            background: isDark
+              ? 'linear-gradient(to top, rgba(9,9,11,0.7) 0%, transparent 80%)'
+              : 'linear-gradient(to top, rgba(255,255,255,0.7) 0%, transparent 80%)',
+          }} />
+          <div className="pointer-events-auto grid grid-cols-2 items-center px-4 gap-2 relative" style={{ height: '76px' }}>
             {/* Tout sélectionner / Tout déselectionner */}
             {(() => {
               const allIds = players.map((p) => p._id);
@@ -343,7 +353,7 @@ export const Players = ({
                     ? selectedItems.filter((id) => !allIds.includes(id))
                     : [...new Set([...selectedItems, ...allIds])]
                   )}
-                  className={`justify-self-start h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900 border border-white/20 shadow-sm'}`}
+                  className={`justify-self-start h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white text-gray-900 shadow-[0_4px_24px_rgba(0,0,0,0.12)]'}`}
                   style={isDark ? { borderTop: '1px solid #ffffff36' } : undefined}
                 >
                   {allSelected ? 'Tout déselectionner' : 'Tout sélectionner'}
