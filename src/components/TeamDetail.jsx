@@ -27,6 +27,12 @@ export const TeamDetail = ({
   useEffect(() => {
     onViewingPokemonChange?.(viewingPokemon !== null);
   }, [viewingPokemon, onViewingPokemonChange]);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   if (!team) return null;
 
@@ -47,13 +53,26 @@ export const TeamDetail = ({
       />
       {/* ── En-tête sticky ── */}
       <div
-        className="sticky top-0 z-10 px-4"
+        className="sticky top-0 z-10 px-4 relative"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
       >
-        <div className="flex items-center justify-between">
+        <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
+          opacity: scrolled ? 1 : 0,
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+        }} />
+        <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
+          opacity: scrolled ? 1 : 0,
+          background: isDark
+            ? 'linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, transparent 100%)'
+            : 'linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, transparent 100%)',
+        }} />
+        <div className="flex items-center justify-between relative">
           <button
             onClick={onBack}
-            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
+            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
             style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label={tr('common.back')}
           >
@@ -62,8 +81,8 @@ export const TeamDetail = ({
           {canEdit && onEdit && (
             <button
               onClick={() => onEdit(team)}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
-            style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
+              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label={tr('common.edit')}
             >
               <Pencil size={20} />

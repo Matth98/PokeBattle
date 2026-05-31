@@ -128,6 +128,13 @@ export const PlayerDetail = ({
   const { isClosing: isAllTeamsSheetClosing, handleClose: closeAllTeamsSheet } = useAnimatedClose(() => setShowAllTeamsSheet(false), 280);
   useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet);
 
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   // Fermeture animée "Modifier joueur"
   const [isEditPlayerClosing, setIsEditPlayerClosing] = useState(false);
   const cancelEditPlayer = useCallback(() => {
@@ -595,13 +602,26 @@ export const PlayerDetail = ({
       />
       {/* ── En-tête sticky ── */}
       <div
-        className="sticky top-0 z-10 px-4"
+        className="sticky top-0 z-10 px-4 relative"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
       >
-        <div className="flex items-center justify-between">
+        <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
+          opacity: scrolled ? 1 : 0,
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+        }} />
+        <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
+          opacity: scrolled ? 1 : 0,
+          background: isDark
+            ? 'linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, transparent 100%)'
+            : 'linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, transparent 100%)',
+        }} />
+        <div className="flex items-center justify-between relative">
           <button
             onClick={onBack}
-            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} transition-all duration-200 ${selectionMode ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} transition-all duration-200 ${selectionMode ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
             style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label="Retour"
           >
@@ -612,7 +632,7 @@ export const PlayerDetail = ({
               <button
                 onClick={() => setSelectionMode(activeTab)}
                 disabled={(activeTab === 'pokemon' ? (player.pokemon?.length || 0) : playerTeams.length) === 0}
-                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} disabled:opacity-40 ${selectionMode ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} disabled:opacity-40 ${selectionMode ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
                 style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                 aria-label="Sélectionner"
               >
@@ -622,7 +642,7 @@ export const PlayerDetail = ({
             {canEdit && (
               <button
                 onClick={openEditPlayer}
-                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${selectionMode ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${selectionMode ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
                 style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                 aria-label="Modifier"
               >
@@ -632,7 +652,7 @@ export const PlayerDetail = ({
             {canEdit && (activeTab === 'pokemon' || activeTab === 'teams') && (
               <button
                 onClick={exitSelection}
-                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${selectionMode ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${selectionMode ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
                 style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                 aria-label="Terminer la sélection"
               >

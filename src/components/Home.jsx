@@ -325,10 +325,10 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
 
       {/* ── En-tête ── */}
       <div
-        className={`sticky top-0 z-10 px-5 pb-3 transition-all duration-200 relative ${
+        className={`sticky top-0 z-10 px-4 transition-all duration-200 relative ${
           scrolled ? '' : ''
         }`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
       >
         <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
           opacity: scrolled ? 1 : 0,
@@ -368,7 +368,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         </div>
       </div>
 
-      <div className="relative z-[1] px-5 mt-5 pb-40 space-y-7">
+      <div className="relative z-[1] px-5 mt-4 pb-40 space-y-7">
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">
