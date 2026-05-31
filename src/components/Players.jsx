@@ -242,13 +242,9 @@ export const Players = ({
                     }
                     className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left`}
                   >
-                    {inSelection && (
-                      <span
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}
-                      >
-                        {isSelected && <Check size={14} className="text-white" />}
-                      </span>
-                    )}
+                    <span className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inSelection ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}>
+                      {isSelected && <Check size={14} className="text-white" />}
+                    </span>
 
                     <PlayerAvatar player={p} size={44} className="flex-shrink-0" />
 
@@ -259,7 +255,9 @@ export const Players = ({
                       </p>
                     </div>
 
-                    {!inSelection && <ChevronRight size={18} className={t.textTertiary} />}
+                    <span className={`transition-all duration-200 overflow-hidden flex items-center flex-shrink-0 ${inSelection ? 'w-0 opacity-0' : 'w-[18px] opacity-100'}`}>
+                      <ChevronRight size={18} className={t.textTertiary} />
+                    </span>
                   </button>
                 </SwipeableRow>
               );
@@ -327,10 +325,14 @@ export const Players = ({
       {/* ── Footer sélection ── */}
       {footerMounted && createPortal(
         <div
-          className={`fixed bottom-0 left-0 right-0 z-30 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          className={`fixed bottom-0 left-0 right-0 z-30 pointer-events-none ${isFooterClosing ? 'anim-slide-down' : 'anim-slide-up'}`}
+          style={{
+            background: isDark ? 'linear-gradient(to top, rgba(9,9,11,0.95) 0%, transparent 100%)' : 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
+            paddingTop: '48px',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+          }}
         >
-          <div className="grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
+          <div className="pointer-events-auto grid grid-cols-2 items-center px-4 gap-2" style={{ height: '76px' }}>
             {/* Tout sélectionner / Tout déselectionner */}
             {(() => {
               const allIds = players.map((p) => p._id);
@@ -341,7 +343,8 @@ export const Players = ({
                     ? selectedItems.filter((id) => !allIds.includes(id))
                     : [...new Set([...selectedItems, ...allIds])]
                   )}
-                  className={`text-sm font-semibold ${t.accent} justify-self-start`}
+                  className={`justify-self-start h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900 border border-white/20 shadow-sm'}`}
+                  style={isDark ? { borderTop: '1px solid #ffffff36' } : undefined}
                 >
                   {allSelected ? 'Tout déselectionner' : 'Tout sélectionner'}
                 </button>
@@ -349,11 +352,10 @@ export const Players = ({
             })()}
             <button
               onClick={() => setDeletingSelected(true)}
-              disabled={selectedItems.length === 0}
-              className={`justify-self-end h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 ${selectedItems.length === 0 ? `${isDark ? 'bg-white/10 text-white/40' : 'bg-white/60 text-gray-400'} ${isDark ? '' : 'border border-white/20'} shadow-sm` : `${t.dangerBg} text-white`}`}
-              style={selectedItems.length === 0 && isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+              className={`justify-self-end h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 bg-red-500/90 text-white border border-red-400/60 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+              style={isDark ? { borderTop: '1px solid #ffffff36' } : undefined}
             >
-              {selectedItems.length === 0 ? 'Supprimer' : `Supprimer (${selectedItems.length})`}
+              {`Supprimer (${selectedItems.length})`}
             </button>
           </div>
         </div>

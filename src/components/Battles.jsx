@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2, Trophy, Dices } from 'lucide-react';
+import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, ChevronRight, Shield, GripVertical, Loader2, Trophy, Dices } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
@@ -661,13 +661,11 @@ export const Battles = ({
                           }
                           className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left`}
                         >
-                          {inSelection && canSelectBattle(b) && (
-                            <span
-                              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`}`}
-                            >
-                              {isSelected && <Check size={14} className="text-white" />}
-                            </span>
-                          )}
+                          <span
+                            className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inSelection && canSelectBattle(b) ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}
+                          >
+                            {isSelected && <Check size={14} className="text-white" />}
+                          </span>
 
                           {/* Joueur 1 — avatar + nom + Pokémon ferré gauche */}
                           <div className="flex-1 min-w-0">
