@@ -739,7 +739,7 @@ export const PlayerDetail = ({
           ))}
         </div>
 
-        <div ref={tabContentRef} style={{ minHeight: tabMinHeight || '100vh' }}>
+        <div ref={tabContentRef} style={{ minHeight: tabMinHeight || '80vh' }}>
         {activeTab === 'pokemon' && (
           <section>
             <div className="flex justify-between items-baseline mb-3 px-1">
