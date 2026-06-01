@@ -628,19 +628,16 @@ export const Battles = ({
                       .map(([id, s]) => ({ ...s, player: players.find(p => String(p._id) === id) }))
                       .sort((a, b) => b.wins - a.wins || a.losses - b.losses);
                     return summaryRows.length > 0 && (
-                      <div className={`px-4 py-2.5 flex flex-wrap gap-x-4 gap-y-1.5 border-b ${t.divider}`}>
-                        {summaryRows.map(({ wins, losses, player }, i) => {
-                          const isLeader = i === 0 && wins > 0 && (summaryRows.length < 2 || wins > summaryRows[1].wins);
-                          return (
-                            <div key={i} className="flex items-center gap-2">
-                              <PlayerAvatar player={player} size={24} textSize="text-[10px]" />
-                              <span className={`text-xs font-bold ${t.text}`}>{player?.name || '—'}</span>
-                              {isLeader && <Trophy size={11} className="text-amber-400 flex-shrink-0 -ml-0.5" />}
-                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-500/15 text-emerald-600'}`}>{wins}V</span>
-                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-500/15 text-red-500'}`}>{losses}D</span>
-                            </div>
-                          );
-                        })}
+                      <div className={`px-4 py-2.5 flex flex-wrap gap-x-5 gap-y-1.5 border-b ${t.divider}`}>
+                        {summaryRows.map(({ wins, losses, player }, i) => (
+                          <div key={i} className="flex items-center gap-1.5">
+                            <PlayerAvatar player={player} size={20} textSize="text-[9px]" />
+                            <span className={`text-xs font-bold ${t.text}`}>{player?.name || '—'}</span>
+                            <span className={`text-[11px] font-semibold ${t.success}`}>{wins}V</span>
+                            <span className={`text-[11px] ${t.textTertiary}`}>·</span>
+                            <span className={`text-[11px] font-semibold ${isDark ? 'text-red-400' : 'text-red-500'}`}>{losses}D</span>
+                          </div>
+                        ))}
                       </div>
                     );
                   })()}
