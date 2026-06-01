@@ -282,7 +282,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       <div
         className="fixed left-0 right-0 flex justify-center z-50 pointer-events-none"
         style={{
-          top: 'calc(env(safe-area-inset-top) + 4rem)',
+          top: 'env(safe-area-inset-top)',
           transform: `translateY(${indicatorY}px)`,
           opacity: indicatorOpacity,
           transition: (isRefreshing || pullY === 0) ? 'transform 0.3s cubic-bezier(0.32,0.72,0.24,1), opacity 0.2s ease' : 'none',
@@ -328,7 +328,11 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         className={`sticky top-0 z-10 px-4 transition-all duration-200 relative ${
           scrolled ? '' : ''
         }`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
+        style={{
+          paddingTop: `calc(env(safe-area-inset-top) + 0.75rem + ${isRefreshing ? 44 : pullY * 0.45}px)`,
+          paddingBottom: '0.75rem',
+          transition: (isRefreshing || pullY === 0) ? 'padding-top 0.3s cubic-bezier(0.32,0.72,0.24,1)' : 'none',
+        }}
       >
         <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
           opacity: scrolled ? 1 : 0,
