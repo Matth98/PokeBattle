@@ -68,6 +68,18 @@ export const PlayerDetail = ({
   }, [viewingPokemon, onViewingPokemonChange]);
   const [activeTab, setActiveTab] = useState(initialActiveTab);
   useEffect(() => { setPokemonSearch(''); setTeamsSearch(''); exitSelection(); }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  const tabContentRef = useRef(null);
+  const [tabMinHeight, setTabMinHeight] = useState(0);
+  useEffect(() => { setTabMinHeight(0); }, [activeTab]);
+  useEffect(() => {
+    const el = tabContentRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      setTabMinHeight((prev) => Math.max(prev, el.offsetHeight));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [activeTab]);
   const [editingPlayer, setEditingPlayer] = useState(false);
   const [editName, setEditName] = useState('');
   const [editAvatar, setEditAvatar] = useState(null);
@@ -721,6 +733,7 @@ export const PlayerDetail = ({
           ))}
         </div>
 
+        <div ref={tabContentRef} style={tabMinHeight ? { minHeight: tabMinHeight } : undefined}>
         {activeTab === 'pokemon' && (
           <section>
             <div className="flex justify-between items-baseline mb-3 px-1">
@@ -1102,6 +1115,7 @@ export const PlayerDetail = ({
             </div>
           </section>
         )}
+        </div>
       </div>
 
       {/* ── Modal Ajouter Pokémon ── */}
