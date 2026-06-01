@@ -70,16 +70,6 @@ export const PlayerDetail = ({
   useEffect(() => { setPokemonSearch(''); setTeamsSearch(''); exitSelection(); }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
   const tabContentRef = useRef(null);
   const [tabMinHeight, setTabMinHeight] = useState(0);
-  useEffect(() => { setTabMinHeight(0); }, [activeTab]);
-  useEffect(() => {
-    const el = tabContentRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver(() => {
-      setTabMinHeight((prev) => Math.max(prev, el.offsetHeight));
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [activeTab]);
   const [editingPlayer, setEditingPlayer] = useState(false);
   const [editName, setEditName] = useState('');
   const [editAvatar, setEditAvatar] = useState(null);
@@ -107,6 +97,22 @@ export const PlayerDetail = ({
   const pokemonSearchRef = useRef(null);
   const [teamsSearch, setTeamsSearch] = useState('');
   const teamsSearchRef = useRef(null);
+  // Capture la hauteur au moment où la recherche commence (vide → non-vide).
+  // La min-height est libérée dès que la recherche est vidée ou qu'on change d'onglet.
+  const prevPokemonSearch = useRef('');
+  const prevTeamsSearch = useRef('');
+  useEffect(() => {
+    const search = activeTab === 'pokemon' ? pokemonSearch : teamsSearch;
+    const prevSearch = activeTab === 'pokemon' ? prevPokemonSearch : prevTeamsSearch;
+    if (!prevSearch.current && search) {
+      // L'utilisateur vient de commencer à taper : capturer la hauteur actuelle
+      setTabMinHeight(tabContentRef.current?.offsetHeight ?? 0);
+    } else if (!search) {
+      // Recherche vidée : libérer la contrainte
+      setTabMinHeight(0);
+    }
+    prevSearch.current = search;
+  }, [pokemonSearch, teamsSearch, activeTab]);
   const [selectionMode, setSelectionMode] = useState(null); // 'pokemon' | 'teams'
   const [selectedItems, setSelectedItems] = useState([]);
   const [footerMounted, setFooterMounted] = useState(false);
@@ -733,7 +739,7 @@ export const PlayerDetail = ({
           ))}
         </div>
 
-        <div ref={tabContentRef} style={tabMinHeight ? { minHeight: tabMinHeight } : undefined}>
+        <div ref={tabContentRef} style={{ minHeight: tabMinHeight || '100vh' }}>
         {activeTab === 'pokemon' && (
           <section>
             <div className="flex justify-between items-baseline mb-3 px-1">
