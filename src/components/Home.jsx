@@ -282,7 +282,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       <div
         className="fixed left-0 right-0 flex justify-center z-50 pointer-events-none"
         style={{
-          top: 'env(safe-area-inset-top)',
+          top: 'calc(env(safe-area-inset-top) + 4rem)',
           transform: `translateY(${indicatorY}px)`,
           opacity: indicatorOpacity,
           transition: (isRefreshing || pullY === 0) ? 'transform 0.3s cubic-bezier(0.32,0.72,0.24,1), opacity 0.2s ease' : 'none',
