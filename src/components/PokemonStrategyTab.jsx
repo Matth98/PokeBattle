@@ -212,12 +212,12 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
           {/* Stickers +stat / −stat */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {boosted && (
-              <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-green-500/15 text-green-400' : 'bg-green-50 text-green-600'}`}>
+              <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-green-400/10 text-green-400' : 'bg-green-600/10 text-green-600'}`}>
                 +{STATS.find(s => s.key === boosted)?.fr}
               </span>
             )}
             {lowered && (
-              <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-600'}`}>
+              <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-400/10 text-red-400' : 'bg-red-600/10 text-red-600'}`}>
                 −{STATS.find(s => s.key === lowered)?.fr}
               </span>
             )}
