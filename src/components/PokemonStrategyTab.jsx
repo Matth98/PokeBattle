@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { TYPE_FR, TYPE_HEX, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { useSmogonSet } from '../hooks/useSmogonSet';
 
@@ -157,9 +158,12 @@ function StatCol({ value, isDark, width = 'w-8' }) {
 
 // ─── Ligne d'attaque (sans fond) ─────────────────────────────────────────────
 
-function MoveRow({ move, isDark, isLast }) {
+function MoveRow({ move, isDark, isLast, onPress }) {
   return (
-    <div className={`flex items-center gap-3 py-2.5 ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}>
+    <button
+      onClick={onPress}
+      className={`w-full flex items-center gap-3 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
+    >
       <TypePictogram typeName={move.type} />
       <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
@@ -169,7 +173,158 @@ function MoveRow({ move, isDark, isLast }) {
         <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} width="w-10" />
         <div className="w-6 flex justify-center"><DamageClassIcon damageClass={move.damageClass} /></div>
       </div>
-    </div>
+    </button>
+  );
+}
+
+// ─── Bottom sheet détail d'une attaque ───────────────────────────────────────
+
+const DAMAGE_CLASS_FR  = { physical: 'Physique', special: 'Spéciale', status: 'Statut' };
+const DAMAGE_CLASS_HEX = { physical: '#ff4400', special: '#2266cc', status: '#999999' };
+
+function MoveSheet({ move, isDark, onClose }) {
+  const H  = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const y  = useMotionValue(H);
+  const overlayOpacity = useTransform(y, [0, H * 0.5], [1, 0]);
+  const sheetRef = useRef(null);
+
+  const dismiss = useCallback((vel = 600) => {
+    animate(y, H, { type: 'spring', damping: 18, stiffness: 200, velocity: vel, restDelta: 1 });
+    setTimeout(onClose, 300);
+  }, [y, H, onClose]);
+
+  const snapBack = useCallback(() => {
+    animate(y, 0, { type: 'spring', damping: 30, stiffness: 400 });
+  }, [y]);
+
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+    let startY = 0, lastY = 0, lastTime = 0, tracking = false;
+
+    const onTouchStart = (e) => {
+      startY = e.touches[0].clientY; lastY = startY; lastTime = Date.now(); tracking = false;
+    };
+    const onTouchMove = (e) => {
+      const cur = e.touches[0].clientY;
+      const delta = cur - startY;
+      lastY = cur; lastTime = Date.now();
+      if (!tracking) { if (delta > 8) tracking = true; else return; }
+      e.preventDefault();
+      if (delta > 0) y.set(delta);
+    };
+    const onTouchEnd = (e) => {
+      if (!tracking) return;
+      tracking = false;
+      const delta = lastY - startY;
+      const vel   = (e.changedTouches[0].clientY - startY) / Math.max(1, Date.now() - (lastTime - 50));
+      if (vel > 0.5 || delta > 100) dismiss(vel * 1000); else snapBack();
+    };
+
+    sheet.addEventListener('touchstart', onTouchStart, { passive: true });
+    sheet.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    sheet.addEventListener('touchend',   onTouchEnd,   { passive: true });
+    return () => {
+      sheet.removeEventListener('touchstart', onTouchStart);
+      sheet.removeEventListener('touchmove',  onTouchMove);
+      sheet.removeEventListener('touchend',   onTouchEnd);
+    };
+  }, [y, dismiss, snapBack]);
+
+  const hex = TYPE_HEX[move.type] || '#A8A77A';
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[9999] flex flex-col justify-end"
+      style={{ backgroundColor: 'rgba(0,0,0,0.45)', opacity: overlayOpacity }}
+      onClick={() => dismiss()}
+    >
+      <motion.div
+        ref={sheetRef}
+        onClick={(e) => e.stopPropagation()}
+        className={`relative rounded-t-3xl overflow-hidden ${isDark ? 'bg-zinc-900' : 'bg-white'}`}
+        style={{ y }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`} />
+        </div>
+
+        <div className="px-6 pt-3 pb-10">
+          {/* Nom */}
+          <h2 className={`text-2xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            {move.nameFr}
+          </h2>
+
+          {/* Type + Catégorie */}
+          <div className="flex gap-2 mb-5">
+            {/* Badge type */}
+            <span className="pl-1 inline-flex items-stretch rounded-full overflow-hidden" style={{ backgroundColor: hex }}>
+              <img
+                src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${move.type}.svg`}
+                alt=""
+                className="w-6 h-6 object-contain flex-shrink-0"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+              <span className="self-center pr-3 text-xs font-bold text-white uppercase leading-none">
+                {TYPE_FR[move.type] || move.type}
+              </span>
+            </span>
+            {/* Badge catégorie */}
+            <span
+              className="pl-1 inline-flex items-center rounded-full overflow-hidden pr-3"
+              style={{ backgroundColor: DAMAGE_CLASS_HEX[move.damageClass] || '#A8A77A' }}
+            >
+              <img
+                src={DAMAGE_CLASS_ICONS[move.damageClass] || DAMAGE_CLASS_ICONS.status}
+                alt={move.damageClass}
+                className="w-5 h-5 object-contain flex-shrink-0"
+              />
+              <span className="text-xs font-bold text-white uppercase leading-none">
+                {DAMAGE_CLASS_FR[move.damageClass] || move.damageClass}
+              </span>
+            </span>
+          </div>
+
+          {/* Description */}
+          {move.desc && (
+            <p className={`text-base leading-relaxed mb-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              {move.desc}
+            </p>
+          )}
+
+          {/* 4 cartes stats */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Puissance</p>
+              <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {move.power ?? '—'}
+              </p>
+            </div>
+            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Précision</p>
+              <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {move.accuracy != null ? `${move.accuracy}%` : '—'}
+              </p>
+            </div>
+            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>PP</p>
+              <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {move.pp ?? '—'}
+              </p>
+            </div>
+            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Priorité</p>
+              <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {move.priority > 0 ? `+${move.priority}` : (move.priority ?? 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -258,6 +413,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
 
 export function StrategyTab({ pokeId, isDark, accentHex }) {
   const { result, loading, error } = useSmogonSet(pokeId);
+  const [selectedMove, setSelectedMove] = useState(null);
 
   if (loading) {
     return (
@@ -303,7 +459,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
           </div>
         </div>
         {result.moves.map((move, i) => (
-          <MoveRow key={i} move={move} isDark={isDark} isLast={i === result.moves.length - 1} />
+          <MoveRow key={i} move={move} isDark={isDark} isLast={i === result.moves.length - 1} onPress={() => setSelectedMove(move)} />
         ))}
       </div>
 
@@ -320,6 +476,11 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
           isDark={isDark}
           accentHex={accentHex}
         />
+      )}
+
+      {/* Bottom sheet attaque */}
+      {selectedMove && (
+        <MoveSheet move={selectedMove} isDark={isDark} onClose={() => setSelectedMove(null)} />
       )}
     </div>
   );

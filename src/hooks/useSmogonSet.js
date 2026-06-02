@@ -22,7 +22,7 @@ const FORMATS = [
 ];
 
 // Incrémenter à chaque modification de FORMATS pour invalider le resultCache
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 5;
 
 const formatCache  = new Map();
 const moveCache    = new Map();
@@ -76,17 +76,23 @@ async function fetchMoveDetail(moveName) {
     const data = await res.json();
     const nameEntry = data.names?.find(n => n.language.name === 'fr')
       || data.names?.find(n => n.language.name === 'en');
+    // Dernière entrée FR disponible, sinon EN
+    const descEntry = [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'fr')
+      || [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'en');
     const result = {
       nameFr:      nameEntry?.name || moveName,
       type:        data.type?.name || 'normal',
       damageClass: data.damage_class?.name || 'status',
       power:       data.power ?? null,
       accuracy:    data.accuracy ?? null,
+      pp:          data.pp ?? null,
+      priority:    data.priority ?? 0,
+      desc:        descEntry?.flavor_text?.replace(/\f|\n/g, ' ') || null,
     };
     moveCache.set(slug, result);
     return result;
   } catch {
-    const fallback = { nameFr: moveName, type: 'normal', damageClass: 'status', power: null, accuracy: null };
+    const fallback = { nameFr: moveName, type: 'normal', damageClass: 'status', power: null, accuracy: null, pp: null, priority: 0, desc: null };
     moveCache.set(slug, fallback);
     return fallback;
   }
