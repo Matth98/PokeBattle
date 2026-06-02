@@ -31,12 +31,12 @@ const NATURE_EFFECTS = {
   Calm:     ['spd', 'atk'],  Gentle:  ['spd', 'def'],  Sassy:   ['spd', 'spe'],  Careful: ['spd', 'spa'],
 };
 
-// ─── Couleur de valeur (identique aux stats de Présentation) ─────────────────
+// ─── Couleur de valeur ────────────────────────────────────────────────────────
 
 const evColor = (v) =>
   v >= 150 ? '#22c55e' : v >= 100 ? '#84cc16' : v >= 70 ? '#eab308' : v >= 50 ? '#f97316' : '#ef4444';
 
-// ─── Badge de type : pictogramme circulaire, sans texte ───────────────────────
+// ─── Badge de type ────────────────────────────────────────────────────────────
 
 function TypePictogram({ typeName }) {
   const hex   = TYPE_HEX[typeName]    || '#A8A77A';
@@ -53,7 +53,6 @@ function TypePictogram({ typeName }) {
           e.currentTarget.nextSibling.style.display = 'flex';
         }}
       />
-      {/* Fallback coloré si le SVG ne charge pas */}
       <div
         className="hidden w-7 h-7 rounded-full items-center justify-center absolute inset-0"
         style={{ backgroundColor: hex }}
@@ -66,7 +65,7 @@ function TypePictogram({ typeName }) {
   );
 }
 
-// ─── Catégorie d'attaque : picto officiel Pokémon Showdown ────────────────────
+// ─── Catégorie d'attaque ──────────────────────────────────────────────────────
 
 const DAMAGE_CLASS_ICONS = {
   physical: '/damage-categories/physical.svg',
@@ -80,15 +79,15 @@ function DamageClassIcon({ damageClass }) {
       src={DAMAGE_CLASS_ICONS[damageClass] || DAMAGE_CLASS_ICONS.status}
       alt={damageClass}
       title={damageClass}
-      className="w-7 h-7 object-contain flex-shrink-0"
+      className="w-6 h-6 object-contain flex-shrink-0"
       onError={(e) => { e.currentTarget.style.display = 'none'; }}
     />
   );
 }
 
-// ─── Objet avec sprite Pokemon Showdown ──────────────────────────────────────
+// ─── Objet ────────────────────────────────────────────────────────────────────
 
-function ItemCard({ item, itemSprite, itemPsSlug, isDark }) {
+function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex }) {
   const psFallback = itemPsSlug
     ? `https://play.pokemonshowdown.com/sprites/itemicons/${itemPsSlug}.png`
     : null;
@@ -97,30 +96,21 @@ function ItemCard({ item, itemSprite, itemPsSlug, isDark }) {
   const [failed, setFailed] = useState(false);
 
   const handleError = () => {
-    if (src === itemSprite && psFallback) {
-      setSrc(psFallback);
-    } else {
-      setFailed(true);
-    }
+    if (src === itemSprite && psFallback) setSrc(psFallback);
+    else setFailed(true);
   };
 
   return (
-    <div className={`rounded-2xl px-3 py-3 flex items-center gap-2.5 ${isDark ? 'bg-zinc-800' : 'bg-gray-50'}`}>
+    <div className="flex items-center gap-3">
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`}>
-        {!failed && src && (
-          <img
-            src={src}
-            alt={item}
-            className="w-7 h-7 object-contain"
-            style={{ imageRendering: 'pixelated' }}
-            onError={handleError}
-          />
-        )}
-        {(failed || !src) && <span className="text-base">🎒</span>}
+        {!failed && src
+          ? <img src={src} alt={item} className="w-7 h-7 object-contain" style={{ imageRendering: 'pixelated' }} onError={handleError} />
+          : <span className="text-base">🎒</span>
+        }
       </div>
       <div className="min-w-0">
         <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Objet</p>
-        <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
+        <p className={`text-base font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
       </div>
     </div>
   );
@@ -128,9 +118,9 @@ function ItemCard({ item, itemSprite, itemPsSlug, isDark }) {
 
 // ─── Talent ───────────────────────────────────────────────────────────────────
 
-function AbilityCard({ ability, isDark, accentHex }) {
+function AbilityRow({ ability, isDark, accentHex }) {
   return (
-    <div className={`rounded-2xl px-3 py-3 flex items-center gap-2.5 ${isDark ? 'bg-zinc-800' : 'bg-gray-50'}`}>
+    <div className="flex items-center gap-3">
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-base"
         style={{ backgroundColor: `${accentHex}22` }}
@@ -139,26 +129,13 @@ function AbilityCard({ ability, isDark, accentHex }) {
       </div>
       <div className="min-w-0">
         <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Talent</p>
-        <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{ability}</p>
+        <p className={`text-base font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{ability}</p>
       </div>
     </div>
   );
 }
 
-// ─── Autres helpers ───────────────────────────────────────────────────────────
-
-function StatPill({ label, value, isDark }) {
-  return (
-    <div className={`flex flex-col items-center px-3 py-1.5 rounded-xl ${isDark ? 'bg-zinc-800/60' : 'bg-gray-100'}`}>
-      <span className={`text-[9px] font-bold uppercase tracking-wide mb-0.5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-        {label}
-      </span>
-      <span className={`text-sm font-black tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
-        {value}
-      </span>
-    </div>
-  );
-}
+// ─── Titre de section ─────────────────────────────────────────────────────────
 
 function SectionTitle({ title, isDark }) {
   return (
@@ -168,33 +145,29 @@ function SectionTitle({ title, isDark }) {
   );
 }
 
-// ─── MoveCard ─────────────────────────────────────────────────────────────────
+// ─── Colonnes de stats pour les attaques ──────────────────────────────────────
 
-function StatCol({ label, value, isDark }) {
+function StatCol({ value, isDark }) {
   return (
-    <div className="flex flex-col items-center w-8">
-      {label && (
-        <span className={`text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label}</span>
-      )}
-      <span className={`text-sm font-semibold tabular-nums text-center ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{value}</span>
-    </div>
+    <span className={`w-8 text-sm font-semibold tabular-nums text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+      {value}
+    </span>
   );
 }
 
-function MoveCard({ move, isDark }) {
+// ─── Ligne d'attaque (sans fond) ─────────────────────────────────────────────
+
+function MoveRow({ move, isDark, isLast }) {
   return (
-    <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-zinc-800' : 'bg-gray-50'}`}>
-      {/* Type — tout à gauche */}
+    <div className={`flex items-center gap-3 py-2.5 ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}>
       <TypePictogram typeName={move.type} />
-      {/* Nom */}
       <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
-      {/* Droite : puissance · précision · catégorie */}
-      <div className="flex items-center gap-4 flex-shrink-0">
+      <div className="flex items-center gap-6 flex-shrink-0">
         <StatCol value={move.power ?? '—'} isDark={isDark} />
         <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} />
-        <div className="w-7 flex justify-center"><DamageClassIcon damageClass={move.damageClass} /></div>
+        <div className="w-6 flex justify-center"><DamageClassIcon damageClass={move.damageClass} /></div>
       </div>
     </div>
   );
@@ -206,43 +179,41 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
   const effects   = nature ? NATURE_EFFECTS[nature] : null;
   const boosted   = effects?.[0];
   const lowered   = effects?.[1];
-  const hasIVs    = Object.values(ivs).some(v => v < 31);
   const activeEVs = STATS.filter(s => (evs[s.key] ?? 0) > 0);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-10">
       {/* Nature */}
       {nature && (
-        <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-zinc-800' : 'bg-gray-50'}`}>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`}>
-            🌿
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Nature</p>
-            <p className={`text-base font-bold mt-0.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        <div>
+          <SectionTitle title="Nature" isDark={isDark} />
+          <div className="flex items-center gap-3">
+            <span className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`}>
+              🌿
+            </span>
+            <p className={`flex-1 text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
               {NATURES_FR[nature] || nature}
             </p>
-          </div>
-          {/* Stickers +stat / −stat */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {boosted && (
-              <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-green-400/10 text-green-400' : 'bg-green-600/10 text-green-600'}`}>
-                +{STATS.find(s => s.key === boosted)?.fr}
-              </span>
-            )}
-            {lowered && (
-              <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-400/10 text-red-400' : 'bg-red-600/10 text-red-600'}`}>
-                −{STATS.find(s => s.key === lowered)?.fr}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {boosted && (
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-green-400/10 text-green-400' : 'bg-green-600/10 text-green-600'}`}>
+                  +{STATS.find(s => s.key === boosted)?.fr}
+                </span>
+              )}
+              {lowered && (
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-400/10 text-red-400' : 'bg-red-600/10 text-red-600'}`}>
+                  −{STATS.find(s => s.key === lowered)?.fr}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* EV bars */}
+      {/* EVs */}
       {activeEVs.length > 0 && (
-        <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-zinc-800' : 'bg-gray-50'}`}>
-          <p className={`text-[10px] font-bold uppercase tracking-wide mb-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>EVs</p>
+        <div>
+          <SectionTitle title="EVs" isDark={isDark} />
           <div className="space-y-2">
             {activeEVs.map(({ key, fr }) => {
               const ev       = evs[key] ?? 0;
@@ -266,26 +237,6 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
         </div>
       )}
 
-      {/* IVs réduits (uniquement si ≠ 31) */}
-      {hasIVs && (
-        <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-zinc-800' : 'bg-gray-50'}`}>
-          <p className={`text-[10px] font-bold uppercase tracking-wide mb-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>IVs réduits</p>
-          <div className="flex flex-wrap gap-1.5">
-            {STATS.map(({ key, fr }) => {
-              const iv = ivs[key];
-              if (iv === undefined || iv >= 31) return null;
-              return (
-                <span
-                  key={key}
-                  className={`text-xs font-bold px-2 py-1 rounded-full ${isDark ? 'bg-red-900/40 text-red-300' : 'bg-red-100 text-red-700'}`}
-                >
-                  {iv} {fr}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -327,44 +278,43 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
 
   return (
     <div className="px-5 pt-3 pb-4">
-      {/* Objet + Talent — 50 / 50 */}
+
+      {/* Objet + Talent */}
       {(result.item || result.ability) && (
-        <div className="flex flex-col gap-2 mb-10">
-          {result.item && <ItemCard item={result.item} itemSprite={result.itemSprite} itemPsSlug={result.itemPsSlug} isDark={isDark} />}
-          {result.ability && <AbilityCard ability={result.ability} isDark={isDark} accentHex={accentHex} />}
+        <div className="flex gap-6 mb-10">
+          {result.item && (
+            <ItemRow item={result.item} itemSprite={result.itemSprite} itemPsSlug={result.itemPsSlug} isDark={isDark} accentHex={accentHex} />
+          )}
+          {result.ability && (
+            <AbilityRow ability={result.ability} isDark={isDark} accentHex={accentHex} />
+          )}
         </div>
       )}
 
       {/* Attaques */}
       <div className="mb-10">
-        {/* Titre + en-têtes de colonnes sur la même ligne */}
-        <div className="flex items-center mb-3 pr-4">
+        <div className="flex items-center mb-1">
           <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>Attaques</h2>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6 pr-0.5">
             <span className={`w-8 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss</span>
             <span className={`w-8 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
-            <span className={`w-7 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Type</span>
+            <span className={`w-6 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Cat.</span>
           </div>
         </div>
-        <div className="space-y-2">
-          {result.moves.map((move, i) => (
-            <MoveCard key={i} move={move} isDark={isDark} />
-          ))}
-        </div>
+        {result.moves.map((move, i) => (
+          <MoveRow key={i} move={move} isDark={isDark} isLast={i === result.moves.length - 1} />
+        ))}
       </div>
 
-      {/* EVs / IVs / Nature */}
+      {/* Nature + EVs + IVs */}
       {(Object.keys(result.evs).length > 0 || result.nature) && (
-        <div>
-          <SectionTitle title="Répartition" isDark={isDark} />
-          <EVsSection
-            evs={result.evs}
-            ivs={result.ivs}
-            nature={result.nature}
-            isDark={isDark}
-            accentHex={accentHex}
-          />
-        </div>
+        <EVsSection
+          evs={result.evs}
+          ivs={result.ivs}
+          nature={result.nature}
+          isDark={isDark}
+          accentHex={accentHex}
+        />
       )}
     </div>
   );
