@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useLayoutEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
@@ -112,8 +112,18 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   const tr = useTranslation();
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
+  const scrollPositions = useRef({ presentation: 0, strategie: 0 });
 
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [activeTab]);
+  const handleTabChange = useCallback((tab) => {
+    scrollPositions.current[activeTab] = window.scrollY;
+    setActiveTab(tab);
+  }, [activeTab]);
+
+  // Restore saved scroll before the browser paints (no flash).
+  // StrategyTab stays mounted, so its content is ready immediately.
+  useLayoutEffect(() => {
+    window.scrollTo({ top: scrollPositions.current[activeTab] ?? 0, behavior: 'instant' });
+  }, [activeTab]);
 
   const primaryType = data?.types?.[0] || 'normal';
   const accentHex = TYPE_HEX[primaryType] || '#6390F0';
@@ -196,8 +206,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             </div>
           </div>
 
-          {activeTab === 'presentation' && (
-            <div className="px-5 pt-2 pb-2">
+          <div className="px-5 pt-2 pb-2" style={{ display: activeTab === 'presentation' ? 'block' : 'none' }}>
               {data.flavorText && (
                 <p className={`text-base leading-relaxed mb-10 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                   {data.flavorText}
@@ -271,21 +280,20 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                 <InfoRow labelKey="pokemon.baseExp"      label={tr('pokemon.baseExp')}      value={String(data.baseExperience)} accentColor={accentHex} isDark={isDark} />
               </div>
             </div>
-          )}
 
-          {activeTab === 'strategie' && (
+          <div style={{ display: activeTab === 'strategie' ? 'block' : 'none' }}>
             <StrategyTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
-          )}
+          </div>
         </div>
       )}
 
       {/* ── Onglets — fixe en bas d'écran ── */}
       {!loading && !error && data && (
         <div
-          className={`fixed bottom-0 left-0 right-0 z-20 border-t ${isDark ? 'bg-[#1c1c1e] border-zinc-800' : 'bg-white border-gray-100'}`}
+          className={`fixed bottom-0 left-0 right-0 z-20 border-t ${isDark ? 'bg-[#1c1c1e] border-zinc-800/80' : 'bg-white border-gray-200/80'}`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-          <TabBar activeTab={activeTab} onTabChange={setActiveTab} accentHex={accentHex} isDark={isDark} />
+          <TabBar activeTab={activeTab} onTabChange={handleTabChange} accentHex={accentHex} isDark={isDark} />
         </div>
       )}
     </div>

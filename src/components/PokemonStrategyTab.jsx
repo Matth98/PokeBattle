@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { TYPE_FR, TYPE_HEX, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { useSmogonSet } from '../hooks/useSmogonSet';
@@ -88,23 +88,35 @@ function DamageClassIcon({ damageClass }) {
 
 // ─── Objet avec sprite Pokemon Showdown ──────────────────────────────────────
 
-function ItemCard({ item, itemSprite, isDark }) {
+function ItemCard({ item, itemSprite, itemPsSlug, isDark }) {
+  const psFallback = itemPsSlug
+    ? `https://play.pokemonshowdown.com/sprites/itemicons/${itemPsSlug}.png`
+    : null;
+  const initial = itemSprite || psFallback;
+  const [src, setSrc] = useState(initial);
+  const [failed, setFailed] = useState(false);
+
+  const handleError = () => {
+    if (src === itemSprite && psFallback) {
+      setSrc(psFallback);
+    } else {
+      setFailed(true);
+    }
+  };
+
   return (
     <div className={`rounded-2xl px-3 py-3 flex items-center gap-2.5 ${isDark ? 'bg-zinc-800' : 'bg-gray-50'}`}>
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`}>
-        {itemSprite ? (
+        {!failed && src && (
           <img
-            src={itemSprite}
+            src={src}
             alt={item}
             className="w-7 h-7 object-contain"
             style={{ imageRendering: 'pixelated' }}
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.nextSibling.style.display = 'block';
-            }}
+            onError={handleError}
           />
-        ) : null}
-        <span className={`${itemSprite ? 'hidden' : ''} text-base`}>🎒</span>
+        )}
+        {(failed || !src) && <span className="text-base">🎒</span>}
       </div>
       <div className="min-w-0">
         <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Objet</p>
@@ -318,7 +330,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
       {/* Objet + Talent — 50 / 50 */}
       {(result.item || result.ability) && (
         <div className="flex flex-col gap-2 mb-10">
-          {result.item && <ItemCard item={result.item} itemSprite={result.itemSprite} isDark={isDark} />}
+          {result.item && <ItemCard item={result.item} itemSprite={result.itemSprite} itemPsSlug={result.itemPsSlug} isDark={isDark} />}
           {result.ability && <AbilityCard ability={result.ability} isDark={isDark} accentHex={accentHex} />}
         </div>
       )}

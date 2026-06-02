@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect, useState } from 'react';
+import React, { useRef, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
@@ -128,9 +128,17 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
   const tr = useTranslation();
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
+  const scrollPositions = useRef({ presentation: 0, strategie: 0 });
 
-  useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  const handleTabChange = useCallback((tab) => {
+    if (scrollRef.current) scrollPositions.current[activeTab] = scrollRef.current.scrollTop;
+    setActiveTab(tab);
+  }, [activeTab]);
+
+  // Restore saved scroll before the browser paints (no flash).
+  // StrategyTab stays mounted, so its content is ready immediately.
+  useLayoutEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollPositions.current[activeTab] ?? 0;
   }, [activeTab]);
 
   // Prevent background scroll on iOS (position: fixed is the only reliable fix)
@@ -172,15 +180,22 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
     if (!sheet) return;
 
     let startY = 0;
+    let startTime = 0;
     let startScrollTop = 0;
     let lastY = 0;
+    let prevY = 0;
     let lastTime = 0;
+    let prevTime = 0;
     let tracking = false;
 
     const onTouchStart = (e) => {
-      startY = e.touches[0].clientY;
-      lastY  = startY;
-      lastTime = Date.now();
+      const now = Date.now();
+      startY    = e.touches[0].clientY;
+      startTime = now;
+      lastY     = startY;
+      prevY     = startY;
+      lastTime  = now;
+      prevTime  = now;
       startScrollTop = scrollRef.current?.scrollTop ?? 0;
       tracking = false;
     };
@@ -188,12 +203,16 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
     const onTouchMove = (e) => {
       const currentY = e.touches[0].clientY;
       const deltaY   = currentY - startY;
-      lastY  = currentY;
+      prevY    = lastY;
+      prevTime = lastTime;
+      lastY    = currentY;
       lastTime = Date.now();
 
-      // Activate tracking only when: scrolled to top AND moving downward
+      // Activate tracking only when: at the very top AND intentional downward drag (>20px).
+      // Double-check scrollTop at activation time — on iOS, scrollTop can lag at touchstart.
       if (!tracking) {
-        if (deltaY > 8 && startScrollTop <= 0) {
+        const currentScrollTop = scrollRef.current?.scrollTop ?? 0;
+        if (deltaY > 20 && startScrollTop <= 0 && currentScrollTop <= 0) {
           tracking = true;
         } else {
           return;
@@ -206,18 +225,28 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
       if (deltaY > 0) y.set(deltaY);
     };
 
-    const onTouchEnd = (e) => {
+    const onTouchEnd = () => {
       if (!tracking) return;
       tracking = false;
 
-      const deltaY   = lastY - startY;
-      const elapsed  = Math.max(1, Date.now() - lastTime);
-      // Velocity in px/ms (use last segment for accuracy)
-      const velocity = (e.changedTouches[0].clientY - startY) /
-                       Math.max(1, Date.now() - (lastTime - 50));
+      const deltaY = lastY - startY;
 
-      if (velocity > 0.5 || deltaY > 120) {
-        dismiss(velocity * 1000); // framer wants px/s
+      // Use segment velocity only when the last interval is ≥ 2 frames (≥32 ms).
+      // If the gap is shorter (e.g. a single touchmove event), fall back to average
+      // velocity over the whole gesture — this avoids artificially huge values from
+      // dividing a small displacement by a near-zero elapsed time.
+      const segDelta = lastY - prevY;
+      const segTime  = lastTime - prevTime;
+      let velocity;
+      if (segTime >= 32) {
+        velocity = segDelta / segTime; // px/ms — reliable segment reading
+      } else {
+        const totalTime = Math.max(1, lastTime - startTime);
+        velocity = deltaY / totalTime; // px/ms — smooth average fallback
+      }
+
+      if (velocity > 0.5 || deltaY > 150) {
+        dismiss(velocity * 1000);
       } else {
         snapBack();
       }
@@ -326,8 +355,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
               </div>
             </div>
 
-            {activeTab === 'presentation' && (
-              <div className="px-5 pt-2 pb-2">
+            <div className="px-5 pt-2 pb-2" style={{ display: activeTab === 'presentation' ? 'block' : 'none' }}>
                 {data.flavorText && (
                   <p className={`text-base leading-relaxed mb-10 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{data.flavorText}</p>
                 )}
@@ -395,19 +423,18 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
                   <InfoRow labelKey="pokemon.baseExp"      label={tr('pokemon.baseExp')}      value={String(data.baseExperience)} accentColor={accentHex} isDark={isDark} />
                 </div>
               </div>
-            )}
 
-            {activeTab === 'strategie' && (
+            <div style={{ display: activeTab === 'strategie' ? 'block' : 'none' }}>
               <StrategyTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
-            )}
+            </div>
           </div>
 
           {/* ── Onglets — bas de la sheet ── */}
           <div
-            className={`flex-shrink-0 border-t ${isDark ? 'border-zinc-800' : 'border-gray-100'}`}
+            className={`flex-shrink-0 border-t ${isDark ? 'border-zinc-800/80' : 'border-gray-200/80'}`}
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
-            <TabBar activeTab={activeTab} onTabChange={setActiveTab} accentHex={accentHex} isDark={isDark} />
+            <TabBar activeTab={activeTab} onTabChange={handleTabChange} accentHex={accentHex} isDark={isDark} />
           </div>
           </>
         )}

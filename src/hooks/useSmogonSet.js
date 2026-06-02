@@ -196,6 +196,7 @@ export function useSmogonSet(pokeId) {
           moves:       moveDetails,
           item:        itemFR?.name || null,
           itemSprite:  itemFR?.sprite || null,
+          itemPsSlug:  itemName ? itemName.toLowerCase().replace(/[^a-z0-9]/g, '') : null,
           itemSlug:    itemName ? toItemSlug(itemName) : null,
           ability:     abilityFR,
           nature:      rawSet.nature ? first(rawSet.nature) : null,
