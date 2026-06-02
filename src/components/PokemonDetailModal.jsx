@@ -293,11 +293,12 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
         )}
 
         {!loading && !error && data && (
+          <>
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto"
             data-scroll-lock-ignore
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}
+            style={{ paddingBottom: '2rem' }}
           >
             {/* ── Hero ── */}
             <div
@@ -311,9 +312,6 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
                 onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
               />
             </div>
-
-            {/* ── Onglets ── */}
-            <TabBar activeTab={activeTab} onTabChange={setActiveTab} accentHex={accentHex} isDark={isDark} />
 
             {activeTab === 'presentation' && (
               <div className="px-5 pt-4 pb-2">
@@ -398,6 +396,15 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
               <StrategyTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
             )}
           </div>
+
+          {/* ── Onglets — bas de la sheet ── */}
+          <div
+            className={`flex-shrink-0 border-t ${isDark ? 'border-gray-800' : 'border-gray-100'}`}
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
+            <TabBar activeTab={activeTab} onTabChange={setActiveTab} accentHex={accentHex} isDark={isDark} />
+          </div>
+          </>
         )}
       </motion.div>
     </motion.div>,

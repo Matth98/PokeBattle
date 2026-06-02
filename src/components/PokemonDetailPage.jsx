@@ -165,7 +165,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
 
       {/* ── Contenu ── */}
       {!loading && !error && data && (
-        <div style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}>
+        <div style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}>
           {/* Hero — remonte jusqu'en haut de l'écran */}
           <div
             className="flex items-center justify-center overflow-hidden"
@@ -182,9 +182,6 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
             />
           </div>
-
-          {/* Onglets */}
-          <TabBar activeTab={activeTab} onTabChange={setActiveTab} accentHex={accentHex} isDark={isDark} />
 
           {activeTab === 'presentation' && (
             <div className="px-5 pt-4 pb-2">
@@ -276,6 +273,16 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
           {activeTab === 'strategie' && (
             <StrategyTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
           )}
+        </div>
+      )}
+
+      {/* ── Onglets — fixe en bas d'écran ── */}
+      {!loading && !error && data && (
+        <div
+          className={`fixed bottom-0 left-0 right-0 z-20 border-t ${isDark ? 'bg-[#1c1c1e] border-gray-800' : 'bg-white border-gray-100'}`}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <TabBar activeTab={activeTab} onTabChange={setActiveTab} accentHex={accentHex} isDark={isDark} />
         </div>
       )}
     </div>

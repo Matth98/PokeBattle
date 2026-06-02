@@ -125,21 +125,32 @@ function SectionTitle({ title, isDark }) {
 
 // ─── MoveCard ─────────────────────────────────────────────────────────────────
 
+function StatCol({ label, value, isDark }) {
+  return (
+    <div className="flex flex-col items-center min-w-[28px]">
+      <span className={`text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label}</span>
+      <span className={`text-xs font-black tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{value}</span>
+    </div>
+  );
+}
+
 function MoveCard({ move, isDark }) {
   return (
-    <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
-      <p className={`text-base font-bold mb-2 leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+    <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
+      {/* Nom — gauche */}
+      <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
-      <div className="flex items-center gap-2 flex-wrap">
-        <TypePictogram typeName={move.type} />
-        <DamageClassIcon damageClass={move.damageClass} />
+      {/* Droite : type · catégorie · puissance · précision */}
+      <div className="flex items-center gap-2 flex-shrink-0">
         {move.damageClass !== 'status' && (
           <>
-            <StatPill label="Puissance" value={move.power ?? '—'} isDark={isDark} />
-            <StatPill label="Précision" value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} />
+            <StatCol label="Pwr" value={move.power ?? '—'} isDark={isDark} />
+            <StatCol label="Acc" value={move.accuracy != null ? `${move.accuracy}` : '—'} isDark={isDark} />
           </>
         )}
+        <DamageClassIcon damageClass={move.damageClass} />
+        <TypePictogram typeName={move.type} />
       </div>
     </div>
   );
@@ -329,7 +340,7 @@ export function TabBar({ activeTab, onTabChange, accentHex, isDark }) {
     { key: 'strategie',    label: 'Stratégie'    },
   ];
   return (
-    <div className={`sticky top-0 z-10 px-5 py-3 ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
+    <div className={`px-5 py-3 ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
       <div className={`flex rounded-xl p-1 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
         {tabs.map(({ key, label }) => {
           const isActive = activeTab === key;
