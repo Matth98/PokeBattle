@@ -139,9 +139,9 @@ function StatPill({ label, value, isDark }) {
 
 function SectionTitle({ title, isDark }) {
   return (
-    <p className={`text-xs font-black uppercase tracking-widest mb-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+    <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
       {title}
-    </p>
+    </h2>
   );
 }
 
