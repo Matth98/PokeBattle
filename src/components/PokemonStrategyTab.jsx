@@ -1,9 +1,39 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { TYPE_FR, TYPE_HEX } from '../hooks/usePokemonTypes';
-import { usePokemonMoves } from '../hooks/usePokemonMoves';
+import { useSmogonSet } from '../hooks/useSmogonSet';
+
+// ─── Constantes ───────────────────────────────────────────────────────────────
 
 const DAMAGE_CLASS_FR = { physical: 'Physique', special: 'Spécial', status: 'Statut' };
+
+const STATS = [
+  { key: 'hp',  fr: 'PV'    },
+  { key: 'atk', fr: 'Att'   },
+  { key: 'def', fr: 'Déf'   },
+  { key: 'spa', fr: 'Att.S' },
+  { key: 'spd', fr: 'Déf.S' },
+  { key: 'spe', fr: 'Vit'   },
+];
+
+const NATURES_FR = {
+  Hardy: 'Hardi',   Lonely: 'Solo',    Brave: 'Brave',    Adamant: 'Rigide',  Naughty: 'Malin',
+  Bold: 'Assuré',   Docile: 'Docile',  Relaxed: 'Relax',  Impish: 'Mauvais',  Lax: 'Lâche',
+  Timid: 'Timide',  Hasty: 'Pressé',   Serious: 'Sérieux',Jolly: 'Jovial',    Naive: 'Naïf',
+  Modest: 'Modeste',Mild: 'Doux',      Quiet: 'Calme',    Bashful: 'Pudique', Rash: 'Foufou',
+  Calm: 'Sage',     Gentle: 'Gentil',  Sassy: 'Malpoli',  Careful: 'Prudent', Quirky: 'Bizarre',
+};
+
+// nature → [boosted stat key, lowered stat key] (null for neutral)
+const NATURE_EFFECTS = {
+  Lonely:   ['atk', 'def'],  Brave:   ['atk', 'spe'],  Adamant: ['atk', 'spa'],  Naughty: ['atk', 'spd'],
+  Bold:     ['def', 'atk'],  Relaxed: ['def', 'spe'],  Impish:  ['def', 'spa'],  Lax:     ['def', 'spd'],
+  Timid:    ['spe', 'atk'],  Hasty:   ['spe', 'def'],  Jolly:   ['spe', 'spa'],  Naive:   ['spe', 'spd'],
+  Modest:   ['spa', 'atk'],  Mild:    ['spa', 'def'],  Quiet:   ['spa', 'spe'],  Rash:    ['spa', 'spd'],
+  Calm:     ['spd', 'atk'],  Gentle:  ['spd', 'def'],  Sassy:   ['spd', 'spe'],  Careful: ['spd', 'spa'],
+};
+
+// ─── Petits composants UI ─────────────────────────────────────────────────────
 
 function TypeBadgeMini({ typeName }) {
   return (
@@ -50,21 +80,22 @@ function StatPill({ label, value, isDark }) {
   );
 }
 
-function MoveCard({ move, isDark, accentHex }) {
-  const levelLabel = move.level === 0 ? 'Évo.' : `Niv. ${move.level}`;
+function SectionTitle({ title, isDark }) {
+  return (
+    <p className={`text-xs font-black uppercase tracking-widest mb-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+      {title}
+    </p>
+  );
+}
+
+// ─── MoveCard ─────────────────────────────────────────────────────────────────
+
+function MoveCard({ move, isDark }) {
   return (
     <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <p className={`text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          {move.nameFr}
-        </p>
-        <span
-          className="flex-shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: `${accentHex}22`, color: accentHex }}
-        >
-          {levelLabel}
-        </span>
-      </div>
+      <p className={`text-base font-bold mb-2 leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        {move.nameFr}
+      </p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <TypeBadgeMini typeName={move.type} />
         <DamageClassBadge damageClass={move.damageClass} isDark={isDark} />
@@ -79,8 +110,130 @@ function MoveCard({ move, isDark, accentHex }) {
   );
 }
 
+// ─── ItemCard ─────────────────────────────────────────────────────────────────
+
+function ItemCard({ item, itemSlug, isDark, accentHex }) {
+  return (
+    <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+        <img
+          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${itemSlug}.png`}
+          alt=""
+          className="w-8 h-8 object-contain"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.nextSibling.style.display = 'block';
+          }}
+        />
+        <span className="hidden text-lg">🎒</span>
+      </div>
+      <p className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
+    </div>
+  );
+}
+
+// ─── EVs / IVs / Nature ───────────────────────────────────────────────────────
+
+function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
+  const effects   = nature ? NATURE_EFFECTS[nature] : null;
+  const boosted   = effects?.[0];
+  const lowered   = effects?.[1];
+  const hasIVs    = Object.values(ivs).some(v => v < 31);
+  const activeEVs = STATS.filter(s => (evs[s.key] ?? 0) > 0);
+
+  return (
+    <div className="space-y-4">
+      {/* Nature */}
+      {nature && (
+        <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+            🌿
+          </div>
+          <div>
+            <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Nature</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {NATURES_FR[nature] || nature}
+              </p>
+              {boosted && (
+                <span className="text-xs font-black text-green-500">
+                  +{STATS.find(s => s.key === boosted)?.fr}
+                </span>
+              )}
+              {lowered && (
+                <span className="text-xs font-black text-red-400">
+                  −{STATS.find(s => s.key === lowered)?.fr}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EV bars */}
+      {activeEVs.length > 0 && (
+        <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
+          <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>EVs</p>
+          <div className="space-y-2">
+            {activeEVs.map(({ key, fr }) => {
+              const ev = evs[key] ?? 0;
+              const isBoosted = key === boosted;
+              const isLowered = key === lowered;
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <span
+                    className="w-10 text-xs font-black"
+                    style={{ color: isBoosted ? '#22c55e' : isLowered ? '#f87171' : accentHex }}
+                  >
+                    {fr}
+                  </span>
+                  <span className={`w-8 text-xs font-semibold tabular-nums text-right ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {ev}
+                  </span>
+                  <div className={`flex-1 h-2 rounded-full overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${(ev / 252) * 100}%`,
+                        backgroundColor: isBoosted ? '#22c55e' : isLowered ? '#f87171' : accentHex,
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* IVs réduits (seulement si ≠ 31) */}
+      {hasIVs && (
+        <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
+          <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>IVs réduits</p>
+          <div className="flex flex-wrap gap-1.5">
+            {STATS.map(({ key, fr }) => {
+              const iv = ivs[key];
+              if (iv === undefined || iv >= 31) return null;
+              return (
+                <span
+                  key={key}
+                  className={`text-xs font-bold px-2 py-1 rounded-full ${isDark ? 'bg-red-900/40 text-red-300' : 'bg-red-100 text-red-700'}`}
+                >
+                  {iv} {fr}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── StrategyTab ──────────────────────────────────────────────────────────────
+
 export function StrategyTab({ pokeId, isDark, accentHex }) {
-  const { moves, loading, error } = usePokemonMoves(pokeId);
+  const { result, loading, error } = useSmogonSet(pokeId);
 
   if (loading) {
     return (
@@ -93,34 +246,81 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
     return (
       <div className="py-16 px-8 text-center">
         <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          Impossible de charger les attaques : {error}
+          Impossible de charger les données stratégiques : {error}
         </p>
       </div>
     );
   }
-  if (!moves.length) {
+  if (result === null) {
     return (
       <div className="py-16 px-8 text-center">
-        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          Aucune attaque disponible.
+        <p className={`text-base font-semibold mb-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+          Aucun set Smogon disponible
+        </p>
+        <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+          Ce Pokémon n'a pas encore de set référencé.
         </p>
       </div>
     );
   }
+  if (!result) return null; // still loading (undefined)
 
   return (
-    <div className="px-5 pt-2 pb-4 space-y-2">
-      {moves.map((move, i) => (
-        <MoveCard key={i} move={move} isDark={isDark} accentHex={accentHex} />
-      ))}
+    <div className="px-5 pt-3 pb-4 space-y-5">
+      {/* Format + nom du set */}
+      <div className="flex items-center gap-2 pt-1">
+        <span
+          className="text-[11px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide"
+          style={{ backgroundColor: `${accentHex}22`, color: accentHex }}
+        >
+          {result.formatLabel}
+        </span>
+        <span className={`text-sm font-medium truncate ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          {result.setName}
+        </span>
+      </div>
+
+      {/* Attaques */}
+      <div>
+        <SectionTitle title="Attaques" isDark={isDark} />
+        <div className="space-y-2">
+          {result.moves.map((move, i) => (
+            <MoveCard key={i} move={move} isDark={isDark} />
+          ))}
+        </div>
+      </div>
+
+      {/* Objet */}
+      {result.item && (
+        <div>
+          <SectionTitle title="Objet conseillé" isDark={isDark} />
+          <ItemCard item={result.item} itemSlug={result.itemSlug} isDark={isDark} accentHex={accentHex} />
+        </div>
+      )}
+
+      {/* EVs / IVs / Nature */}
+      {(Object.keys(result.evs).length > 0 || result.nature) && (
+        <div>
+          <SectionTitle title="Répartition" isDark={isDark} />
+          <EVsSection
+            evs={result.evs}
+            ivs={result.ivs}
+            nature={result.nature}
+            isDark={isDark}
+            accentHex={accentHex}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
+// ─── TabBar ───────────────────────────────────────────────────────────────────
+
 export function TabBar({ activeTab, onTabChange, accentHex, isDark }) {
   const tabs = [
     { key: 'presentation', label: 'Présentation' },
-    { key: 'strategie',    label: 'Stratégie' },
+    { key: 'strategie',    label: 'Stratégie'    },
   ];
   return (
     <div className={`sticky top-0 z-10 px-5 py-3 ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
@@ -132,9 +332,7 @@ export function TabBar({ activeTab, onTabChange, accentHex, isDark }) {
               key={key}
               onClick={() => onTabChange(key)}
               className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                isActive
-                  ? 'text-white shadow-sm'
-                  : isDark ? 'text-gray-400' : 'text-gray-500'
+                isActive ? 'text-white shadow-sm' : isDark ? 'text-gray-400' : 'text-gray-500'
               }`}
               style={isActive ? { backgroundColor: accentHex } : {}}
             >
