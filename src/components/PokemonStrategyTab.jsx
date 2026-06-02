@@ -91,25 +91,25 @@ function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888' }) {
   const psFallback = itemPsSlug
     ? `https://play.pokemonshowdown.com/sprites/itemicons/${itemPsSlug}.png`
     : null;
-  const initial = itemSprite || psFallback;
-  const [src, setSrc] = useState(initial);
-  const [failed, setFailed] = useState(false);
 
-  const handleError = () => {
-    if (src === itemSprite && psFallback) setSrc(psFallback);
-    else setFailed(true);
-  };
+  // Chaîne de sources dans l'ordre de priorité, sans doublons ni null
+  const sources = [...new Set([itemSprite, psFallback].filter(Boolean))];
+  const [srcIndex, setSrcIndex] = useState(0);
+  const src = sources[srcIndex] ?? null;
+  const failed = srcIndex >= sources.length;
+
+  const handleError = () => setSrcIndex(i => i + 1);
 
   return (
     <div className="flex items-center gap-3">
       <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentHex}22` }}>
-        {!failed && src
+        {src && !failed
           ? <img src={src} alt={item} className="w-7 h-7 object-contain" style={{ imageRendering: 'pixelated' }} onError={handleError} />
           : <span className="text-base">🎒</span>
         }
       </div>
       <div className="min-w-0">
-        <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Objet</p>
+        <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentHex }}>Objet</p>
         <p className={`text-base font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
       </div>
     </div>
@@ -128,7 +128,7 @@ function AbilityRow({ ability, isDark, accentHex }) {
         ⭐️
       </div>
       <div className="min-w-0">
-        <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Talent</p>
+        <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentHex }}>Talent</p>
         <p className={`text-base font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{ability}</p>
       </div>
     </div>
@@ -137,9 +137,9 @@ function AbilityRow({ ability, isDark, accentHex }) {
 
 // ─── Titre de section ─────────────────────────────────────────────────────────
 
-function SectionTitle({ title, isDark }) {
+function SectionTitle({ title, isDark, mb = 'mb-3' }) {
   return (
-    <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+    <h2 className={`text-xl font-black ${mb} ${isDark ? 'text-white' : 'text-gray-900'}`}>
       {title}
     </h2>
   );
@@ -147,9 +147,9 @@ function SectionTitle({ title, isDark }) {
 
 // ─── Colonnes de stats pour les attaques ──────────────────────────────────────
 
-function StatCol({ value, isDark }) {
+function StatCol({ value, isDark, width = 'w-8' }) {
   return (
-    <span className={`w-8 text-sm font-semibold tabular-nums text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+    <span className={`${width} text-sm font-semibold tabular-nums text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
       {value}
     </span>
   );
@@ -165,8 +165,8 @@ function MoveRow({ move, isDark, isLast }) {
         {move.nameFr}
       </p>
       <div className="flex items-center gap-6 flex-shrink-0">
-        <StatCol value={move.power ?? '—'} isDark={isDark} />
-        <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} />
+        <StatCol value={move.power ?? '—'} isDark={isDark} width="w-10" />
+        <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} width="w-10" />
         <div className="w-6 flex justify-center"><DamageClassIcon damageClass={move.damageClass} /></div>
       </div>
     </div>
@@ -186,15 +186,15 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
       {/* Set : Nature + Objet + Talent */}
       {(nature || item || ability) && (
         <div>
-          <SectionTitle title="Set" isDark={isDark} />
-          <div className="space-y-3">
+          <SectionTitle title="Set complet" isDark={isDark} mb="mb-4" />
+          <div className="space-y-4">
             {nature && (
               <div className="flex items-center gap-3">
                 <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ backgroundColor: `${accentHex}22` }}>
                   🌿
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Nature</p>
+                  <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentHex }}>Nature</p>
                   <p className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {NATURES_FR[nature] || nature}
                   </p>
@@ -232,12 +232,12 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
               const ev       = evs[key] ?? 0;
               const barColor = evColor(ev);
               return (
-                <div key={key} className="flex items-center gap-2">
+                <div key={key} className="flex items-center gap-3">
                   <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{fr}</span>
                   <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                     {ev}
                   </span>
-                  <div className={`flex-1 h-2 rounded-full overflow-hidden ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`}>
+                  <div className={`flex-1 h-2 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-200'}`}>
                     <div
                       className="h-full rounded-full"
                       style={{ width: `${(ev / 252) * 100}%`, backgroundColor: barColor }}
@@ -290,15 +290,15 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
   if (!result) return null;
 
   return (
-    <div className="px-5 pt-3 pb-4">
+    <div className="px-5 pt-10 pb-4">
 
       {/* Attaques */}
       <div className="mb-10">
         <div className="flex items-center mb-1">
           <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>Attaques</h2>
           <div className="flex items-center gap-6 pr-0.5">
-            <span className={`w-8 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss</span>
-            <span className={`w-8 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
+            <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss.</span>
+            <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
             <span className={`w-6 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Cat.</span>
           </div>
         </div>

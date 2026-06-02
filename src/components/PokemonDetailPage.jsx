@@ -102,7 +102,7 @@ function InfoRow({ labelKey, label, value, accentColor, isDark }) {
       )}
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentColor }}>{label}</p>
-        <p className={`text-base mt-0.5 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>{value}</p>
+        <p className={`text-base mt-0.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{value}</p>
       </div>
     </div>
   );
@@ -208,7 +208,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
 
           <div className="px-5 pt-2 pb-2" style={{ display: activeTab === 'presentation' ? 'block' : 'none' }}>
               {data.flavorText && (
-                <p className={`text-base leading-relaxed mb-10 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p className={`text-base leading-relaxed mb-10 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   {data.flavorText}
                 </p>
               )}
@@ -219,8 +219,8 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                 {data.stats.map(({ name, value }) => (
                   <div key={name} className="flex items-center gap-3">
                     <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{name}</span>
-                    <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{value}</span>
-                    <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'} overflow-hidden`}>
+                    <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{value}</span>
+                    <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-zinc-800' : 'bg-gray-200'} overflow-hidden`}>
                       <div
                         className="h-full rounded-full"
                         style={{ width: `${Math.min(100, (value / 255) * 100)}%`, backgroundColor: statColor(value) }}
@@ -230,8 +230,8 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                 ))}
                 <div className="flex items-center gap-3">
                   <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{tr('pokemon.base')}</span>
-                  <span className={`w-8 text-base font-black text-left tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{data.total}</span>
-                  <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'} overflow-hidden`}>
+                  <span className={`w-8 text-base font-black text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{data.total}</span>
+                  <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-zinc-800' : 'bg-gray-200'} overflow-hidden`}>
                     <div className="h-full rounded-full" style={{ width: `${Math.min(100, (data.total / 780) * 100)}%`, backgroundColor: accentHex }} />
                   </div>
                 </div>
@@ -251,14 +251,9 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                     {data.abilities.map(({ nameFr, descFr, isHidden }, i) => (
                       <div key={i}>
                         <p className="text-base font-bold mb-0.5" style={{ color: accentHex }}>
-                          {nameFr}
-                          {isHidden && (
-                            <span className={`ml-2 text-[10px] font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                              ({tr('pokemon.hidden')})
-                            </span>
-                          )}
+                          {nameFr}{isHidden && ` (${tr('pokemon.hidden')})`}
                         </p>
-                        {descFr && <p className={`text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{descFr}</p>}
+                        {descFr && <p className={`text-base ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{descFr}</p>}
                       </div>
                     ))}
                   </div>
