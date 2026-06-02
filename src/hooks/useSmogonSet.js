@@ -88,12 +88,16 @@ async function fetchItemFR(smogonItemName) {
     if (!res.ok) throw new Error();
     const data = await res.json();
     const frEntry = data.names?.find(n => n.language.name === 'fr');
-    const name = frEntry?.name || smogonItemName;
-    itemCache.set(slug, name);
-    return name;
+    const result = {
+      name:   frEntry?.name || smogonItemName,
+      sprite: data.sprites?.default || null,
+    };
+    itemCache.set(slug, result);
+    return result;
   } catch {
-    itemCache.set(slug, smogonItemName);
-    return smogonItemName;
+    const fallback = { name: smogonItemName, sprite: null };
+    itemCache.set(slug, fallback);
+    return fallback;
   }
 }
 
@@ -190,9 +194,9 @@ export function useSmogonSet(pokeId) {
           setName:     rawSet.setName,
           formatLabel,
           moves:       moveDetails,
-          item:        itemFR,
+          item:        itemFR?.name || null,
+          itemSprite:  itemFR?.sprite || null,
           itemSlug:    itemName ? toItemSlug(itemName) : null,
-          itemPsSlug:  itemName ? itemName.toLowerCase().replace(/[^a-z0-9]/g, '') : null,
           ability:     abilityFR,
           nature:      rawSet.nature ? first(rawSet.nature) : null,
           evs:         rawSet.evs || {},

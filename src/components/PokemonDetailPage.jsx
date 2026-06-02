@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
@@ -59,7 +59,7 @@ function TypePictogram({ typeName }) {
 function MultBadge({ mult, isDark }) {
   const isWeak = typeof mult === 'number' && mult >= 2;
   return (
-    <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+    <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
       <span className={`text-[11px] font-black ${isWeak ? 'text-red-500' : 'text-green-600'}`}>×{mult}</span>
     </div>
   );
@@ -96,7 +96,7 @@ function InfoRow({ labelKey, label, value, accentColor, isDark }) {
   return (
     <div className="py-3 flex items-center gap-3">
       {icon && (
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
           {icon}
         </div>
       )}
@@ -112,6 +112,8 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   const tr = useTranslation();
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
+
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [activeTab]);
 
   const primaryType = data?.types?.[0] || 'normal';
   const accentHex = TYPE_HEX[primaryType] || '#6390F0';
@@ -132,7 +134,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   ]);
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
+    <div className={`min-h-screen ${isDark ? 'bg-zinc-900' : 'bg-white'}`}>
 
       {/* ── Bouton retour sticky hauteur 0 — flotte par-dessus la cover sans la pousser ── */}
       <div className="sticky top-0 z-20" style={{ height: 0, overflow: 'visible' }}>
@@ -209,7 +211,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                   <div key={name} className="flex items-center gap-3">
                     <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{name}</span>
                     <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{value}</span>
-                    <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} overflow-hidden`}>
+                    <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'} overflow-hidden`}>
                       <div
                         className="h-full rounded-full"
                         style={{ width: `${Math.min(100, (value / 255) * 100)}%`, backgroundColor: statColor(value) }}
@@ -220,7 +222,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                 <div className="flex items-center gap-3">
                   <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{tr('pokemon.base')}</span>
                   <span className={`w-8 text-base font-black text-left tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{data.total}</span>
-                  <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} overflow-hidden`}>
+                  <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'} overflow-hidden`}>
                     <div className="h-full rounded-full" style={{ width: `${Math.min(100, (data.total / 780) * 100)}%`, backgroundColor: accentHex }} />
                   </div>
                 </div>
@@ -280,7 +282,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       {/* ── Onglets — fixe en bas d'écran ── */}
       {!loading && !error && data && (
         <div
-          className={`fixed bottom-0 left-0 right-0 z-20 border-t ${isDark ? 'bg-[#1c1c1e] border-gray-800' : 'bg-white border-gray-100'}`}
+          className={`fixed bottom-0 left-0 right-0 z-20 border-t ${isDark ? 'bg-[#1c1c1e] border-zinc-800' : 'bg-white border-gray-100'}`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <TabBar activeTab={activeTab} onTabChange={setActiveTab} accentHex={accentHex} isDark={isDark} />

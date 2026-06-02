@@ -67,7 +67,7 @@ function TypePictogram({ typeName }) {
 function MultBadge({ mult, isDark }) {
   const isWeak = typeof mult === 'number' && mult >= 2;
   return (
-    <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+    <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
       <span className={`text-[11px] font-black ${isWeak ? 'text-red-500' : 'text-green-600'}`}>
         ×{mult}
       </span>
@@ -112,7 +112,7 @@ function InfoRow({ labelKey, label, value, accentColor, isDark }) {
   return (
     <div className={`py-3 flex items-center gap-3`}>
       {icon && (
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
           {icon}
         </div>
       )}
@@ -128,6 +128,10 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
   const tr = useTranslation();
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [activeTab]);
 
   // Prevent background scroll on iOS (position: fixed is the only reliable fix)
   useBodyScrollLock();
@@ -259,7 +263,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
     >
       <motion.div
         ref={sheetRef}
-        className={`relative ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'} flex-1 overflow-hidden flex flex-col rounded-t-3xl`}
+        className={`relative ${isDark ? 'bg-zinc-900' : 'bg-white'} flex-1 overflow-hidden flex flex-col rounded-t-3xl`}
         style={{ y, marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', damping: 32, stiffness: 320 }}
@@ -335,7 +339,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
                     <div key={name} className="flex items-center gap-3">
                       <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{name}</span>
                       <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{value}</span>
-                      <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} overflow-hidden`}>
+                      <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'} overflow-hidden`}>
                         <div
                           className="h-full rounded-full"
                           style={{ width: `${Math.min(100, (value / 255) * 100)}%`, backgroundColor: statColor(value) }}
@@ -346,7 +350,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
                   <div className="flex items-center gap-3">
                     <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{tr('pokemon.base')}</span>
                     <span className={`w-8 text-base font-black text-left tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{data.total}</span>
-                    <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} overflow-hidden`}>
+                    <div className={`flex-1 h-2 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'} overflow-hidden`}>
                       <div className="h-full rounded-full" style={{ width: `${Math.min(100, (data.total / 780) * 100)}%`, backgroundColor: accentHex }} />
                     </div>
                   </div>
@@ -400,7 +404,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
 
           {/* ── Onglets — bas de la sheet ── */}
           <div
-            className={`flex-shrink-0 border-t ${isDark ? 'border-gray-800' : 'border-gray-100'}`}
+            className={`flex-shrink-0 border-t ${isDark ? 'border-zinc-800' : 'border-gray-100'}`}
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             <TabBar activeTab={activeTab} onTabChange={setActiveTab} accentHex={accentHex} isDark={isDark} />
