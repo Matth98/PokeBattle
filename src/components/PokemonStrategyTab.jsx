@@ -7,11 +7,11 @@ import { useSmogonSet } from '../hooks/useSmogonSet';
 
 const STATS = [
   { key: 'hp',  fr: 'PV'    },
-  { key: 'atk', fr: 'Att'   },
-  { key: 'def', fr: 'Déf'   },
-  { key: 'spa', fr: 'Att.S' },
-  { key: 'spd', fr: 'Déf.S' },
-  { key: 'spe', fr: 'Vit'   },
+  { key: 'atk', fr: 'ATT'   },
+  { key: 'def', fr: 'DEF'   },
+  { key: 'spa', fr: 'ATT.S' },
+  { key: 'spd', fr: 'DEF.S' },
+  { key: 'spe', fr: 'VIT'   },
 ];
 
 const NATURES_FR = {
@@ -30,6 +30,11 @@ const NATURE_EFFECTS = {
   Modest:   ['spa', 'atk'],  Mild:    ['spa', 'def'],  Quiet:   ['spa', 'spe'],  Rash:    ['spa', 'spd'],
   Calm:     ['spd', 'atk'],  Gentle:  ['spd', 'def'],  Sassy:   ['spd', 'spe'],  Careful: ['spd', 'spa'],
 };
+
+// ─── Couleur de valeur (identique aux stats de Présentation) ─────────────────
+
+const evColor = (v) =>
+  v >= 150 ? '#22c55e' : v >= 100 ? '#84cc16' : v >= 70 ? '#eab308' : v >= 50 ? '#f97316' : '#ef4444';
 
 // ─── Badge de type : pictogramme circulaire, sans texte ───────────────────────
 
@@ -63,15 +68,19 @@ function TypePictogram({ typeName }) {
 
 // ─── Catégorie d'attaque : picto officiel Pokémon Showdown ────────────────────
 
+const DAMAGE_CLASS_ICONS = {
+  physical: '/damage-categories/physical.svg',
+  special:  '/damage-categories/special.svg',
+  status:   '/damage-categories/status.svg',
+};
+
 function DamageClassIcon({ damageClass }) {
-  // "physical" → "Physical" pour correspondre au nom du fichier PS
-  const category = damageClass.charAt(0).toUpperCase() + damageClass.slice(1);
   return (
     <img
-      src={`https://play.pokemonshowdown.com/sprites/categories/${category}.png`}
-      alt={category}
-      title={category}
-      className="h-5 object-contain flex-shrink-0"
+      src={DAMAGE_CLASS_ICONS[damageClass] || DAMAGE_CLASS_ICONS.status}
+      alt={damageClass}
+      title={damageClass}
+      className="w-7 h-7 object-contain flex-shrink-0"
       onError={(e) => { e.currentTarget.style.display = 'none'; }}
     />
   );
@@ -112,7 +121,7 @@ function AbilityCard({ ability, isDark, accentHex }) {
         className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-base"
         style={{ backgroundColor: `${accentHex}22` }}
       >
-        ✨
+        ⭐️
       </div>
       <div className="min-w-0">
         <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Talent</p>
@@ -149,9 +158,11 @@ function SectionTitle({ title, isDark }) {
 
 function StatCol({ label, value, isDark }) {
   return (
-    <div className="flex flex-col items-center min-w-[28px]">
-      <span className={`text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label}</span>
-      <span className={`text-xs font-black tabular-nums ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{value}</span>
+    <div className="flex flex-col items-center w-8">
+      {label && (
+        <span className={`text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label}</span>
+      )}
+      <span className={`text-sm font-semibold tabular-nums text-center ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{value}</span>
     </div>
   );
 }
@@ -159,20 +170,17 @@ function StatCol({ label, value, isDark }) {
 function MoveCard({ move, isDark }) {
   return (
     <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
-      {/* Nom — gauche */}
+      {/* Type — tout à gauche */}
+      <TypePictogram typeName={move.type} />
+      {/* Nom */}
       <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
-      {/* Droite : type · catégorie · puissance · précision */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {move.damageClass !== 'status' && (
-          <>
-            <StatCol label="Pwr" value={move.power ?? '—'} isDark={isDark} />
-            <StatCol label="Acc" value={move.accuracy != null ? `${move.accuracy}` : '—'} isDark={isDark} />
-          </>
-        )}
-        <DamageClassIcon damageClass={move.damageClass} />
-        <TypePictogram typeName={move.type} />
+      {/* Droite : puissance · précision · catégorie */}
+      <div className="flex items-center gap-4 flex-shrink-0">
+        <StatCol value={move.power ?? '—'} isDark={isDark} />
+        <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} />
+        <div className="w-7 flex justify-center"><DamageClassIcon damageClass={move.damageClass} /></div>
       </div>
     </div>
   );
@@ -195,23 +203,24 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
             🌿
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Nature</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {NATURES_FR[nature] || nature}
-              </p>
-              {boosted && (
-                <span className="text-xs font-black text-green-500">
-                  +{STATS.find(s => s.key === boosted)?.fr}
-                </span>
-              )}
-              {lowered && (
-                <span className="text-xs font-black text-red-400">
-                  −{STATS.find(s => s.key === lowered)?.fr}
-                </span>
-              )}
-            </div>
+            <p className={`text-base font-bold mt-0.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {NATURES_FR[nature] || nature}
+            </p>
+          </div>
+          {/* Stickers +stat / −stat */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {boosted && (
+              <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-green-500/15 text-green-400' : 'bg-green-50 text-green-600'}`}>
+                +{STATS.find(s => s.key === boosted)?.fr}
+              </span>
+            )}
+            {lowered && (
+              <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-600'}`}>
+                −{STATS.find(s => s.key === lowered)?.fr}
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -219,17 +228,15 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
       {/* EV bars */}
       {activeEVs.length > 0 && (
         <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
-          <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>EVs</p>
+          <p className={`text-[10px] font-bold uppercase tracking-wide mb-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>EVs</p>
           <div className="space-y-2">
             {activeEVs.map(({ key, fr }) => {
-              const ev         = evs[key] ?? 0;
-              const isBoosted  = key === boosted;
-              const isLowered  = key === lowered;
-              const barColor   = isBoosted ? '#22c55e' : isLowered ? '#f87171' : accentHex;
+              const ev       = evs[key] ?? 0;
+              const barColor = evColor(ev);
               return (
                 <div key={key} className="flex items-center gap-2">
-                  <span className="w-10 text-xs font-black" style={{ color: barColor }}>{fr}</span>
-                  <span className={`w-8 text-xs font-semibold tabular-nums text-right ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{fr}</span>
+                  <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                     {ev}
                   </span>
                   <div className={`flex-1 h-2 rounded-full overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
@@ -248,7 +255,7 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
       {/* IVs réduits (uniquement si ≠ 31) */}
       {hasIVs && (
         <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
-          <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>IVs réduits</p>
+          <p className={`text-[10px] font-bold uppercase tracking-wide mb-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>IVs réduits</p>
           <div className="flex flex-wrap gap-1.5">
             {STATS.map(({ key, fr }) => {
               const iv = ivs[key];
@@ -305,23 +312,10 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
   if (!result) return null;
 
   return (
-    <div className="px-5 pt-3 pb-4 space-y-5">
-      {/* Format + nom du set */}
-      <div className="flex items-center gap-2 pt-1">
-        <span
-          className="text-[11px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide"
-          style={{ backgroundColor: `${accentHex}22`, color: accentHex }}
-        >
-          {result.formatLabel}
-        </span>
-        <span className={`text-sm font-medium truncate ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          {result.setName}
-        </span>
-      </div>
-
+    <div className="px-5 pt-3 pb-4">
       {/* Objet + Talent — 50 / 50 */}
       {(result.item || result.ability) && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 mb-10">
           {result.item
             ? <ItemCard item={result.item} itemPsSlug={result.itemPsSlug} isDark={isDark} />
             : <div />}
@@ -332,8 +326,16 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
       )}
 
       {/* Attaques */}
-      <div>
-        <SectionTitle title="Attaques" isDark={isDark} />
+      <div className="mb-10">
+        {/* Titre + en-têtes de colonnes sur la même ligne */}
+        <div className="flex items-end mb-3 pr-4">
+          <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>Attaques</h2>
+          <div className="flex items-center gap-4">
+            <span className={`w-8 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss</span>
+            <span className={`w-8 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
+            <span className={`w-7 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Type</span>
+          </div>
+        </div>
         <div className="space-y-2">
           {result.moves.map((move, i) => (
             <MoveCard key={i} move={move} isDark={isDark} />
@@ -367,15 +369,15 @@ export function TabBar({ activeTab, onTabChange, accentHex, isDark }) {
   ];
   return (
     <div className={`px-5 py-3 ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
-      <div className={`flex rounded-xl p-1 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+      <div className={`grid grid-cols-2 gap-1 p-1 rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
         {tabs.map(({ key, label }) => {
           const isActive = activeTab === key;
           return (
             <button
               key={key}
               onClick={() => onTabChange(key)}
-              className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                isActive ? 'text-white shadow-sm' : isDark ? 'text-gray-400' : 'text-gray-500'
+              className={`py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+                isActive ? 'text-white shadow-sm' : isDark ? 'text-zinc-400' : 'text-gray-500'
               }`}
               style={isActive ? { backgroundColor: accentHex } : {}}
             >
