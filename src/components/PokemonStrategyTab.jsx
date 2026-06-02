@@ -87,7 +87,7 @@ function DamageClassIcon({ damageClass }) {
 
 // ─── Objet ────────────────────────────────────────────────────────────────────
 
-function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex }) {
+function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888' }) {
   const psFallback = itemPsSlug
     ? `https://play.pokemonshowdown.com/sprites/itemicons/${itemPsSlug}.png`
     : null;
@@ -102,7 +102,7 @@ function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex }) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`}>
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentHex}22` }}>
         {!failed && src
           ? <img src={src} alt={item} className="w-7 h-7 object-contain" style={{ imageRendering: 'pixelated' }} onError={handleError} />
           : <span className="text-base">🎒</span>
@@ -175,7 +175,7 @@ function MoveRow({ move, isDark, isLast }) {
 
 // ─── EVs / IVs / Nature ───────────────────────────────────────────────────────
 
-function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
+function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, isDark, accentHex }) {
   const effects   = nature ? NATURE_EFFECTS[nature] : null;
   const boosted   = effects?.[0];
   const lowered   = effects?.[1];
@@ -183,29 +183,42 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
 
   return (
     <div className="space-y-10">
-      {/* Nature */}
-      {nature && (
+      {/* Set : Nature + Objet + Talent */}
+      {(nature || item || ability) && (
         <div>
-          <SectionTitle title="Nature" isDark={isDark} />
-          <div className="flex items-center gap-3">
-            <span className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`}>
-              🌿
-            </span>
-            <p className={`flex-1 text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {NATURES_FR[nature] || nature}
-            </p>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              {boosted && (
-                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-green-400/10 text-green-400' : 'bg-green-600/10 text-green-600'}`}>
-                  +{STATS.find(s => s.key === boosted)?.fr}
+          <SectionTitle title="Set" isDark={isDark} />
+          <div className="space-y-3">
+            {nature && (
+              <div className="flex items-center gap-3">
+                <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ backgroundColor: `${accentHex}22` }}>
+                  🌿
                 </span>
-              )}
-              {lowered && (
-                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-400/10 text-red-400' : 'bg-red-600/10 text-red-600'}`}>
-                  −{STATS.find(s => s.key === lowered)?.fr}
-                </span>
-              )}
-            </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Nature</p>
+                  <p className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {NATURES_FR[nature] || nature}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {boosted && (
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-green-400/10 text-green-400' : 'bg-green-600/10 text-green-600'}`}>
+                      +{STATS.find(s => s.key === boosted)?.fr}
+                    </span>
+                  )}
+                  {lowered && (
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-400/10 text-red-400' : 'bg-red-600/10 text-red-600'}`}>
+                      −{STATS.find(s => s.key === lowered)?.fr}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+            {item && (
+              <ItemRow item={item} itemSprite={itemSprite} itemPsSlug={itemPsSlug} isDark={isDark} accentHex={accentHex} />
+            )}
+            {ability && (
+              <AbilityRow ability={ability} isDark={isDark} accentHex={accentHex} />
+            )}
           </div>
         </div>
       )}
@@ -279,18 +292,6 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
   return (
     <div className="px-5 pt-3 pb-4">
 
-      {/* Objet + Talent */}
-      {(result.item || result.ability) && (
-        <div className="flex gap-6 mb-10">
-          {result.item && (
-            <ItemRow item={result.item} itemSprite={result.itemSprite} itemPsSlug={result.itemPsSlug} isDark={isDark} accentHex={accentHex} />
-          )}
-          {result.ability && (
-            <AbilityRow ability={result.ability} isDark={isDark} accentHex={accentHex} />
-          )}
-        </div>
-      )}
-
       {/* Attaques */}
       <div className="mb-10">
         <div className="flex items-center mb-1">
@@ -307,11 +308,15 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
       </div>
 
       {/* Nature + EVs + IVs */}
-      {(Object.keys(result.evs).length > 0 || result.nature) && (
+      {(Object.keys(result.evs).length > 0 || result.nature || result.item || result.ability) && (
         <EVsSection
           evs={result.evs}
           ivs={result.ivs}
           nature={result.nature}
+          item={result.item}
+          itemSprite={result.itemSprite}
+          itemPsSlug={result.itemPsSlug}
+          ability={result.ability}
           isDark={isDark}
           accentHex={accentHex}
         />
