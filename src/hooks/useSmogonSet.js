@@ -15,10 +15,11 @@ const FORMATS = [
   { key: 'gen8vgc2022',     label: 'VGC 2022'  },
 ];
 
-const formatCache  = new Map(); // format key → parsed JSON (or null if 404)
-const moveCache    = new Map(); // move slug → { nameFr, type, damageClass, power, accuracy }
-const itemCache    = new Map(); // item slug → FR name string
-const resultCache  = new Map(); // pokeId → fully resolved result object
+const formatCache   = new Map(); // format key → parsed JSON (or null if 404)
+const moveCache     = new Map(); // move slug → { nameFr, type, damageClass, power, accuracy }
+const itemCache     = new Map(); // item slug → FR name string
+const abilityCache  = new Map(); // ability slug → FR name string
+const resultCache   = new Map(); // pokeId → fully resolved result object
 
 // "charizard-mega-x" → "Charizard-Mega-X"
 function toSmogonName(apiName) {
@@ -96,6 +97,24 @@ async function fetchItemFR(smogonItemName) {
   }
 }
 
+async function fetchAbilityFR(smogonAbilityName) {
+  if (!smogonAbilityName) return null;
+  const slug = smogonAbilityName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  if (abilityCache.has(slug)) return abilityCache.get(slug);
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/ability/${slug}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const frEntry = data.names?.find(n => n.language.name === 'fr');
+    const name = frEntry?.name || smogonAbilityName;
+    abilityCache.set(slug, name);
+    return name;
+  } catch {
+    abilityCache.set(slug, smogonAbilityName);
+    return smogonAbilityName;
+  }
+}
+
 export function useSmogonSet(pokeId) {
   const [result,  setResult]  = useState(undefined); // undefined=loading, null=not found, obj=found
   const [loading, setLoading] = useState(false);
@@ -159,9 +178,10 @@ export function useSmogonSet(pokeId) {
         const itemName    = first(rawSet.item);
         const abilityName = first(rawSet.ability);
 
-        const [moveDetails, itemFR] = await Promise.all([
+        const [moveDetails, itemFR, abilityFR] = await Promise.all([
           Promise.all(moveNames.map(fetchMoveDetail)),
           fetchItemFR(itemName),
+          fetchAbilityFR(abilityName),
         ]);
 
         if (cancelled) return;
@@ -172,12 +192,11 @@ export function useSmogonSet(pokeId) {
           moves:       moveDetails,
           item:        itemFR,
           itemSlug:    itemName ? toItemSlug(itemName) : null,
-          // PS item sprite slug: "Choice Scarf" → "choicescarf"
           itemPsSlug:  itemName ? itemName.toLowerCase().replace(/[^a-z0-9]/g, '') : null,
-          ability:     abilityName || null,
-          nature:      rawSet.nature    ? first(rawSet.nature)    : null,
-          evs:         rawSet.evs   || {},
-          ivs:         rawSet.ivs   || {},
+          ability:     abilityFR,
+          nature:      rawSet.nature ? first(rawSet.nature) : null,
+          evs:         rawSet.evs || {},
+          ivs:         rawSet.ivs || {},
         };
 
         resultCache.set(cacheKey, data);

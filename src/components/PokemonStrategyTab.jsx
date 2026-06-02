@@ -81,21 +81,43 @@ function DamageClassIcon({ damageClass }) {
 
 function ItemCard({ item, itemPsSlug, isDark }) {
   return (
-    <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+    <div className={`rounded-2xl px-3 py-3 flex items-center gap-2.5 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
         <img
           src={`https://play.pokemonshowdown.com/sprites/itemicons/${itemPsSlug}.png`}
           alt={item}
-          className="w-8 h-8 object-contain image-rendering-pixelated"
+          className="w-7 h-7 object-contain"
           style={{ imageRendering: 'pixelated' }}
           onError={(e) => {
             e.currentTarget.style.display = 'none';
             e.currentTarget.nextSibling.style.display = 'block';
           }}
         />
-        <span className="hidden text-lg">🎒</span>
+        <span className="hidden text-base">🎒</span>
       </div>
-      <p className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
+      <div className="min-w-0">
+        <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Objet</p>
+        <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Talent ───────────────────────────────────────────────────────────────────
+
+function AbilityCard({ ability, isDark, accentHex }) {
+  return (
+    <div className={`rounded-2xl px-3 py-3 flex items-center gap-2.5 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
+      <div
+        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-base"
+        style={{ backgroundColor: `${accentHex}22` }}
+      >
+        ✨
+      </div>
+      <div className="min-w-0">
+        <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Talent</p>
+        <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{ability}</p>
+      </div>
     </div>
   );
 }
@@ -297,6 +319,18 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
         </span>
       </div>
 
+      {/* Objet + Talent — 50 / 50 */}
+      {(result.item || result.ability) && (
+        <div className="grid grid-cols-2 gap-2">
+          {result.item
+            ? <ItemCard item={result.item} itemPsSlug={result.itemPsSlug} isDark={isDark} />
+            : <div />}
+          {result.ability
+            ? <AbilityCard ability={result.ability} isDark={isDark} accentHex={accentHex} />
+            : <div />}
+        </div>
+      )}
+
       {/* Attaques */}
       <div>
         <SectionTitle title="Attaques" isDark={isDark} />
@@ -306,14 +340,6 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
           ))}
         </div>
       </div>
-
-      {/* Objet */}
-      {result.item && (
-        <div>
-          <SectionTitle title="Objet conseillé" isDark={isDark} />
-          <ItemCard item={result.item} itemPsSlug={result.itemPsSlug} isDark={isDark} />
-        </div>
-      )}
 
       {/* EVs / IVs / Nature */}
       {(Object.keys(result.evs).length > 0 || result.nature) && (
