@@ -172,6 +172,8 @@ export function useSmogonSet(pokeId) {
           moves:       moveDetails,
           item:        itemFR,
           itemSlug:    itemName ? toItemSlug(itemName) : null,
+          // PS item sprite slug: "Choice Scarf" → "choicescarf"
+          itemPsSlug:  itemName ? itemName.toLowerCase().replace(/[^a-z0-9]/g, '') : null,
           ability:     abilityName || null,
           nature:      rawSet.nature    ? first(rawSet.nature)    : null,
           evs:         rawSet.evs   || {},

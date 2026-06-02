@@ -1,11 +1,9 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
-import { TYPE_FR, TYPE_HEX } from '../hooks/usePokemonTypes';
+import { TYPE_FR, TYPE_HEX, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { useSmogonSet } from '../hooks/useSmogonSet';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
-
-const DAMAGE_CLASS_FR = { physical: 'Physique', special: 'Spécial', status: 'Statut' };
 
 const STATS = [
   { key: 'hp',  fr: 'PV'    },
@@ -24,7 +22,7 @@ const NATURES_FR = {
   Calm: 'Sage',     Gentle: 'Gentil',  Sassy: 'Malpoli',  Careful: 'Prudent', Quirky: 'Bizarre',
 };
 
-// nature → [boosted stat key, lowered stat key] (null for neutral)
+// nature → [boosted stat key, lowered stat key]
 const NATURE_EFFECTS = {
   Lonely:   ['atk', 'def'],  Brave:   ['atk', 'spe'],  Adamant: ['atk', 'spa'],  Naughty: ['atk', 'spd'],
   Bold:     ['def', 'atk'],  Relaxed: ['def', 'spe'],  Impish:  ['def', 'spa'],  Lax:     ['def', 'spd'],
@@ -33,39 +31,76 @@ const NATURE_EFFECTS = {
   Calm:     ['spd', 'atk'],  Gentle:  ['spd', 'def'],  Sassy:   ['spd', 'spe'],  Careful: ['spd', 'spa'],
 };
 
-// ─── Petits composants UI ─────────────────────────────────────────────────────
+// ─── Badge de type : pictogramme circulaire, sans texte ───────────────────────
 
-function TypeBadgeMini({ typeName }) {
+function TypePictogram({ typeName }) {
+  const hex   = TYPE_HEX[typeName]    || '#A8A77A';
+  const c     = TYPE_COLORS[typeName] || { text: 'text-white' };
+  const label = TYPE_FR[typeName]     || typeName;
   return (
-    <span
-      className="pl-1 inline-flex items-stretch rounded-full overflow-hidden"
-      style={{ backgroundColor: TYPE_HEX[typeName] || '#828282' }}
-    >
+    <div className="relative w-7 h-7 flex-shrink-0" title={label}>
       <img
         src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${typeName}.svg`}
-        alt=""
-        className="w-5 h-5 object-contain flex-shrink-0"
-        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        alt={label}
+        className="w-7 h-7 object-contain"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.nextSibling.style.display = 'flex';
+        }}
       />
-      <span className="self-center pr-2 text-[10px] font-bold text-white uppercase leading-none">
-        {TYPE_FR[typeName] || typeName}
-      </span>
-    </span>
+      {/* Fallback coloré si le SVG ne charge pas */}
+      <div
+        className="hidden w-7 h-7 rounded-full items-center justify-center absolute inset-0"
+        style={{ backgroundColor: hex }}
+      >
+        <span className={`text-[8px] font-black ${c.text} uppercase tracking-wide`}>
+          {label.slice(0, 3)}
+        </span>
+      </div>
+    </div>
   );
 }
 
-function DamageClassBadge({ damageClass, isDark }) {
-  const colors = {
-    physical: isDark ? 'bg-orange-900/40 text-orange-300' : 'bg-orange-100 text-orange-700',
-    special:  isDark ? 'bg-indigo-900/40 text-indigo-300' : 'bg-indigo-100 text-indigo-700',
-    status:   isDark ? 'bg-gray-700 text-gray-400'        : 'bg-gray-200 text-gray-500',
-  };
+// ─── Catégorie d'attaque : picto officiel Pokémon Showdown ────────────────────
+
+function DamageClassIcon({ damageClass }) {
+  // "physical" → "Physical" pour correspondre au nom du fichier PS
+  const category = damageClass.charAt(0).toUpperCase() + damageClass.slice(1);
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${colors[damageClass] || colors.status}`}>
-      {DAMAGE_CLASS_FR[damageClass] || damageClass}
-    </span>
+    <img
+      src={`https://play.pokemonshowdown.com/sprites/categories/${category}.png`}
+      alt={category}
+      title={category}
+      className="h-5 object-contain flex-shrink-0"
+      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+    />
   );
 }
+
+// ─── Objet avec sprite Pokemon Showdown ──────────────────────────────────────
+
+function ItemCard({ item, itemPsSlug, isDark }) {
+  return (
+    <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+        <img
+          src={`https://play.pokemonshowdown.com/sprites/itemicons/${itemPsSlug}.png`}
+          alt={item}
+          className="w-8 h-8 object-contain image-rendering-pixelated"
+          style={{ imageRendering: 'pixelated' }}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.nextSibling.style.display = 'block';
+          }}
+        />
+        <span className="hidden text-lg">🎒</span>
+      </div>
+      <p className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
+    </div>
+  );
+}
+
+// ─── Autres helpers ───────────────────────────────────────────────────────────
 
 function StatPill({ label, value, isDark }) {
   return (
@@ -96,9 +131,9 @@ function MoveCard({ move, isDark }) {
       <p className={`text-base font-bold mb-2 leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <TypeBadgeMini typeName={move.type} />
-        <DamageClassBadge damageClass={move.damageClass} isDark={isDark} />
+      <div className="flex items-center gap-2 flex-wrap">
+        <TypePictogram typeName={move.type} />
+        <DamageClassIcon damageClass={move.damageClass} />
         {move.damageClass !== 'status' && (
           <>
             <StatPill label="Puissance" value={move.power ?? '—'} isDark={isDark} />
@@ -106,28 +141,6 @@ function MoveCard({ move, isDark }) {
           </>
         )}
       </div>
-    </div>
-  );
-}
-
-// ─── ItemCard ─────────────────────────────────────────────────────────────────
-
-function ItemCard({ item, itemSlug, isDark, accentHex }) {
-  return (
-    <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
-        <img
-          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${itemSlug}.png`}
-          alt=""
-          className="w-8 h-8 object-contain"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none';
-            e.currentTarget.nextSibling.style.display = 'block';
-          }}
-        />
-        <span className="hidden text-lg">🎒</span>
-      </div>
-      <p className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
     </div>
   );
 }
@@ -176,27 +189,20 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
           <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>EVs</p>
           <div className="space-y-2">
             {activeEVs.map(({ key, fr }) => {
-              const ev = evs[key] ?? 0;
-              const isBoosted = key === boosted;
-              const isLowered = key === lowered;
+              const ev         = evs[key] ?? 0;
+              const isBoosted  = key === boosted;
+              const isLowered  = key === lowered;
+              const barColor   = isBoosted ? '#22c55e' : isLowered ? '#f87171' : accentHex;
               return (
                 <div key={key} className="flex items-center gap-2">
-                  <span
-                    className="w-10 text-xs font-black"
-                    style={{ color: isBoosted ? '#22c55e' : isLowered ? '#f87171' : accentHex }}
-                  >
-                    {fr}
-                  </span>
+                  <span className="w-10 text-xs font-black" style={{ color: barColor }}>{fr}</span>
                   <span className={`w-8 text-xs font-semibold tabular-nums text-right ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                     {ev}
                   </span>
                   <div className={`flex-1 h-2 rounded-full overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
                     <div
                       className="h-full rounded-full"
-                      style={{
-                        width: `${(ev / 252) * 100}%`,
-                        backgroundColor: isBoosted ? '#22c55e' : isLowered ? '#f87171' : accentHex,
-                      }}
+                      style={{ width: `${(ev / 252) * 100}%`, backgroundColor: barColor }}
                     />
                   </div>
                 </div>
@@ -206,7 +212,7 @@ function EVsSection({ evs, ivs, nature, isDark, accentHex }) {
         </div>
       )}
 
-      {/* IVs réduits (seulement si ≠ 31) */}
+      {/* IVs réduits (uniquement si ≠ 31) */}
       {hasIVs && (
         <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-gray-800/60' : 'bg-gray-50'}`}>
           <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>IVs réduits</p>
@@ -263,7 +269,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
       </div>
     );
   }
-  if (!result) return null; // still loading (undefined)
+  if (!result) return null;
 
   return (
     <div className="px-5 pt-3 pb-4 space-y-5">
@@ -294,7 +300,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
       {result.item && (
         <div>
           <SectionTitle title="Objet conseillé" isDark={isDark} />
-          <ItemCard item={result.item} itemSlug={result.itemSlug} isDark={isDark} accentHex={accentHex} />
+          <ItemCard item={result.item} itemPsSlug={result.itemPsSlug} isDark={isDark} />
         </div>
       )}
 
