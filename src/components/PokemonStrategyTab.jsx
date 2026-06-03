@@ -673,7 +673,7 @@ export function TabBar({ activeTab, onTabChange, accentHex, isDark }) {
     { key: 'attaques',     label: 'Attaques'     },
   ];
   return (
-    <div className={`px-5 py-3 ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
+    <div className={`px-5 py-3 ${isDark ? 'bg-zinc-900' : 'bg-white'}`}>
       <div className={`grid grid-cols-3 gap-1 p-1 rounded-2xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
         {tabs.map(({ key, label }) => {
           const isActive = activeTab === key;
