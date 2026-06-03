@@ -238,6 +238,7 @@ function MoveSheet({ move, isDark, onClose }) {
       className="fixed inset-0 z-[9999] flex flex-col justify-end"
       style={{ backgroundColor: 'rgba(0,0,0,0.45)', opacity: overlayOpacity }}
       onClick={() => dismiss()}
+      onTouchStart={(e) => e.stopPropagation()}
     >
       <motion.div
         ref={sheetRef}
