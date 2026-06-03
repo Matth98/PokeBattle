@@ -144,8 +144,6 @@ export const PlayerDetail = ({
   useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet);
 
   const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
-  const [topbarTransition, setTopbarTransition] = useState(false);
-  useEffect(() => { setTopbarTransition(true); }, []);
   useEffect(() => {
     if (isBackground) return;
     const onScroll = () => {
@@ -626,14 +624,14 @@ export const PlayerDetail = ({
         className={`sticky top-0 ${isBackground ? 'z-[10000]' : 'z-10'} px-4 relative`}
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
       >
-        <div className={`absolute inset-x-0 top-0 -bottom-12 pointer-events-none ${topbarTransition ? 'transition-opacity duration-300' : ''}`} style={{
+        <div className={`absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300`} style={{
           opacity: scrolled ? 1 : 0,
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
           WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
         }} />
-        <div className={`absolute inset-x-0 top-0 -bottom-12 pointer-events-none ${topbarTransition ? 'transition-opacity duration-300' : ''}`} style={{
+        <div className={`absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300`} style={{
           opacity: scrolled ? 1 : 0,
           background: isDark
             ? 'linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, transparent 100%)'

@@ -442,7 +442,7 @@ export const Battles = ({
     });
   };
   const inSelection = selectionMode === 'battles';
-  const [scrolled, setScrolled] = useState(() => isBackground ? initialScrollY > 20 : window.scrollY > 20);
+  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   // isActiveRef mis à jour synchroniquement (useLayoutEffect) avant le paint,
   // pour que le listener window.scroll ne déclenche pas de mise à jour d'état
   // quand le composant est caché (hidden div). Sans ça, scroller dans BattleDetail

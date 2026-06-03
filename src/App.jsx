@@ -646,6 +646,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           isDark={isDark}
           initialActiveTab={playerDetailTab}
           backLabel={backLabel}
+          initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('playerDetail') || 0 : 0}
           onBack={() => {
             setSelectedPlayer(null);
             navigateBack();
@@ -708,6 +709,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           t={t}
           isDark={isDark}
           backLabel={backLabel}
+          initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('teamDetail') || 0 : 0}
           onBack={() => {
             setSelectedTeam(null);
             navigateBack();
@@ -772,6 +774,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           t={t}
           isDark={isDark}
           backLabel={backLabel}
+          initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('battleDetail') || 0 : 0}
           onBack={() => {
             setSelectedBattle(null);
             navigateBack();

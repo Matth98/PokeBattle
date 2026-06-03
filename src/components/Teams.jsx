@@ -231,7 +231,7 @@ export const Teams = ({
 
   const inSelection = selectionMode === 'teams';
 
-  const [scrolled, setScrolled] = useState(() => isBackground ? initialScrollY > 20 : window.scrollY > 20);
+  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   // Même logique que Battles : empêcher le listener de polluer scrolled quand caché.
   const isActiveRef = useRef(isActive);
   useLayoutEffect(() => { isActiveRef.current = isActive; }, [isActive]);
