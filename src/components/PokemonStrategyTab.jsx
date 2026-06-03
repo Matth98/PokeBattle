@@ -120,11 +120,16 @@ function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888' }) {
 
 // ─── Talent ───────────────────────────────────────────────────────────────────
 
-function AbilityRow({ ability, isDark, accentHex }) {
+function AbilityRow({ ability, isDark, accentHex, pokeId }) {
   return (
     <div className="flex items-center gap-3">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
-        ⭐️
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
+        <img
+          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`}
+          alt=""
+          className="w-9 h-9 object-contain"
+          onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+        />
       </div>
       <div className="min-w-0">
         <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentHex }}>Talent</p>
@@ -331,7 +336,7 @@ function MoveSheet({ move, isDark, onClose }) {
 
 // ─── EVs / IVs / Nature ───────────────────────────────────────────────────────
 
-function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, isDark, accentHex }) {
+function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, isDark, accentHex, pokeId }) {
   const effects   = nature ? NATURE_EFFECTS[nature] : null;
   const boosted   = effects?.[0];
   const lowered   = effects?.[1];
@@ -373,7 +378,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
               <ItemRow item={item} itemSprite={itemSprite} itemPsSlug={itemPsSlug} isDark={isDark} accentHex={accentHex} />
             )}
             {ability && (
-              <AbilityRow ability={ability} isDark={isDark} accentHex={accentHex} />
+              <AbilityRow ability={ability} isDark={isDark} accentHex={accentHex} pokeId={pokeId} />
             )}
           </div>
         </div>
@@ -476,6 +481,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
           ability={result.ability}
           isDark={isDark}
           accentHex={accentHex}
+          pokeId={pokeId}
         />
       )}
 
