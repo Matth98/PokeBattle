@@ -338,10 +338,10 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
   const activeEVs = STATS.filter(s => (evs[s.key] ?? 0) > 0);
 
   return (
-    <div className="space-y-10">
+    <div>
       {/* Set : Nature + Objet + Talent */}
       {(nature || item || ability) && (
-        <div>
+        <div className="mb-12">
           <SectionTitle title="Set complet" isDark={isDark} mb="mb-4" />
           <div className="space-y-4">
             {nature && (
@@ -406,7 +406,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
         </div>
       )}
 
-    </div>
+  </div>
   );
 }
 
