@@ -172,7 +172,7 @@ function MoveRow({ move, isDark, isLast, onPress }) {
       <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
-      <div className="flex items-center gap-6 flex-shrink-0">
+      <div className="flex items-center gap-3 flex-shrink-0">
         <StatCol value={move.power ?? '—'} isDark={isDark} width="w-10" />
         <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} width="w-10" />
         <div className="w-6 flex justify-center"><DamageClassIcon damageClass={move.damageClass} /></div>
@@ -459,7 +459,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
       <div className="mb-10">
         <div className="flex items-center mb-1">
           <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>Attaques</h2>
-          <div className="flex items-center gap-6 pr-0.5">
+          <div className="flex items-center gap-3 pr-0.5">
             <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss.</span>
             <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
             <span className={`w-6 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Cat.</span>
@@ -506,9 +506,9 @@ function LevelMoveRow({ move, isDark, isLast, onPress, accentHex }) {
       <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
-      <div className="flex items-center gap-6 flex-shrink-0">
+      <div className="flex items-center gap-3 flex-shrink-0">
         {/* Niveau */}
-        <span className="w-10 flex items-baseline justify-center gap-0.5 flex-shrink-0" style={{ color: accentHex }}>
+        <span className="w-10 flex items-baseline justify-center gap-0 flex-shrink-0" style={{ color: accentHex }}>
           {move.level === 0
             ? <span className="text-[10px] font-bold">Évo.</span>
             : <>
@@ -532,7 +532,7 @@ function MoveColHeaders({ isDark, title, showLevel = false, showMachine = false 
   return (
     <div className="flex items-center mb-1">
       <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{title}</h2>
-      <div className="flex items-center gap-6 pr-0.5">
+      <div className="flex items-center gap-3 pr-0.5">
         {label4 && <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label4}</span>}
         <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss.</span>
         <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
@@ -555,8 +555,8 @@ function MachineMoveRow({ move, isDark, isLast, onPress, accentHex }) {
       <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
-      <div className="flex items-center gap-6 flex-shrink-0">
-        <span className="w-10 flex items-baseline justify-center gap-0.5 flex-shrink-0" style={{ color: accentHex }}>
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <span className="w-10 flex items-baseline justify-center gap-0 flex-shrink-0" style={{ color: accentHex }}>
           {mn
             ? <>
                 <span className="text-[9px] font-bold leading-none">{mn.prefix}</span>
