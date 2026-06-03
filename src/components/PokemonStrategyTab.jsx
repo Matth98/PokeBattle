@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { TYPE_FR, TYPE_HEX, TYPE_HEX_DARK, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { useSmogonSet } from '../hooks/useSmogonSet';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -180,6 +181,7 @@ const DAMAGE_CLASS_FR  = { physical: 'Physique', special: 'Spéciale', status: '
 const DAMAGE_CLASS_HEX = { physical: '#ff4400', special: '#2266cc', status: '#999999' };
 
 function MoveSheet({ move, isDark, onClose }) {
+  useBodyScrollLock();
   const H  = typeof window !== 'undefined' ? window.innerHeight : 800;
   const y  = useMotionValue(H);
   const overlayOpacity = useTransform(y, [0, H * 0.5], [1, 0]);
