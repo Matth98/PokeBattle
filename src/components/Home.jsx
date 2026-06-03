@@ -360,7 +360,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             </button>
 <button
               onClick={onOpenSettings}
-              className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden backdrop-blur-xl shadow-sm transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
               style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Paramètres"
             >

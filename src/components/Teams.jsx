@@ -763,7 +763,7 @@ export const Teams = ({
             })()}
             <button
               onClick={() => setDeletingSelected(true)}
-              className={`justify-self-end h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 bg-red-500/90 text-white border border-red-400/60 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+              className={`justify-self-end h-11 px-4 rounded-full backdrop-blur-xl text-sm font-semibold flex items-center justify-center transition-all duration-200 bg-red-500/90 text-white border border-red-400/60 ${!isDark ? 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]' : ''} ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
               style={isDark ? { borderTop: '1px solid #ffffff36' } : undefined}
             >
               {`Supprimer (${selectedItems.length})`}
