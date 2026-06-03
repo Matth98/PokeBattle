@@ -144,7 +144,10 @@ export const PlayerDetail = ({
 
   const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      if (document.documentElement.style.overflow === 'hidden') return;
+      setScrolled(window.scrollY > 20);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);

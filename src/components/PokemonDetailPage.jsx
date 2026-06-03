@@ -118,6 +118,10 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   useBodyScrollLock();
 
   const handleTabChange = useCallback((tab) => {
+    if (tab === activeTab) {
+      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     scrollPositions.current[activeTab] = scrollRef.current?.scrollTop ?? 0;
     setActiveTab(tab);
   }, [activeTab]);
