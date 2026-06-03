@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Users, Shield, Zap, ChevronRight, Trophy, Loader2 } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
@@ -6,7 +7,7 @@ import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes } from '../hooks/usePokemonTypes';
 import { calcTypeAdv } from '../utils/mvp';
 import { PlayerAvatar } from './PlayerAvatar';
-import { PokemonDetailModal } from './PokemonDetailModal';
+import { PokemonDetailPage } from './PokemonDetailPage';
 import { useTranslation } from '../hooks/useTranslation';
 
 const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
@@ -650,15 +651,16 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       </div>
     </div>
 
-    {/* ── Détail Pokémon (bottom sheet) ── */}
-    {viewingPokemon && (
-      <PokemonDetailModal
-        pokeId={viewingPokemon.pokeId}
-        pokeName={viewingPokemon.name}
-        t={t}
-        isDark={isDark}
-        onClose={() => setViewingPokemon(null)}
-      />
+    {viewingPokemon && createPortal(
+      <div className="fixed inset-0 z-50">
+        <PokemonDetailPage
+          pokeId={viewingPokemon.pokeId}
+          pokeName={viewingPokemon.name}
+          isDark={isDark}
+          onBack={() => setViewingPokemon(null)}
+        />
+      </div>,
+      document.body
     )}
     </>
   );

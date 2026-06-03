@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { TYPE_FR, TYPE_HEX, TYPE_COLORS } from '../hooks/usePokemonTypes';
+import { TYPE_FR, TYPE_HEX, TYPE_HEX_DARK, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { useSmogonSet } from '../hooks/useSmogonSet';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
@@ -103,7 +103,7 @@ function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888' }) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accentHex}22` }}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
         {src && !failed
           ? <img src={src} alt={item} className="w-7 h-7 object-contain" style={{ imageRendering: 'pixelated' }} onError={handleError} />
           : <span className="text-base">🎒</span>
@@ -122,10 +122,7 @@ function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888' }) {
 function AbilityRow({ ability, isDark, accentHex }) {
   return (
     <div className="flex items-center gap-3">
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-base"
-        style={{ backgroundColor: `${accentHex}22` }}
-      >
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
         ⭐️
       </div>
       <div className="min-w-0">
@@ -231,7 +228,8 @@ function MoveSheet({ move, isDark, onClose }) {
     };
   }, [y, dismiss, snapBack]);
 
-  const hex = TYPE_HEX[move.type] || '#A8A77A';
+  const hex      = (isDark ? TYPE_HEX_DARK : TYPE_HEX)[move.type] || '#A8A77A';
+  const badgeHex = TYPE_HEX[move.type] || '#A8A77A';
 
   return (
     <motion.div
@@ -261,7 +259,7 @@ function MoveSheet({ move, isDark, onClose }) {
           {/* Type + Catégorie */}
           <div className="flex gap-2 mb-5">
             {/* Badge type */}
-            <span className="pl-1 inline-flex items-stretch rounded-full overflow-hidden" style={{ backgroundColor: hex }}>
+            <span className="pl-1 inline-flex items-stretch rounded-full overflow-hidden" style={{ backgroundColor: badgeHex }}>
               <img
                 src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${move.type}.svg`}
                 alt=""
@@ -345,7 +343,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
           <div className="space-y-4">
             {nature && (
               <div className="flex items-center gap-3">
-                <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ backgroundColor: `${accentHex}22` }}>
+                <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
                   🌿
                 </span>
                 <div className="flex-1 min-w-0">

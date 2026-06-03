@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileTex
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
-import { PokemonDetailModal } from './PokemonDetailModal';
+import { PokemonDetailPage } from './PokemonDetailPage';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -733,14 +733,16 @@ export const BattleDetail = ({
       , document.body)}
     </div>
 
-    {viewingPokemon && (
-      <PokemonDetailModal
-        pokeId={viewingPokemon.pokeId}
-        pokeName={viewingPokemon.name}
-        t={t}
-        isDark={isDark}
-        onClose={() => setViewingPokemon(null)}
-      />
+    {viewingPokemon && createPortal(
+      <div className="fixed inset-0 z-50">
+        <PokemonDetailPage
+          pokeId={viewingPokemon.pokeId}
+          pokeName={viewingPokemon.name}
+          isDark={isDark}
+          onBack={() => setViewingPokemon(null)}
+        />
+      </div>,
+      document.body
     )}
     </>
   );

@@ -38,6 +38,12 @@ export const TYPE_HEX = {
   dark:     '#4f4747', steel:    '#74b0cb', fairy:    '#e18ce1',
 };
 
+// Couleurs overridées pour le dark mode (types trop sombres sur fond #1c1c1e)
+export const TYPE_HEX_DARK = {
+  ...TYPE_HEX,
+  dark: '#998585',
+};
+
 // Couleurs canoniques pour les badges (Tailwind arbitrary values pour pile la teinte)
 // - bg / text : version "pleine" (badge solide, texte blanc)
 // - softBg / softText : version "tuile pastel" (fond très transparent, texte coloré),

@@ -4,7 +4,7 @@ import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
-import { TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
+import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
 import { TabBar, StrategyTab } from './PokemonStrategyTab';
 
@@ -264,7 +264,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
   }, [y, dismiss, snapBack]);
 
   const primaryType = data?.types?.[0] || 'normal';
-  const accentHex = TYPE_HEX[primaryType] || '#6390F0';
+  const accentHex = (isDark ? TYPE_HEX_DARK : TYPE_HEX)[primaryType] || '#6390F0';
 
   const groupByMult = (multValues) => {
     return multValues

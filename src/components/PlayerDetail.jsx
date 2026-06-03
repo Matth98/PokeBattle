@@ -30,7 +30,7 @@ import { AlertModal } from './AlertModal';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { PokemonPicker } from './PokemonPicker';
-import { PokemonDetailModal } from './PokemonDetailModal';
+import { PokemonDetailPage } from './PokemonDetailPage';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
@@ -1679,17 +1679,18 @@ export const PlayerDetail = ({
         </div>
       , document.body)}
 
-      {/* ── Modal détail Pokémon ── */}
-      {viewingPokemon && (
-        <PokemonDetailModal
-          pokeId={viewingPokemon.pokeId}
-          pokeName={viewingPokemon.name}
-          t={t}
-          isDark={isDark}
-          onClose={() => setViewingPokemon(null)}
-        />
+<AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
+      {viewingPokemon && createPortal(
+        <div className="fixed inset-0 z-50">
+          <PokemonDetailPage
+            pokeId={viewingPokemon.pokeId}
+            pokeName={viewingPokemon.name}
+            isDark={isDark}
+            onBack={() => setViewingPokemon(null)}
+          />
+        </div>,
+        document.body
       )}
-      <AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
     </div>
   );
 };

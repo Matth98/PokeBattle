@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, Pencil, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
-import { PokemonDetailModal } from './PokemonDetailModal';
+import { PokemonDetailPage } from './PokemonDetailPage';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -185,14 +186,16 @@ export const TeamDetail = ({
       </div>
     </div>
 
-    {viewingPokemon && (
-      <PokemonDetailModal
-        pokeId={viewingPokemon.pokeId}
-        pokeName={viewingPokemon.name}
-        t={t}
-        isDark={isDark}
-        onClose={() => setViewingPokemon(null)}
-      />
+    {viewingPokemon && createPortal(
+      <div className="fixed inset-0 z-50">
+        <PokemonDetailPage
+          pokeId={viewingPokemon.pokeId}
+          pokeName={viewingPokemon.name}
+          isDark={isDark}
+          onBack={() => setViewingPokemon(null)}
+        />
+      </div>,
+      document.body
     )}
     </>
   );

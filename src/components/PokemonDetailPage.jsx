@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
-import { TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
+import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
 import { TabBar, StrategyTab } from './PokemonStrategyTab';
 
@@ -112,21 +112,21 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   const tr = useTranslation();
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
+  const [scrolled, setScrolled] = useState(false);
   const scrollPositions = useRef({ presentation: 0, strategie: 0 });
+  const scrollRef = useRef(null);
 
   const handleTabChange = useCallback((tab) => {
-    scrollPositions.current[activeTab] = window.scrollY;
+    scrollPositions.current[activeTab] = scrollRef.current?.scrollTop ?? 0;
     setActiveTab(tab);
   }, [activeTab]);
 
-  // Restore saved scroll before the browser paints (no flash).
-  // StrategyTab stays mounted, so its content is ready immediately.
   useLayoutEffect(() => {
-    window.scrollTo({ top: scrollPositions.current[activeTab] ?? 0, behavior: 'instant' });
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollPositions.current[activeTab] ?? 0;
   }, [activeTab]);
 
   const primaryType = data?.types?.[0] || 'normal';
-  const accentHex = TYPE_HEX[primaryType] || '#6390F0';
+  const accentHex = (isDark ? TYPE_HEX_DARK : TYPE_HEX)[primaryType] || '#6390F0';
 
   const groupByMult = (multValues) =>
     multValues
@@ -144,14 +144,17 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   ]);
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-zinc-900' : 'bg-white'}`}>
-
-      {/* ── Bouton retour sticky hauteur 0 — flotte par-dessus la cover sans la pousser ── */}
-      <div className="sticky top-0 z-20" style={{ height: 0, overflow: 'visible' }}>
-        <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.6rem)' }}>
+    <div
+      ref={scrollRef}
+      className={`h-screen overflow-y-auto ${isDark ? 'bg-zinc-900' : 'bg-white'}`}
+      onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 20)}
+    >
+      {/* ── Bouton retour — flotte par-dessus le hero ── */}
+      <div className="sticky top-0 z-10" style={{ height: 0, overflow: 'visible' }}>
+        <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
           <button
             onClick={onBack}
-            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
+            className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
             style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
             aria-label={tr('common.back')}
           >
@@ -178,7 +181,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       {/* ── Contenu ── */}
       {!loading && !error && data && (
         <div style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}>
-          {/* Hero — remonte jusqu'en haut de l'écran */}
+          {/* Hero */}
           <div
             className="flex items-center justify-center overflow-hidden"
             style={{
@@ -285,7 +288,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       {/* ── Onglets — fixe en bas d'écran ── */}
       {!loading && !error && data && (
         <div
-          className={`fixed bottom-0 left-0 right-0 z-20 border-t ${isDark ? 'bg-[#1c1c1e] border-zinc-800/80' : 'bg-white border-gray-200/80'}`}
+          className={`fixed bottom-0 left-0 right-0 z-20 border-t ${isDark ? 'bg-zinc-900 border-zinc-800/80' : 'bg-white border-gray-200/80'}`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <TabBar activeTab={activeTab} onTabChange={handleTabChange} accentHex={accentHex} isDark={isDark} />
