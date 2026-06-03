@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { TYPE_FR, TYPE_HEX, TYPE_HEX_DARK, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { useSmogonSet } from '../hooks/useSmogonSet';
+import { usePokemonMoves } from '../hooks/usePokemonMoves';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
@@ -452,7 +453,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
   if (!result) return null;
 
   return (
-    <div className="px-5 pt-10 pb-4">
+    <div className="px-5 pt-4 pb-4">
 
       {/* Attaques */}
       <div className="mb-10">
@@ -493,16 +494,181 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
   );
 }
 
+// ─── Ligne d'attaque avec niveau ─────────────────────────────────────────────
+
+function LevelMoveRow({ move, isDark, isLast, onPress, accentHex }) {
+  return (
+    <button
+      onClick={onPress}
+      className={`w-full flex items-center gap-3 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
+    >
+      <TypePictogram typeName={move.type} />
+      <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        {move.nameFr}
+      </p>
+      <div className="flex items-center gap-6 flex-shrink-0">
+        {/* Niveau */}
+        <span className="w-10 flex items-baseline justify-center gap-0.5 flex-shrink-0" style={{ color: accentHex }}>
+          {move.level === 0
+            ? <span className="text-[10px] font-bold">Évo.</span>
+            : <>
+                <span className="text-[9px] font-bold leading-none">Niv</span>
+                <span className="text-sm font-semibold tabular-nums leading-none">{move.level}</span>
+              </>
+          }
+        </span>
+        <StatCol value={move.power ?? '—'} isDark={isDark} width="w-10" />
+        <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} width="w-10" />
+        <div className="w-6 flex justify-center"><DamageClassIcon damageClass={move.damageClass} /></div>
+      </div>
+    </button>
+  );
+}
+
+// ─── En-tête de colonnes (réutilisable) ──────────────────────────────────────
+
+function MoveColHeaders({ isDark, title, showLevel = false, showMachine = false }) {
+  const label4 = showLevel ? 'Niv.' : showMachine ? 'CT' : null;
+  return (
+    <div className="flex items-center mb-1">
+      <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{title}</h2>
+      <div className="flex items-center gap-6 pr-0.5">
+        {label4 && <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label4}</span>}
+        <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss.</span>
+        <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
+        <span className={`w-6 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Cat.</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Ligne CT / CS ───────────────────────────────────────────────────────────
+
+function MachineMoveRow({ move, isDark, isLast, onPress, accentHex }) {
+  const mn = move.machineNum;
+  return (
+    <button
+      onClick={onPress}
+      className={`w-full flex items-center gap-3 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
+    >
+      <TypePictogram typeName={move.type} />
+      <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+        {move.nameFr}
+      </p>
+      <div className="flex items-center gap-6 flex-shrink-0">
+        <span className="w-10 flex items-baseline justify-center gap-0.5 flex-shrink-0" style={{ color: accentHex }}>
+          {mn
+            ? <>
+                <span className="text-[9px] font-bold leading-none">{mn.prefix}</span>
+                <span className="text-sm font-semibold tabular-nums leading-none">{mn.number}</span>
+              </>
+            : <span className={`text-sm font-semibold tabular-nums ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>—</span>
+          }
+        </span>
+        <StatCol value={move.power ?? '—'} isDark={isDark} width="w-10" />
+        <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} width="w-10" />
+        <div className="w-6 flex justify-center"><DamageClassIcon damageClass={move.damageClass} /></div>
+      </div>
+    </button>
+  );
+}
+
+// ─── MovesTab ────────────────────────────────────────────────────────────────
+
+export function MovesTab({ pokeId, isDark, accentHex }) {
+  const { moves, loading, error } = usePokemonMoves(pokeId);
+  const [selectedMove, setSelectedMove] = useState(null);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 size={28} className="animate-spin" style={{ color: accentHex }} />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="py-16 px-8 text-center">
+        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          Impossible de charger les attaques : {error}
+        </p>
+      </div>
+    );
+  }
+  if (!moves) return null;
+
+  return (
+    <div className="px-5 pt-4 pb-4">
+
+      {/* ── Par niveau ── */}
+      {moves.levelUp.length > 0 && (
+        <div className="mb-10">
+          <MoveColHeaders title="Par niveau" isDark={isDark} showLevel />
+          {moves.levelUp.map((move, i) => (
+            <LevelMoveRow
+              key={move.name}
+              move={move}
+              isDark={isDark}
+              accentHex={accentHex}
+              isLast={i === moves.levelUp.length - 1}
+              onPress={() => setSelectedMove(move)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── CT / CS ── */}
+      {moves.machine.length > 0 && (
+        <div className="mb-10">
+          <MoveColHeaders title="CT / CS" isDark={isDark} showMachine />
+          {moves.machine.map((move, i) => (
+            <MachineMoveRow
+              key={move.name}
+              move={move}
+              isDark={isDark}
+              accentHex={accentHex}
+              isLast={i === moves.machine.length - 1}
+              onPress={() => setSelectedMove(move)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── Reproduction ── */}
+      {moves.egg.length > 0 && (
+        <div className="mb-10">
+          <MoveColHeaders title="Reproduction" isDark={isDark} />
+          {moves.egg.map((move, i) => (
+            <MoveRow
+              key={move.name}
+              move={move}
+              isDark={isDark}
+              isLast={i === moves.egg.length - 1}
+              onPress={() => setSelectedMove(move)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Bottom sheet */}
+      {selectedMove && (
+        <MoveSheet move={selectedMove} isDark={isDark} onClose={() => setSelectedMove(null)} />
+      )}
+    </div>
+  );
+}
+
 // ─── TabBar ───────────────────────────────────────────────────────────────────
 
 export function TabBar({ activeTab, onTabChange, accentHex, isDark }) {
   const tabs = [
     { key: 'presentation', label: 'Présentation' },
     { key: 'strategie',    label: 'Stratégie'    },
+    { key: 'attaques',     label: 'Attaques'     },
   ];
   return (
     <div className={`px-5 py-3 ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
-      <div className={`grid grid-cols-2 gap-1 p-1 rounded-2xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
+      <div className={`grid grid-cols-3 gap-1 p-1 rounded-2xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
         {tabs.map(({ key, label }) => {
           const isActive = activeTab === key;
           return (

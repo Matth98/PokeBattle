@@ -3,7 +3,7 @@ import { ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
-import { TabBar, StrategyTab } from './PokemonStrategyTab';
+import { TabBar, StrategyTab, MovesTab } from './PokemonStrategyTab';
 
 const ALL_TYPES = Object.keys(TYPE_HEX);
 
@@ -119,7 +119,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
     return () => { document.body.style.backgroundColor = ''; };
   }, [isDark]);
 
-  const scrollPositions = useRef({ presentation: 0, strategie: 0 });
+  const scrollPositions = useRef({ presentation: 0, strategie: 0, attaques: 0 });
 
   const handleTabChange = useCallback((tab) => {
     if (tab === activeTab) {
@@ -210,7 +210,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               #{String(data.id).padStart(4, '0')}
             </p>
             <h1 className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{data?.name || pokeName}</h1>
-            <div className="flex gap-2 mb-3">
+            <div className="flex gap-2 mb-5">
               {data.types.map(tn => <TypeBadge key={tn} typeName={tn} />)}
             </div>
           </div>
@@ -287,6 +287,10 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
 
           <div style={{ display: activeTab === 'strategie' ? 'block' : 'none' }}>
             <StrategyTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
+          </div>
+
+          <div style={{ display: activeTab === 'attaques' ? 'block' : 'none' }}>
+            <MovesTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
           </div>
         </div>
       )}

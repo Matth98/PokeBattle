@@ -1,55 +1,89 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from './useLanguage';
 
-const moveCache = new Map();
-const pokemonMovesCache = new Map();
-
-// Most-recent-first list of version groups for picking the current moveset
-const VERSION_GROUP_PRIORITY = [
+// Version groups du plus récent au plus ancien
+const VG_PRIORITY = [
   'scarlet-violet', 'the-teal-mask', 'the-indigo-disk',
   'sword-shield', 'the-isle-of-armor', 'the-crown-tundra',
-  'ultra-sun-ultra-moon', 'sun-moon',
+  'brilliant-diamond-and-shining-pearl', 'legends-arceus',
+  'ultra-sun-ultra-moon', 'sun-moon', 'lets-go-pikachu-lets-go-eevee',
   'omega-ruby-alpha-sapphire', 'x-y',
   'black-2-white-2', 'black-white',
   'heartgold-soulsilver', 'platinum', 'diamond-pearl',
   'firered-leafgreen', 'emerald', 'ruby-sapphire',
-  'crystal', 'gold-silver', 'red-blue',
+  'crystal', 'gold-silver', 'red-blue', 'yellow',
 ];
 
-async function fetchMoveDetail(moveName) {
-  if (moveCache.has(moveName)) return moveCache.get(moveName);
+const moveDetailCache = new Map();
+const machineCache    = new Map();
+
+async function fetchMoveDetail(moveName, lang) {
+  const key = `${moveName}-${lang}`;
+  if (moveDetailCache.has(key)) return moveDetailCache.get(key);
+
   const res = await fetch(`https://pokeapi.co/api/v2/move/${moveName}`);
+  if (!res.ok) throw new Error(`Move ${moveName} not found`);
   const data = await res.json();
+
   const nameEntry =
-    data.names?.find(n => n.language.name === 'fr') ||
+    data.names?.find(n => n.language.name === lang) ??
+    data.names?.find(n => n.language.name === 'fr') ??
     data.names?.find(n => n.language.name === 'en');
+
+  const descList = [...(data.flavor_text_entries ?? [])].reverse();
+  const descEntry =
+    descList.find(e => e.language.name === lang) ??
+    descList.find(e => e.language.name === 'fr') ??
+    descList.find(e => e.language.name === 'en');
+
   const result = {
-    nameFr: nameEntry?.name || moveName,
-    type: data.type?.name || 'normal',
-    damageClass: data.damage_class?.name || 'status',
+    name: moveName,
+    nameFr: nameEntry?.name ?? moveName,
+    type: data.type?.name ?? 'normal',
     power: data.power ?? null,
     accuracy: data.accuracy ?? null,
+    pp: data.pp ?? null,
+    priority: data.priority ?? 0,
+    damageClass: data.damage_class?.name ?? 'status',
+    desc: descEntry?.flavor_text?.replace(/[\n\f\r]/g, ' ') ?? '',
+    // machines array pour récupérer le numéro CT/CS plus tard
+    machines: data.machines ?? [],
   };
-  moveCache.set(moveName, result);
+  moveDetailCache.set(key, result);
+  return result;
+}
+
+// Retourne { prefix: 'CT'|'CS'|'TR', number: 169 } ou null
+async function fetchMachineNumber(machineUrl) {
+  if (machineCache.has(machineUrl)) return machineCache.get(machineUrl);
+  const res = await fetch(machineUrl);
+  if (!res.ok) { machineCache.set(machineUrl, null); return null; }
+  const data = await res.json();
+  const itemName = data.item?.name ?? '';
+  let result = null;
+  if (itemName.startsWith('tm')) {
+    result = { prefix: 'CT', number: parseInt(itemName.slice(2), 10) };
+  } else if (itemName.startsWith('hm')) {
+    result = { prefix: 'CS', number: parseInt(itemName.slice(2), 10) };
+  } else if (itemName.startsWith('tr')) {
+    result = { prefix: 'TR', number: parseInt(itemName.slice(2), 10) };
+  }
+  machineCache.set(machineUrl, result);
   return result;
 }
 
 export function usePokemonMoves(pokeId) {
-  const [moves, setMoves] = useState([]);
+  const [moves, setMoves] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { language } = useLanguage();
 
   useEffect(() => {
     if (!pokeId) return;
-
-    const cacheKey = String(pokeId);
-    if (pokemonMovesCache.has(cacheKey)) {
-      setMoves(pokemonMovesCache.get(cacheKey));
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
+    setMoves(null);
+
     let cancelled = false;
 
     const load = async () => {
@@ -58,47 +92,71 @@ export function usePokemonMoves(pokeId) {
         if (!res.ok) throw new Error('Pokémon introuvable');
         const pokemonData = await res.json();
 
-        // Group level-up moves by version group
-        const vgMoves = {};
-        for (const entry of pokemonData.moves) {
-          for (const vgd of entry.version_group_details) {
-            if (vgd.move_learn_method.name !== 'level-up') continue;
-            const vg = vgd.version_group.name;
-            if (!vgMoves[vg]) vgMoves[vg] = [];
-            vgMoves[vg].push({ name: entry.move.name, level: vgd.level_learned_at });
-          }
-        }
+        // Version group le plus récent disponible pour ce Pokémon
+        const allVGs = new Set(
+          pokemonData.moves.flatMap(m =>
+            m.version_group_details.map(d => d.version_group.name)
+          )
+        );
+        const bestVG = VG_PRIORITY.find(vg => allVGs.has(vg)) ?? [...allVGs][0];
 
-        // Pick best version group
-        let selectedMoves = [];
-        for (const vg of VERSION_GROUP_PRIORITY) {
-          if (vgMoves[vg]?.length > 0) {
-            selectedMoves = vgMoves[vg];
-            break;
-          }
-        }
-        // Fallback: pick version group with most moves
-        if (selectedMoves.length === 0) {
-          const best = Object.entries(vgMoves).sort((a, b) => b[1].length - a[1].length)[0];
-          if (best) selectedMoves = best[1];
-        }
-
-        // Deduplicate by name, sort by level
-        const seen = new Set();
-        const deduped = selectedMoves
-          .sort((a, b) => a.level - b.level)
-          .filter(m => { if (seen.has(m.name)) return false; seen.add(m.name); return true; });
-
-        const details = await Promise.all(
-          deduped.slice(0, 30).map(async m => {
-            const detail = await fetchMoveDetail(m.name);
-            return { ...detail, level: m.level };
+        // Garder uniquement les attaques du meilleur version group
+        const entries = pokemonData.moves
+          .map(moveData => {
+            const detail = moveData.version_group_details.find(
+              d => d.version_group.name === bestVG
+            );
+            if (!detail) return null;
+            return {
+              moveName: moveData.move.name,
+              method: detail.move_learn_method.name,
+              level: detail.level_learned_at,
+            };
           })
+          .filter(Boolean);
+
+        // Détails de toutes les attaques en parallèle
+        const details = await Promise.all(
+          entries.map(e =>
+            fetchMoveDetail(e.moveName, language).then(d => ({
+              ...d,
+              method: e.method,
+              level: e.level,
+            }))
+          )
+        );
+
+        // Numéros CT : récupérer en parallèle pour les attaques machine
+        await Promise.all(
+          details
+            .filter(m => m.method === 'machine')
+            .map(async m => {
+              const entry = m.machines?.find(mc => mc.version_group.name === bestVG);
+              if (!entry) return;
+              const machineNum = await fetchMachineNumber(entry.machine.url);
+              m.machineNum = machineNum; // mutation directe, avant setMoves
+            })
         );
 
         if (cancelled) return;
-        pokemonMovesCache.set(cacheKey, details);
-        setMoves(details);
+
+        const levelUp = details
+          .filter(m => m.method === 'level-up')
+          .sort((a, b) => a.level - b.level || a.nameFr.localeCompare(b.nameFr));
+
+        const machine = details
+          .filter(m => m.method === 'machine')
+          .sort((a, b) => {
+            const na = a.machineNum?.number ?? 9999;
+            const nb = b.machineNum?.number ?? 9999;
+            return na - nb || a.nameFr.localeCompare(b.nameFr);
+          });
+
+        const egg = details
+          .filter(m => m.method === 'egg')
+          .sort((a, b) => a.nameFr.localeCompare(b.nameFr));
+
+        setMoves({ levelUp, machine, egg, versionGroup: bestVG });
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
@@ -108,7 +166,7 @@ export function usePokemonMoves(pokeId) {
 
     load();
     return () => { cancelled = true; };
-  }, [pokeId]);
+  }, [pokeId, language]);
 
   return { moves, loading, error };
 }
