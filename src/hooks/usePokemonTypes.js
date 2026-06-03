@@ -112,8 +112,19 @@ export const usePokemonTypes = (pokeIds = []) => {
 
   useEffect(() => {
     let cancelled = false;
+    // Sync entries already in cache but not yet in state (ex: ajout multiple)
+    setTypes((prev) => {
+      let next = prev;
+      pokeIds.forEach((id) => {
+        if (typeCache.has(id) && !prev[id]) {
+          if (next === prev) next = { ...prev };
+          next[id] = typeCache.get(id);
+        }
+      });
+      return next;
+    });
     pokeIds.forEach((id) => {
-      if (typeCache.has(id)) return; // déjà connu
+      if (typeCache.has(id)) return;
       fetchPokemonTypes(id)
         .then((t) => {
           if (cancelled) return;
