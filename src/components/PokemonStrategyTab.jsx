@@ -166,10 +166,10 @@ function MoveRow({ move, isDark, isLast, onPress }) {
   return (
     <button
       onClick={onPress}
-      className={`w-full flex items-center gap-3 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
+      className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
       <TypePictogram typeName={move.type} />
-      <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+      <p className={`flex-1 text-sm font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
       <div className="flex items-center gap-3 flex-shrink-0">
@@ -500,10 +500,10 @@ function LevelMoveRow({ move, isDark, isLast, onPress, accentHex }) {
   return (
     <button
       onClick={onPress}
-      className={`w-full flex items-center gap-3 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
+      className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
       <TypePictogram typeName={move.type} />
-      <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+      <p className={`flex-1 text-sm font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
       <div className="flex items-center gap-3 flex-shrink-0">
@@ -549,10 +549,10 @@ function MachineMoveRow({ move, isDark, isLast, onPress, accentHex }) {
   return (
     <button
       onClick={onPress}
-      className={`w-full flex items-center gap-3 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
+      className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
       <TypePictogram typeName={move.type} />
-      <p className={`flex-1 text-base font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+      <p className={`flex-1 text-sm font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
         {move.nameFr}
       </p>
       <div className="flex items-center gap-3 flex-shrink-0">
