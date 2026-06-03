@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileTex
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
-import { PokemonDetailPage } from './PokemonDetailPage';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -116,8 +115,8 @@ export const BattleDetail = ({
   onEdit,
   onDelete,
   onAddTeam,
+  onViewPokemon,
   backLabel = 'Combats',
-  onViewingPokemonChange = null,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -132,10 +131,6 @@ export const BattleDetail = ({
   const [savingTeamSlot, setSavingTeamSlot] = useState(null); // 'player1' | 'player2'
   const [namingTeamSlot, setNamingTeamSlot] = useState(null); // slot en cours de nommage
   const [teamNameInput, setTeamNameInput] = useState('');
-  const [viewingPokemon, setViewingPokemon] = useState(null);
-  useEffect(() => {
-    onViewingPokemonChange?.(viewingPokemon !== null);
-  }, [viewingPokemon, onViewingPokemonChange]);
   const [showTypeDetail, setShowTypeDetail] = useState(false);
   const [mvpStats, setMvpStats] = useState(null);
   const [mvpArtwork, setMvpArtwork] = useState(null);
@@ -394,7 +389,7 @@ export const BattleDetail = ({
           getPokemonImageUrl={getPokemonImageUrl}
           t={t}
           tr={tr}
-          onPokemonClick={(p) => setViewingPokemon(p)}
+          onPokemonClick={(p) => onViewPokemon?.(p)}
           saveButton={canSaveTeam('player1') && (
             <button
               onClick={() => openNamingModal('player1')}
@@ -413,7 +408,7 @@ export const BattleDetail = ({
           getPokemonImageUrl={getPokemonImageUrl}
           t={t}
           tr={tr}
-          onPokemonClick={(p) => setViewingPokemon(p)}
+          onPokemonClick={(p) => onViewPokemon?.(p)}
           saveButton={canSaveTeam('player2') && (
             <button
               onClick={() => openNamingModal('player2')}
@@ -568,7 +563,7 @@ export const BattleDetail = ({
 
                 {/* Hero — cliquable pour ouvrir la fiche */}
                 <button
-                  onClick={() => setViewingPokemon({ pokeId: mvpPokemon.pokeId, name: mvpPokemon.name })}
+                  onClick={() => onViewPokemon?.({ pokeId: mvpPokemon.pokeId, name: mvpPokemon.name })}
                   className="flex items-center gap-4 w-full text-left"
                 >
                   {/* Image circulaire */}
@@ -733,15 +728,6 @@ export const BattleDetail = ({
       , document.body)}
     </div>
 
-    {viewingPokemon && (
-      <PokemonDetailPage
-        pokeId={viewingPokemon.pokeId}
-        pokeName={viewingPokemon.name}
-        isDark={isDark}
-        onBack={() => setViewingPokemon(null)}
-        asOverlay
-      />
-    )}
     </>
   );
 };

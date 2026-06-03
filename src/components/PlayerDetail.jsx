@@ -30,7 +30,6 @@ import { AlertModal } from './AlertModal';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { PokemonPicker } from './PokemonPicker';
-import { PokemonDetailPage } from './PokemonDetailPage';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
@@ -53,7 +52,7 @@ export const PlayerDetail = ({
   onSelectTeam,
   initialActiveTab = 'pokemon',
   isDark,
-  onViewingPokemonChange = null,
+  onViewPokemon,
   onSelectionModeChange = null,
 }) => {
   const tr = useTranslation();
@@ -62,10 +61,6 @@ export const PlayerDetail = ({
     (dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id));
 
   const [addingPokemon, setAddingPokemon] = useState(false);
-  const [viewingPokemon, setViewingPokemon] = useState(null); // { pokeId, name }
-  useEffect(() => {
-    onViewingPokemonChange?.(viewingPokemon !== null);
-  }, [viewingPokemon, onViewingPokemonChange]);
   const [activeTab, setActiveTab] = useState(initialActiveTab);
   useEffect(() => { setPokemonSearch(''); setTeamsSearch(''); exitSelection(); }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
   const tabContentRef = useRef(null);
@@ -812,7 +807,7 @@ export const PlayerDetail = ({
                       <button
                         onClick={() => inPokemonSelection
                           ? setSelectedItems(isSelected ? selectedItems.filter((id) => id !== p.id) : [...selectedItems, p.id])
-                          : setViewingPokemon({ pokeId: p.pokeId, name: p.name })
+                          : onViewPokemon?.({ pokeId: p.pokeId, name: p.name })
                         }
                         className={`w-full flex items-center gap-3 pr-4 py-3 ${t.surface} text-left relative`}
                         style={{ paddingLeft: inPokemonSelection ? '52px' : '16px', transition: 'padding-left 200ms' }}
@@ -1680,15 +1675,6 @@ export const PlayerDetail = ({
       , document.body)}
 
 <AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
-      {viewingPokemon && (
-        <PokemonDetailPage
-          pokeId={viewingPokemon.pokeId}
-          pokeName={viewingPokemon.name}
-          isDark={isDark}
-          onBack={() => setViewingPokemon(null)}
-          asOverlay
-        />
-      )}
     </div>
   );
 };

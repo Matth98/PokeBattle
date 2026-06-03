@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Pencil, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
-import { PokemonDetailPage } from './PokemonDetailPage';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -12,8 +11,8 @@ export const TeamDetail = ({
   isDark,
   onBack,
   onEdit,
+  onViewPokemon,
   backLabel = 'Équipes',
-  onViewingPokemonChange = null,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -23,10 +22,6 @@ export const TeamDetail = ({
   const { getPokemonImageUrl } = usePokemon();
   const rosterPokeIds = (team?.pokemon || []).map((p) => p.pokeId);
   const pokemonTypes = usePokemonTypes(rosterPokeIds);
-  const [viewingPokemon, setViewingPokemon] = useState(null);
-  useEffect(() => {
-    onViewingPokemonChange?.(viewingPokemon !== null);
-  }, [viewingPokemon, onViewingPokemonChange]);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -142,7 +137,7 @@ export const TeamDetail = ({
                 return (
                   <button
                     key={p.id}
-                    onClick={() => setViewingPokemon({ pokeId: p.pokeId, name: p.name })}
+                    onClick={() => onViewPokemon?.({ pokeId: p.pokeId, name: p.name })}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left ${!isLast ? `border-b ${t.divider}` : ''}`}
                   >
                     <img
@@ -185,15 +180,6 @@ export const TeamDetail = ({
       </div>
     </div>
 
-    {viewingPokemon && (
-      <PokemonDetailPage
-        pokeId={viewingPokemon.pokeId}
-        pokeName={viewingPokemon.name}
-        isDark={isDark}
-        onBack={() => setViewingPokemon(null)}
-        asOverlay
-      />
-    )}
     </>
   );
 };

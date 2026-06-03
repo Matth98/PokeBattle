@@ -6,7 +6,6 @@ import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes } from '../hooks/usePokemonTypes';
 import { calcTypeAdv } from '../utils/mvp';
 import { PlayerAvatar } from './PlayerAvatar';
-import { PokemonDetailPage } from './PokemonDetailPage';
 import { useTranslation } from '../hooks/useTranslation';
 
 const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
@@ -22,7 +21,7 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, linkedPlayer, onOpenSettings, onRefresh, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0 }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0 }) => {
   const tr = useTranslation();
   const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
 
@@ -210,7 +209,6 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   const { getPokemonImageUrl } = usePokemon();
   // Même logique que Players : initialScrollY évite le flash de topbar au retour.
   const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
-  const [viewingPokemon, setViewingPokemon] = useState(null);
 
   useEffect(() => {
     if (isBackground) return;
@@ -603,7 +601,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
               {topPokemon.map((p, i) => (
                 <button
                   key={p.pokeId}
-                  onClick={() => setViewingPokemon({ pokeId: p.pokeId, name: p.name })}
+                  onClick={() => onViewPokemon?.({ pokeId: p.pokeId, name: p.name })}
                   className={`flex-shrink-0 w-[120px] ${t.surface} rounded-2xl pt-3 pb-4 px-3 flex flex-col items-center shadow-sm active:scale-95 transition-transform duration-100`}
                   style={{ scrollSnapAlign: 'start' }}
                 >
@@ -650,15 +648,6 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       </div>
     </div>
 
-    {viewingPokemon && (
-      <PokemonDetailPage
-        pokeId={viewingPokemon.pokeId}
-        pokeName={viewingPokemon.name}
-        isDark={isDark}
-        onBack={() => setViewingPokemon(null)}
-        asOverlay
-      />
-    )}
     </>
   );
 };

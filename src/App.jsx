@@ -186,10 +186,9 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const bgPageRef = useRef(null);
   const bgScrollRef = useRef(null);
   const bgOverlayRef = useRef(null);
-  const [pokemonDetailOpen, setPokemonDetailOpen] = useState(false);
   const { pageRef, resetFg } = useEdgeSwipeBack({
     onBack: handleBack,
-    enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm && !pokemonDetailOpen,
+    enabled: SUB_PAGES.includes(currentTab) && !settingsOpen && !showNewBattleForm && !showNewTeamForm,
     bgRef: bgPageRef,
     bgOverlayRef: bgOverlayRef,
   });
@@ -610,6 +609,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           onRefresh={refreshAll}
           deleteAnimSnapshot={homeDeleteSnapshotRef.current}
           onDeleteAnimConsumed={() => { homeDeleteSnapshotRef.current = null; }}
+          onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
         />
       )}
 
@@ -658,7 +658,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setSelectedTeam(team);
             navigateTo('teamDetail', { playerDetailTab: activeTab });
           }}
-          onViewingPokemonChange={(isOpen) => setPokemonDetailOpen(isOpen)}
+          onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
           onSelectionModeChange={(active) => setHideNav(active)}
         />
       )}
@@ -718,7 +718,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setShowNewTeamForm(true);
           }}
           onUpdate={handleUpdateTeam}
-          onViewingPokemonChange={(isOpen) => setPokemonDetailOpen(isOpen)}
+          onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
         />
       )}
 
@@ -783,7 +783,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           }}
           onDelete={handleDeleteBattle}
           onAddTeam={handleAddTeam}
-          onViewingPokemonChange={(isOpen) => setPokemonDetailOpen(isOpen)}
+          onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
         />
       )}
 
