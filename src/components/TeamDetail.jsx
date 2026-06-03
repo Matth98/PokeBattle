@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { ChevronLeft, Pencil, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
@@ -186,16 +185,14 @@ export const TeamDetail = ({
       </div>
     </div>
 
-    {viewingPokemon && createPortal(
-      <div className="fixed inset-0 z-50">
-        <PokemonDetailPage
-          pokeId={viewingPokemon.pokeId}
-          pokeName={viewingPokemon.name}
-          isDark={isDark}
-          onBack={() => setViewingPokemon(null)}
-        />
-      </div>,
-      document.body
+    {viewingPokemon && (
+      <PokemonDetailPage
+        pokeId={viewingPokemon.pokeId}
+        pokeName={viewingPokemon.name}
+        isDark={isDark}
+        onBack={() => setViewingPokemon(null)}
+        asOverlay
+      />
     )}
     </>
   );

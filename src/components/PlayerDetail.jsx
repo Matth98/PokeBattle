@@ -1680,16 +1680,14 @@ export const PlayerDetail = ({
       , document.body)}
 
 <AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
-      {viewingPokemon && createPortal(
-        <div className="fixed inset-0 z-50">
-          <PokemonDetailPage
-            pokeId={viewingPokemon.pokeId}
-            pokeName={viewingPokemon.name}
-            isDark={isDark}
-            onBack={() => setViewingPokemon(null)}
-          />
-        </div>,
-        document.body
+      {viewingPokemon && (
+        <PokemonDetailPage
+          pokeId={viewingPokemon.pokeId}
+          pokeName={viewingPokemon.name}
+          isDark={isDark}
+          onBack={() => setViewingPokemon(null)}
+          asOverlay
+        />
       )}
     </div>
   );

@@ -1,9 +1,11 @@
 import React, { useState, useLayoutEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
 import { TabBar, StrategyTab } from './PokemonStrategyTab';
+import { useEdgeSwipeBack } from '../hooks/useEdgeSwipeBack';
 
 const ALL_TYPES = Object.keys(TYPE_HEX);
 
@@ -108,13 +110,14 @@ function InfoRow({ labelKey, label, value, accentColor, isDark }) {
   );
 }
 
-export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLabel = 'Recherche' }) => {
+export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLabel = 'Recherche', asOverlay = false }) => {
   const tr = useTranslation();
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
   const [scrolled, setScrolled] = useState(false);
   const scrollPositions = useRef({ presentation: 0, strategie: 0 });
   const scrollRef = useRef(null);
+  const { pageRef } = useEdgeSwipeBack({ onBack, enabled: asOverlay });
 
   const handleTabChange = useCallback((tab) => {
     scrollPositions.current[activeTab] = scrollRef.current?.scrollTop ?? 0;
@@ -143,7 +146,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
     { multVal: 2, label: 2 }, { multVal: 4, label: 4 },
   ]);
 
-  return (
+  const scrollContainer = (
     <div
       ref={scrollRef}
       className={`h-screen overflow-y-auto ${isDark ? 'bg-zinc-900' : 'bg-white'}`}
@@ -296,4 +299,11 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       )}
     </div>
   );
+
+  if (asOverlay) return createPortal(
+    <div ref={pageRef} className="fixed inset-0 z-50">{scrollContainer}</div>,
+    document.body
+  );
+
+  return scrollContainer;
 };

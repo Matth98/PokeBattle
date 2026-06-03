@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import { Search, Users, Shield, Zap, ChevronRight, Trophy, Loader2 } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
@@ -651,16 +650,14 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       </div>
     </div>
 
-    {viewingPokemon && createPortal(
-      <div className="fixed inset-0 z-50">
-        <PokemonDetailPage
-          pokeId={viewingPokemon.pokeId}
-          pokeName={viewingPokemon.name}
-          isDark={isDark}
-          onBack={() => setViewingPokemon(null)}
-        />
-      </div>,
-      document.body
+    {viewingPokemon && (
+      <PokemonDetailPage
+        pokeId={viewingPokemon.pokeId}
+        pokeName={viewingPokemon.name}
+        isDark={isDark}
+        onBack={() => setViewingPokemon(null)}
+        asOverlay
+      />
     )}
     </>
   );
