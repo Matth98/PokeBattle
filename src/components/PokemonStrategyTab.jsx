@@ -168,7 +168,7 @@ function MoveRow({ move, isDark, isLast, onPress }) {
       onClick={onPress}
       className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
-      <div className="flex items-center gap-1 flex-1 min-w-0">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         <TypePictogram typeName={move.type} size="w-6 h-6" />
         <p className={`text-[15px] font-bold leading-tight truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
           {move.nameFr}
@@ -504,7 +504,7 @@ function LevelMoveRow({ move, isDark, isLast, onPress, accentHex }) {
       onClick={onPress}
       className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
-      <div className="flex items-center gap-1 flex-1 min-w-0">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         <TypePictogram typeName={move.type} size="w-6 h-6" />
         <p className={`text-[15px] font-bold leading-tight truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
           {move.nameFr}
@@ -555,7 +555,7 @@ function MachineMoveRow({ move, isDark, isLast, onPress, accentHex }) {
       onClick={onPress}
       className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
-      <div className="flex items-center gap-1 flex-1 min-w-0">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         <TypePictogram typeName={move.type} size="w-6 h-6" />
         <p className={`text-[15px] font-bold leading-tight truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
           {move.nameFr}
