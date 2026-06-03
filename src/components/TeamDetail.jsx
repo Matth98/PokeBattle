@@ -13,6 +13,7 @@ export const TeamDetail = ({
   onEdit,
   onViewPokemon,
   backLabel = 'Équipes',
+  initialScrollY = 0,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -22,7 +23,7 @@ export const TeamDetail = ({
   const { getPokemonImageUrl } = usePokemon();
   const rosterPokeIds = (team?.pokemon || []).map((p) => p.pokeId);
   const pokemonTypes = usePokemonTypes(rosterPokeIds);
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });

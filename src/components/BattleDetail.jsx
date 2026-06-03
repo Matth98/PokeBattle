@@ -117,6 +117,7 @@ export const BattleDetail = ({
   onAddTeam,
   onViewPokemon,
   backLabel = 'Combats',
+  initialScrollY = 0,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -134,7 +135,7 @@ export const BattleDetail = ({
   const [showTypeDetail, setShowTypeDetail] = useState(false);
   const [mvpStats, setMvpStats] = useState(null);
   const [mvpArtwork, setMvpArtwork] = useState(null);
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });

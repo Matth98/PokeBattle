@@ -54,6 +54,7 @@ export const PlayerDetail = ({
   isDark,
   onViewPokemon,
   onSelectionModeChange = null,
+  initialScrollY = 0,
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
@@ -141,7 +142,7 @@ export const PlayerDetail = ({
   const { isClosing: isAllTeamsSheetClosing, handleClose: closeAllTeamsSheet } = useAnimatedClose(() => setShowAllTeamsSheet(false), 280);
   useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet);
 
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });

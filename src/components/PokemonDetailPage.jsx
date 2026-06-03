@@ -1,5 +1,6 @@
 import React, { useState, useLayoutEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, Loader2 } from 'lucide-react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
@@ -113,14 +114,16 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
   const scrollPositions = useRef({ presentation: 0, strategie: 0 });
+  const scrollRef = useRef(null);
+  useBodyScrollLock();
 
   const handleTabChange = useCallback((tab) => {
-    scrollPositions.current[activeTab] = window.scrollY;
+    scrollPositions.current[activeTab] = scrollRef.current?.scrollTop ?? 0;
     setActiveTab(tab);
   }, [activeTab]);
 
   useLayoutEffect(() => {
-    window.scrollTo({ top: scrollPositions.current[activeTab] ?? 0, behavior: 'instant' });
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollPositions.current[activeTab] ?? 0;
   }, [activeTab]);
 
   const primaryType = data?.types?.[0] || 'normal';
@@ -142,7 +145,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   ]);
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-zinc-900' : 'bg-white'}`}>
+    <div ref={scrollRef} className={`h-screen overflow-y-auto ${isDark ? 'bg-zinc-900' : 'bg-white'}`}>
       {/* ── Bouton retour — flotte par-dessus le hero ── */}
       <div className="sticky top-0 z-10" style={{ height: 0, overflow: 'visible' }}>
         <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
