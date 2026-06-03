@@ -50,6 +50,8 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
       if (bgRef?.current) {
         bgRef.current.style.transition = '';
         bgRef.current.style.transform = `translateX(${bgInitialX()}px)`;
+        bgRef.current.style.opacity = '0';
+        bgRef.current.style.visibility = 'hidden';
       }
       if (fgOverlayRef?.current) {
         fgOverlayRef.current.style.transition = '';
@@ -91,8 +93,11 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
           document.removeEventListener('touchmove', handleTouchMove);
           return;
         }
-        // Axe verrouillé sur X : compenser le décalage de scroll pour que les
-        // gradients position:fixed ne sautent pas quand pageRef reçoit un transform.
+        // Axe verrouillé sur X : révéler la couche de fond et compenser le scroll.
+        if (bgRef?.current) {
+          bgRef.current.style.visibility = 'visible';
+          bgRef.current.style.opacity = '1';
+        }
         if (pageRef.current) {
           const scrollY = window.scrollY;
           if (scrollY > 0) {

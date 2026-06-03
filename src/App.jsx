@@ -564,6 +564,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             pointerEvents: 'none',
             transform: 'translateX(-25vw)',
             overflow: 'hidden',
+            opacity: 0,
+            visibility: 'hidden',
           }}
         >
           {/* Conteneur scrollable — preserves scroll position, fixed children stay relative to bgPageRef */}

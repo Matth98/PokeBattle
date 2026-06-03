@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useRef, useCallback } from 'react';
+import React, { useState, useLayoutEffect, useEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
@@ -112,6 +112,13 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   const tr = useTranslation();
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
+
+  useEffect(() => {
+    const bg = isDark ? '#18181b' : '#ffffff';
+    document.body.style.backgroundColor = bg;
+    return () => { document.body.style.backgroundColor = ''; };
+  }, [isDark]);
+
   const scrollPositions = useRef({ presentation: 0, strategie: 0 });
 
   const handleTabChange = useCallback((tab) => {
