@@ -41,23 +41,23 @@ const evColor = (v) =>
 
 // ─── Badge de type ────────────────────────────────────────────────────────────
 
-function TypePictogram({ typeName }) {
+function TypePictogram({ typeName, size = 'w-7 h-7' }) {
   const hex   = TYPE_HEX[typeName]    || '#A8A77A';
   const c     = TYPE_COLORS[typeName] || { text: 'text-white' };
   const label = TYPE_FR[typeName]     || typeName;
   return (
-    <div className="relative w-7 h-7 flex-shrink-0" title={label}>
+    <div className={`relative ${size} flex-shrink-0`} title={label}>
       <img
         src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${typeName}.svg`}
         alt={label}
-        className="w-7 h-7 object-contain"
+        className={`${size} object-contain`}
         onError={(e) => {
           e.currentTarget.style.display = 'none';
           e.currentTarget.nextSibling.style.display = 'flex';
         }}
       />
       <div
-        className="hidden w-7 h-7 rounded-full items-center justify-center absolute inset-0"
+        className={`hidden ${size} rounded-full items-center justify-center absolute inset-0`}
         style={{ backgroundColor: hex }}
       >
         <span className={`text-[8px] font-black ${c.text} uppercase tracking-wide`}>
@@ -154,7 +154,7 @@ function SectionTitle({ title, isDark, mb = 'mb-3' }) {
 
 function StatCol({ value, isDark, width = 'w-8' }) {
   return (
-    <span className={`${width} text-sm font-semibold tabular-nums text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+    <span className={`${width} text-sm font-semibold tabular-nums text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`} style={{ letterSpacing: '-0.5px' }}>
       {value}
     </span>
   );
@@ -168,10 +168,12 @@ function MoveRow({ move, isDark, isLast, onPress }) {
       onClick={onPress}
       className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
-      <TypePictogram typeName={move.type} />
-      <p className={`flex-1 text-sm font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-        {move.nameFr}
-      </p>
+      <div className="flex items-center gap-1 flex-1 min-w-0">
+        <TypePictogram typeName={move.type} size="w-5 h-5" />
+        <p className={`text-sm font-bold leading-tight truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {move.nameFr}
+        </p>
+      </div>
       <div className="flex items-center gap-3 flex-shrink-0">
         <StatCol value={move.power ?? '—'} isDark={isDark} width="w-10" />
         <StatCol value={move.accuracy != null ? `${move.accuracy}%` : '—'} isDark={isDark} width="w-10" />
@@ -460,9 +462,9 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
         <div className="flex items-center mb-1">
           <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>Attaques</h2>
           <div className="flex items-center gap-3 pr-0.5">
-            <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss.</span>
-            <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
-            <span className={`w-6 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Cat.</span>
+            <span className={`w-10 text-center text-[9px] font-bold uppercase ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss.</span>
+            <span className={`w-10 text-center text-[9px] font-bold uppercase ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
+            <span className={`w-6 text-center text-[9px] font-bold uppercase ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Cat.</span>
           </div>
         </div>
         {result.moves.map((move, i) => (
@@ -502,10 +504,12 @@ function LevelMoveRow({ move, isDark, isLast, onPress, accentHex }) {
       onClick={onPress}
       className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
-      <TypePictogram typeName={move.type} />
-      <p className={`flex-1 text-sm font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-        {move.nameFr}
-      </p>
+      <div className="flex items-center gap-1 flex-1 min-w-0">
+        <TypePictogram typeName={move.type} size="w-5 h-5" />
+        <p className={`text-sm font-bold leading-tight truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {move.nameFr}
+        </p>
+      </div>
       <div className="flex items-center gap-3 flex-shrink-0">
         {/* Niveau */}
         <span className="w-10 flex items-baseline justify-center gap-0 flex-shrink-0" style={{ color: accentHex }}>
@@ -513,7 +517,7 @@ function LevelMoveRow({ move, isDark, isLast, onPress, accentHex }) {
             ? <span className="text-[10px] font-bold">Évo.</span>
             : <>
                 <span className="text-[9px] font-bold leading-none">Niv</span>
-                <span className="text-sm font-semibold tabular-nums leading-none">{move.level}</span>
+                <span className="text-sm font-semibold tabular-nums leading-none" style={{ letterSpacing: '-0.5px' }}>{move.level}</span>
               </>
           }
         </span>
@@ -533,10 +537,10 @@ function MoveColHeaders({ isDark, title, showLevel = false, showMachine = false 
     <div className="flex items-center mb-1">
       <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{title}</h2>
       <div className="flex items-center gap-3 pr-0.5">
-        {label4 && <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label4}</span>}
-        <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss.</span>
-        <span className={`w-10 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
-        <span className={`w-6 text-center text-[9px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Cat.</span>
+        {label4 && <span className={`w-10 text-center text-[9px] font-bold uppercase ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label4}</span>}
+        <span className={`w-10 text-center text-[9px] font-bold uppercase ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Puiss.</span>
+        <span className={`w-10 text-center text-[9px] font-bold uppercase ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Préc.</span>
+        <span className={`w-6 text-center text-[9px] font-bold uppercase ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Cat.</span>
       </div>
     </div>
   );
@@ -551,16 +555,18 @@ function MachineMoveRow({ move, isDark, isLast, onPress, accentHex }) {
       onClick={onPress}
       className={`w-full flex items-center gap-2 py-2.5 text-left ${!isLast ? `border-b ${isDark ? 'border-zinc-800' : 'border-gray-100'}` : ''}`}
     >
-      <TypePictogram typeName={move.type} />
-      <p className={`flex-1 text-sm font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-        {move.nameFr}
-      </p>
+      <div className="flex items-center gap-1 flex-1 min-w-0">
+        <TypePictogram typeName={move.type} size="w-5 h-5" />
+        <p className={`text-sm font-bold leading-tight truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {move.nameFr}
+        </p>
+      </div>
       <div className="flex items-center gap-3 flex-shrink-0">
         <span className="w-10 flex items-baseline justify-center gap-0 flex-shrink-0" style={{ color: accentHex }}>
           {mn
             ? <>
                 <span className="text-[9px] font-bold leading-none">{mn.prefix}</span>
-                <span className="text-sm font-semibold tabular-nums leading-none">{mn.number}</span>
+                <span className="text-sm font-semibold tabular-nums leading-none" style={{ letterSpacing: '-0.5px' }}>{mn.number}</span>
               </>
             : <span className={`text-sm font-semibold tabular-nums ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>—</span>
           }
