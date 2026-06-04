@@ -4,7 +4,9 @@ import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useTranslation } from '../hooks/useTranslation';
 
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isStandalone;
 
 export function LoginScreen({ onSignInWithGoogle }) {
   const tr = useTranslation();
@@ -48,7 +50,7 @@ export function LoginScreen({ onSignInWithGoogle }) {
     // Sur mobile : signInWithRedirect redirige la page entière vers Google.
     // La promesse resolve avant la redirection (pas d'erreur à gérer ici).
     // Le résultat est traité au retour via getRedirectResult() dans useAuth.
-    if (isMobile) {
+    if (isMobileWeb) {
       await fn().catch(() => {});
       return;
     }

@@ -12,7 +12,12 @@ import {
 
 // Sur iOS/Android, signInWithPopup est peu fiable quand aucun compte n'est
 // pré-sélectionné. On utilise signInWithRedirect à la place.
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+// signInWithRedirect fonctionne dans le navigateur mobile, mais PAS en mode
+// standalone (PWA installée sur l'écran d'accueil) où la redirection ne revient
+// pas dans l'app. Dans ce cas on retombe sur signInWithPopup.
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isStandalone;
 
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
 const AuthContext  = createContext(null);
@@ -44,7 +49,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Sur mobile, on récupère le résultat d'un éventuel signInWithRedirect
     // avant d'écouter onAuthStateChanged (évite un flash "non connecté").
-    if (isMobile) {
+    if (isMobileWeb) {
       getRedirectResult(auth).catch(() => {});
     }
     return onAuthStateChanged(auth, (firebaseUser) => {
@@ -62,7 +67,7 @@ export function AuthProvider({ children }) {
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    if (isMobile) return signInWithRedirect(auth, provider);
+    if (isMobileWeb) return signInWithRedirect(auth, provider);
     return signInWithPopup(auth, provider);
   };
 
