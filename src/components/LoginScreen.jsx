@@ -47,25 +47,49 @@ export function LoginScreen({ onSignInWithGoogle }) {
     setError('');
     setLoading(true);
 
-    // Sur mobile : signInWithRedirect redirige la page entière vers Google.
-    // La promesse resolve avant la redirection (pas d'erreur à gérer ici).
+    // Sur mobile navigateur : signInWithRedirect redirige la page entière vers Google.
     // Le résultat est traité au retour via getRedirectResult() dans useAuth.
     if (isMobileWeb) {
       await fn().catch(() => {});
       return;
     }
 
+    // Sur desktop / standalone PWA : signInWithPopup ouvre une fenêtre.
+    // Sur iOS standalone, si l'utilisateur fait "précédent", la fenêtre se ferme
+    // mais la promesse ne rejette pas → loading bloqué à l'infini.
+    // On écoute le retour dans l'app (visibilitychange / focus) pour débloquer.
+    let returnCleanup = null;
+    const onReturnToApp = () => {
+      returnCleanup?.();
+      // Laisse 3s à Firebase pour confirmer l'auth avant de reset le loading.
+      waitForAuthState(3000).then((succeeded) => {
+        if (mountedRef.current && !succeeded) setLoading(false);
+      });
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') onReturnToApp();
+    };
+    const onFocus = () => onReturnToApp();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onFocus, { once: true });
+    returnCleanup = () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onFocus);
+    };
+
     try {
       await withTimeout(fn(), 60_000);
+      returnCleanup?.();
     } catch (e) {
+      returnCleanup?.();
       if (IGNORED_CODES.includes(e?.code)) {
-        // Annulation volontaire ou timeout → pas d'erreur affichée
         if (mountedRef.current) setLoading(false);
         return;
       }
-      // Sur desktop, signInWithPopup peut rejeter même quand l'auth réussit.
-      // On écoute onAuthStateChanged jusqu'à 5s pour confirmer.
-      const authSucceeded = await waitForAuthState(5000);
+      // signInWithPopup peut rejeter même quand l'auth réussit (iOS).
+      // On attend jusqu'à 8s pour laisser onAuthStateChanged confirmer.
+      const authSucceeded = await waitForAuthState(8000);
       if (mountedRef.current && !authSucceeded) {
         setError(tr('login.error'));
         setLoading(false);
