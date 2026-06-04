@@ -290,15 +290,18 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   };
 
   const loadAllData = async () => {
-    const [p, b, t] = await Promise.all([
-      fetchPlayers(),
-      fetchBattles(),
-      fetchTeams()
-    ]);
-    if (p) setPlayers(p);
-    if (b) setBattles(b);
-    if (t) setTeams(t);
-    setInitialLoading(false);
+    try {
+      const [p, b, t] = await Promise.all([
+        fetchPlayers(),
+        fetchBattles(),
+        fetchTeams()
+      ]);
+      if (p) setPlayers(p);
+      if (b) setBattles(b);
+      if (t) setTeams(t);
+    } finally {
+      setInitialLoading(false);
+    }
   };
 
   const refreshPlayers = async () => {
