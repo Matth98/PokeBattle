@@ -99,12 +99,15 @@ export function LoginScreen({ onSignInWithGoogle }) {
         if (isCurrent()) setLoading(false);
         return;
       }
-      // signInWithPopup peut rejeter même quand l'auth réussit (iOS).
-      // On attend jusqu'à 8s pour laisser onAuthStateChanged confirmer.
+      // Sur iOS PWA, signInWithPopup peut rejeter même quand l'auth réussit :
+      // Firebase écrit l'état dans le storage mais la communication popup→app échoue.
+      // On attend 8s pour laisser onAuthStateChanged confirmer.
+      // Si rien → on recharge la page : Firebase lira l'état persisté et connectera
+      // l'utilisateur. Si l'auth a vraiment échoué, l'écran de login s'affiche
+      // normalement et l'utilisateur peut retenter.
       const authSucceeded = await waitForAuthState(8000);
       if (isCurrent() && !authSucceeded) {
-        setError(tr('login.error'));
-        setLoading(false);
+        window.location.reload();
       }
       return;
     }
