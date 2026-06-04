@@ -413,7 +413,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     const newTeam = await createTeam(teamData);
     if (newTeam) {
       setTeams([...teams, newTeam]);
-      toast.success(`Équipe « ${newTeam.name} » créée`);
+      toast.success(`Équipe « ${newTeam.name} » ajoutée à ${newTeam.owner}`);
     } else {
       toast.error('Erreur lors de la création');
     }

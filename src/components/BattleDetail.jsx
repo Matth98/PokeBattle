@@ -276,7 +276,7 @@ export const BattleDetail = ({
       <img
         src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${type}.svg`}
         alt={TYPE_FR[type] || type}
-        className="w-5 h-5 object-contain block"
+        className="w-4 h-4 object-contain block"
         onError={(e) => { e.currentTarget.style.display = 'none'; }}
       />
     </span>
@@ -482,53 +482,105 @@ export const BattleDetail = ({
                   {/* Détail P1 */}
                   {(p1Matchups.advantages.length > 0 || p1Matchups.weaknesses.length > 0) && (
                     <div className={`rounded-xl p-3 mb-2 space-y-1.5 ${t.surfaceMuted}`}>
-                      <p className={`text-[10px] font-bold uppercase tracking-wide ${t.textTertiary} mb-2`}>{p1?.name || '—'}</p>
-                      {p1Matchups.advantages.map(({ myType, myPokName, oppType, oppPokName }, i) => (
-                        <div key={`adv-${i}`} className="flex items-center gap-1.5 text-xs">
-                          <TypeBadge type={myType} />
-                          <span className={`font-semibold ${t.text}`}>{myPokName}</span>
-                          <span className={t.textTertiary}>›</span>
-                          <TypeBadge type={oppType} />
-                          <span className={t.textSecondary}>{oppPokName}</span>
-                          <span className="ml-auto font-bold text-emerald-500">+1</span>
-                        </div>
-                      ))}
-                      {p1Matchups.weaknesses.map(({ oppType, oppPokName, myType, myPokName }, i) => (
-                        <div key={`weak-${i}`} className="flex items-center gap-1.5 text-xs">
-                          <TypeBadge type={oppType} />
-                          <span className={t.textSecondary}>{oppPokName}</span>
-                          <span className={t.textTertiary}>›</span>
-                          <TypeBadge type={myType} />
-                          <span className={`font-semibold ${t.text}`}>{myPokName}</span>
-                          <span className="ml-auto font-bold text-red-500">−1</span>
-                        </div>
-                      ))}
+                      {/* Header : avatar + nom */}
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <PlayerAvatar player={p1} size={28} textSize="text-xs" className="flex-shrink-0" />
+                        <p className={`font-black text-sm ${t.text}`}>{p1?.name || '—'}</p>
+                      </div>
+                      {p1Matchups.advantages.length > 0 && (
+                        <>
+                          {p1Matchups.advantages.map(({ myType, myPokName, oppType, oppPokName }, i) => (
+                            <div key={`adv-${i}`} className="flex items-center gap-1.5 text-xs">
+                              <TypeBadge type={myType} />
+                              <span className={`font-semibold ${t.text}`}>{myPokName}</span>
+                              <span className={t.textTertiary}>›</span>
+                              <TypeBadge type={oppType} />
+                              <span className={t.textSecondary}>{oppPokName}</span>
+                              <span className="ml-auto font-bold text-emerald-500">+1</span>
+                            </div>
+                          ))}
+                          <div className="flex items-center justify-between pt-0.5">
+                            <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-500">Points gagnés</span>
+                            <span className="text-sm font-black text-emerald-500">+{p1Matchups.advantages.length}</span>
+                          </div>
+                        </>
+                      )}
+                      {p1Matchups.weaknesses.length > 0 && (
+                        <>
+                          {p1Matchups.advantages.length > 0 && <div className={`border-t ${t.border} my-1.5`} />}
+                          {p1Matchups.weaknesses.map(({ oppType, oppPokName, myType, myPokName }, i) => (
+                            <div key={`weak-${i}`} className="flex items-center gap-1.5 text-xs">
+                              <TypeBadge type={oppType} />
+                              <span className={t.textSecondary}>{oppPokName}</span>
+                              <span className={t.textTertiary}>›</span>
+                              <TypeBadge type={myType} />
+                              <span className={`font-semibold ${t.text}`}>{myPokName}</span>
+                              <span className="ml-auto font-bold text-red-500">−1</span>
+                            </div>
+                          ))}
+                          <div className="flex items-center justify-between pt-0.5">
+                            <span className="text-[9px] font-bold uppercase tracking-wide text-red-500">Points perdus</span>
+                            <span className="text-sm font-black text-red-500">−{p1Matchups.weaknesses.length}</span>
+                          </div>
+                        </>
+                      )}
+                      {/* Total global P1 */}
+                      <div className={`flex items-center justify-between border-t ${t.border} pt-2 mt-1`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-wide ${t.textTertiary}`}>Total</span>
+                        <span className={`text-base font-black ${advColor(p1TypeAdv) || t.text}`}>{fmtAdv(p1TypeAdv)}</span>
+                      </div>
                     </div>
                   )}
                   {/* Détail P2 */}
                   {(p2Matchups.advantages.length > 0 || p2Matchups.weaknesses.length > 0) && (
                     <div className={`rounded-xl p-3 space-y-1.5 ${t.surfaceMuted}`}>
-                      <p className={`text-[10px] font-bold uppercase tracking-wide ${t.textTertiary} mb-2`}>{p2?.name || '—'}</p>
-                      {p2Matchups.advantages.map(({ myType, myPokName, oppType, oppPokName }, i) => (
-                        <div key={`adv-${i}`} className="flex items-center gap-1.5 text-xs">
-                          <TypeBadge type={myType} />
-                          <span className={`font-semibold ${t.text}`}>{myPokName}</span>
-                          <span className={t.textTertiary}>›</span>
-                          <TypeBadge type={oppType} />
-                          <span className={t.textSecondary}>{oppPokName}</span>
-                          <span className="ml-auto font-bold text-emerald-500">+1</span>
-                        </div>
-                      ))}
-                      {p2Matchups.weaknesses.map(({ oppType, oppPokName, myType, myPokName }, i) => (
-                        <div key={`weak-${i}`} className="flex items-center gap-1.5 text-xs">
-                          <TypeBadge type={oppType} />
-                          <span className={t.textSecondary}>{oppPokName}</span>
-                          <span className={t.textTertiary}>›</span>
-                          <TypeBadge type={myType} />
-                          <span className={`font-semibold ${t.text}`}>{myPokName}</span>
-                          <span className="ml-auto font-bold text-red-500">−1</span>
-                        </div>
-                      ))}
+                      {/* Header : avatar + nom */}
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <PlayerAvatar player={p2} size={28} textSize="text-xs" className="flex-shrink-0" />
+                        <p className={`font-black text-sm ${t.text}`}>{p2?.name || '—'}</p>
+                      </div>
+                      {p2Matchups.advantages.length > 0 && (
+                        <>
+                          {p2Matchups.advantages.map(({ myType, myPokName, oppType, oppPokName }, i) => (
+                            <div key={`adv-${i}`} className="flex items-center gap-1.5 text-xs">
+                              <TypeBadge type={myType} />
+                              <span className={`font-semibold ${t.text}`}>{myPokName}</span>
+                              <span className={t.textTertiary}>›</span>
+                              <TypeBadge type={oppType} />
+                              <span className={t.textSecondary}>{oppPokName}</span>
+                              <span className="ml-auto font-bold text-emerald-500">+1</span>
+                            </div>
+                          ))}
+                          <div className="flex items-center justify-between pt-0.5">
+                            <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-500">Points gagnés</span>
+                            <span className="text-sm font-black text-emerald-500">+{p2Matchups.advantages.length}</span>
+                          </div>
+                        </>
+                      )}
+                      {p2Matchups.weaknesses.length > 0 && (
+                        <>
+                          {p2Matchups.advantages.length > 0 && <div className={`border-t ${t.border} my-1.5`} />}
+                          {p2Matchups.weaknesses.map(({ oppType, oppPokName, myType, myPokName }, i) => (
+                            <div key={`weak-${i}`} className="flex items-center gap-1.5 text-xs">
+                              <TypeBadge type={oppType} />
+                              <span className={t.textSecondary}>{oppPokName}</span>
+                              <span className={t.textTertiary}>›</span>
+                              <TypeBadge type={myType} />
+                              <span className={`font-semibold ${t.text}`}>{myPokName}</span>
+                              <span className="ml-auto font-bold text-red-500">−1</span>
+                            </div>
+                          ))}
+                          <div className="flex items-center justify-between pt-0.5">
+                            <span className="text-[9px] font-bold uppercase tracking-wide text-red-500">Points perdus</span>
+                            <span className="text-sm font-black text-red-500">−{p2Matchups.weaknesses.length}</span>
+                          </div>
+                        </>
+                      )}
+                      {/* Total global P2 */}
+                      <div className={`flex items-center justify-between border-t ${t.border} pt-2 mt-1`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-wide ${t.textTertiary}`}>Total</span>
+                        <span className={`text-base font-black ${advColor(p2TypeAdv) || t.text}`}>{fmtAdv(p2TypeAdv)}</span>
+                      </div>
                     </div>
                   )}
                   {/* Bouton masquer */}

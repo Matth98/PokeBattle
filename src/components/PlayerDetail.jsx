@@ -35,6 +35,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
+import { useToast } from './Toast';
 
 import { TYPE_SUPER_EFFECTIVE } from '../utils/mvp';
 
@@ -58,6 +59,7 @@ export const PlayerDetail = ({
   isBackground = false,
 }) => {
   const tr = useTranslation();
+  const toast = useToast();
   const { dbUser, isSuperAdmin } = useAuth();
   const canEdit = isSuperAdmin ||
     (dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id));
@@ -305,6 +307,7 @@ export const PlayerDetail = ({
       .map((p, i) => ({ id: `${Date.now()}-${i}-${p.pokeId}`, pokeId: p.pokeId, name: p.name, level: 50 }));
     if (newEntries.length === 0) { setAddingPokemon(false); return; }
     await onUpdate(player._id, { ...player, pokemon: [...(player.pokemon || []), ...newEntries] });
+    toast.success(`${newEntries.length} pokémon ajouté${newEntries.length > 1 ? 's' : ''}`);
     setAddingPokemon(false);
   };
 
@@ -335,6 +338,7 @@ export const PlayerDetail = ({
       ...player,
       pokemon: player.pokemon.filter((p) => p.id !== deletingPokemon),
     });
+    toast.success('Pokémon supprimé');
     setDeletingPokemon(null);
   };
 
@@ -362,10 +366,12 @@ export const PlayerDetail = ({
         });
       }
     }
+    const deletedCount = selectedItems.length;
     await onUpdate(player._id, {
       ...player,
       pokemon: player.pokemon.filter((p) => !selectedItems.includes(p.id)),
     });
+    toast.success(`${deletedCount} pokémon supprimé${deletedCount > 1 ? 's' : ''}`);
     setIsDeletingSelectedPokemon(false);
     setDeletingSelectedPokemon(false);
     exitSelection();
@@ -388,6 +394,14 @@ export const PlayerDetail = ({
   const winRate = total > 0 ? Math.round((wins / total) * 100) : null;
   const playerTeams = teams.filter((team) => team.ownerId === player._id);
   const playerBattles = battles.filter((battle) => battle.player1 === player._id || battle.player2 === player._id);
+  const recentForm = [...playerBattles]
+    .sort((a, b) => new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0))
+    .slice(0, 5)
+    .reverse()
+    .map((b) => {
+      const isPlayer1 = b.player1 === player._id;
+      return (isPlayer1 && b.winner === 'player1') || (!isPlayer1 && b.winner === 'player2');
+    });
 
   const countPokemon = (items) =>
     items.reduce((acc, pokemon) => {
@@ -693,6 +707,18 @@ export const PlayerDetail = ({
             {total} combat{total > 1 ? 's' : ''}
             {winRate !== null && ` · ${winRate}% de victoires`}
           </p>
+          {recentForm.length > 0 && (
+            <div className="flex items-center gap-0 mt-1.5">
+              <span className={`${t.textSecondary} text-sm mr-0.5`}>Forme du moment :</span>
+              {recentForm.map((won, i) => (
+                <svg key={i} viewBox="0 0 36.57 27.78" className="w-5 h-5 flex-shrink-0" fill={won ? '#22c55e' : '#ef4444'} xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16.67,9.91c-2.19.91-3.23,3.41-2.32,5.6.91,2.19,3.41,3.23,5.6,2.32,2.19-.91,3.23-3.41,2.32-5.6-.91-2.19-3.41-3.23-5.6-2.32Z"/>
+                  <path d="M36.24,7.7l-8.73,3.61c1.28,4.61-1.05,9.57-5.57,11.45-4.53,1.88-9.69.02-12.04-4.15l-3.98,1.65c3.27,6.35,10.94,9.25,17.66,6.46,5.44-2.25,8.67-7.58,8.56-13.15l4.43-5.08-.33-.79Z"/>
+                  <path d="M14.59,5.02c4.53-1.88,9.68-.02,12.03,4.15l3.98-1.65C27.34,1.17,19.67-1.72,12.95,1.06,7.5,3.32,4.26,8.66,4.39,14.23L0,19.27l.33.79,8.69-3.6c-1.28-4.61,1.05-9.57,5.58-11.44Z"/>
+                </svg>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── Tuiles stats ── */}
