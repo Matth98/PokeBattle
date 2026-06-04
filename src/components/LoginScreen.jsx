@@ -18,6 +18,15 @@ export function LoginScreen({ onSignInWithGoogle }) {
   const mountedRef = useRef(true);
   useEffect(() => () => { mountedRef.current = false; }, []);
 
+  // Sur iOS, quand l'utilisateur fait "précédent" depuis la page Google,
+  // Safari restaure la page depuis le bfcache (état React préservé, loading = true).
+  // pageshow avec persisted=true détecte ce cas et débloque le bouton.
+  useEffect(() => {
+    const onPageShow = (e) => { if (e.persisted) setLoading(false); };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
+
   const IGNORED_CODES = [
     'auth/popup-closed-by-user',
     'auth/cancelled-popup-request',
