@@ -6,12 +6,12 @@ import { useTranslation } from '../hooks/useTranslation';
 
 // Desktop              → signInWithPopup (fiable)
 // Mobile navigateur   → signInWithRedirect (géré dans useAuth)
-// iOS PWA standalone  → signInWithPopup + reload si la communication popup→app échoue
+// iOS PWA standalone  → signInWithPopup + stratégie de récupération
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches
   || window.navigator.standalone === true;
 const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isStandalone;
 
-// Codes où l'utilisateur a volontairement annulé — pas de retry automatique
+// Codes où l'utilisateur a fermé la popup volontairement
 const CANCELLED_CODES = [
   'auth/popup-closed-by-user',
   'auth/cancelled-popup-request',
@@ -26,8 +26,8 @@ export function LoginScreen({ onSignInWithGoogle }) {
 
   useEffect(() => () => { mountedRef.current = false; }, []);
 
-  // Sur iOS, "précédent" depuis la page Google restaure la page depuis le bfcache
-  // (état React préservé avec loading=true). pageshow détecte ce cas et débloque le bouton.
+  // Sur iOS, "précédent" depuis la page Google peut restaurer la page depuis le
+  // bfcache (état React préservé avec loading=true). pageshow débloque le bouton.
   useEffect(() => {
     const handler = (e) => { if (e.persisted) setLoading(false); };
     window.addEventListener('pageshow', handler);
@@ -41,9 +41,8 @@ export function LoginScreen({ onSignInWithGoogle }) {
     setLoading(true);
 
     // ── Mobile navigateur ──────────────────────────────────────────────────
-    // signInWithRedirect navigue la page entière vers Google.
-    // Le résultat est traité au retour via getRedirectResult() dans useAuth.
-    // Si on revient ici sans redirection (erreur inattendue), on reset le loading.
+    // signInWithRedirect navigue la page vers Google.
+    // getRedirectResult() dans useAuth traite le résultat au retour.
     if (isMobileWeb) {
       await onSignInWithGoogle().catch(() => {});
       if (isCurrent()) setLoading(false);
@@ -51,36 +50,77 @@ export function LoginScreen({ onSignInWithGoogle }) {
     }
 
     // ── Desktop + iOS PWA standalone ───────────────────────────────────────
-    // signInWithPopup ouvre une fenêtre. Sur iOS PWA, la communication
-    // popup→app est bloquée : la promesse throw même si l'auth a réussi.
-    // Firebase a toutefois écrit la session en IndexedDB.
-    // Solution : attendre 2s qu'onAuthStateChanged confirme. Si rien → reload.
-    // Le reload force Firebase à lire l'IndexedDB → utilisateur connecté.
+    //
+    // Sur iOS PWA, signInWithPopup ouvre une fenêtre Safari. Deux problèmes :
+    //
+    // A) "Quitter" : l'utilisateur ferme la popup avant de choisir un compte.
+    //    Firebase parfois ne détecte pas la fermeture → promesse qui ne settle
+    //    jamais → loading infini.
+    //    Fix : quand l'app redevient visible (popup fermée), on lance un timer
+    //    de 5s. Si la promesse n'a pas encore settled → reset loading.
+    //
+    // B) Double authentification : l'utilisateur prend >N secondes dans la popup.
+    //    Ne surtout pas recharger pendant ce temps.
+    //    Fix : attendre que signInWithPopup settle (quelle que soit la durée),
+    //    PUIS recharger si c'est une erreur non-annulation (auth en IndexedDB).
+    //
+    // C) Filet : timeout absolu de 3 min si la promesse ne settle jamais du tout.
+
+    let settled = false;
+    const cleanup = [];
+
+    // Surveillance du retour dans l'app (cas A)
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      // Popup vient de fermer — si la promesse ne settle pas dans les 5s,
+      // c'est un abandon sans erreur → reset loading.
+      const timer = setTimeout(() => {
+        if (!settled && isCurrent()) setLoading(false);
+      }, 5000);
+      cleanup.push(() => clearTimeout(timer));
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    cleanup.push(() => document.removeEventListener('visibilitychange', onVisible));
+
+    // Timeout absolu (cas C)
+    const absoluteTimeout = setTimeout(() => {
+      if (!settled && isCurrent()) setLoading(false);
+    }, 180_000);
+    cleanup.push(() => clearTimeout(absoluteTimeout));
+
+    const runCleanup = () => { cleanup.forEach(fn => fn()); };
+
     try {
       await onSignInWithGoogle();
       // Résolu normalement (desktop) → onAuthStateChanged va démonter ce composant
+      settled = true;
+      runCleanup();
     } catch (e) {
+      settled = true;
+      runCleanup();
+
       if (!isCurrent()) return;
 
       if (CANCELLED_CODES.includes(e?.code)) {
-        // L'utilisateur a fermé la popup volontairement
+        // Fermeture volontaire détectée par Firebase → reset loading
         setLoading(false);
         return;
       }
 
-      // Attendre 2s qu'onAuthStateChanged confirme (cas desktop lent ou iOS chanceux)
-      const authConfirmed = await new Promise((resolve) => {
-        const timer = setTimeout(() => { unsub(); resolve(false); }, 2000);
+      // Erreur non-annulation après fermeture de la popup (cas iOS typique) :
+      // Firebase a écrit l'auth en IndexedDB mais la communication popup→app a échoué.
+      // Attendre 2s qu'onAuthStateChanged confirme (cas rare où ça fonctionne).
+      // Sinon recharger pour que Firebase lise l'IndexedDB.
+      const confirmed = await new Promise((resolve) => {
+        const t = setTimeout(() => { unsub(); resolve(false); }, 2000);
         const unsub = onAuthStateChanged(auth, (user) => {
-          if (user) { clearTimeout(timer); unsub(); resolve(true); }
+          if (user) { clearTimeout(t); unsub(); resolve(true); }
         });
       });
 
       if (!isCurrent()) return;
-      if (authConfirmed) return; // composant va se démonter via App.jsx
+      if (confirmed) return; // composant va se démonter via App.jsx
 
-      // iOS PWA : auth probablement en IndexedDB mais non notifiée dans cette session.
-      // Reload → Firebase relit l'IndexedDB → onAuthStateChanged fire → connecté.
       window.location.reload();
     }
   };
