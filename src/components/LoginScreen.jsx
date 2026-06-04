@@ -1,7 +1,10 @@
 // src/components/LoginScreen.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { useTranslation } from '../hooks/useTranslation';
+
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 export function LoginScreen({ onSignInWithGoogle }) {
   const tr = useTranslation();
@@ -29,9 +32,27 @@ export function LoginScreen({ onSignInWithGoogle }) {
     ),
   ]);
 
+  // Attend qu'onAuthStateChanged remonte un user, ou expire après `ms`.
+  // Retourne true si un user est arrivé, false si timeout.
+  const waitForAuthState = (ms) => new Promise((resolve) => {
+    const timer = setTimeout(() => { unsubscribe(); resolve(false); }, ms);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) { clearTimeout(timer); unsubscribe(); resolve(true); }
+    });
+  });
+
   const handle = (fn) => async () => {
     setError('');
     setLoading(true);
+
+    // Sur mobile : signInWithRedirect redirige la page entière vers Google.
+    // La promesse resolve avant la redirection (pas d'erreur à gérer ici).
+    // Le résultat est traité au retour via getRedirectResult() dans useAuth.
+    if (isMobile) {
+      await fn().catch(() => {});
+      return;
+    }
+
     try {
       await withTimeout(fn(), 60_000);
     } catch (e) {
@@ -40,13 +61,10 @@ export function LoginScreen({ onSignInWithGoogle }) {
         if (mountedRef.current) setLoading(false);
         return;
       }
-      // Sur iOS, signInWithPopup peut rejeter même quand l'auth réussit.
-      // On attend 3 s pour laisser onAuthStateChanged démonter ce composant.
-      // Si Firebase a déjà un currentUser → auth réussie, on reste en loading
-      // et on attend le démontage sans afficher d'erreur.
-      await new Promise(r => setTimeout(r, 3000));
-      if (mountedRef.current) {
-        if (auth.currentUser) return; // auth OK, onAuthStateChanged va arriver
+      // Sur desktop, signInWithPopup peut rejeter même quand l'auth réussit.
+      // On écoute onAuthStateChanged jusqu'à 5s pour confirmer.
+      const authSucceeded = await waitForAuthState(5000);
+      if (mountedRef.current && !authSucceeded) {
         setError(tr('login.error'));
         setLoading(false);
       }
