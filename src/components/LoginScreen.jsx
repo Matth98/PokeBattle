@@ -1,5 +1,6 @@
 // src/components/LoginScreen.jsx
 import React, { useState, useRef, useEffect } from 'react';
+import { auth } from '../firebase';
 import { useTranslation } from '../hooks/useTranslation';
 
 export function LoginScreen({ onSignInWithGoogle }) {
@@ -16,24 +17,36 @@ export function LoginScreen({ onSignInWithGoogle }) {
     'auth/popup-closed-by-user',
     'auth/cancelled-popup-request',
     'auth/popup-blocked',
+    'auth/login-timeout',
   ];
+
+  // Garantit que la promesse se termine dans le délai imparti.
+  // Si la popup reste ouverte indéfiniment (cas iOS), on sort proprement.
+  const withTimeout = (promise, ms) => Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject({ code: 'auth/login-timeout' }), ms)
+    ),
+  ]);
 
   const handle = (fn) => async () => {
     setError('');
     setLoading(true);
     try {
-      await fn();
+      await withTimeout(fn(), 60_000);
     } catch (e) {
       if (IGNORED_CODES.includes(e?.code)) {
-        // Annulation volontaire → pas d'erreur
+        // Annulation volontaire ou timeout → pas d'erreur affichée
         if (mountedRef.current) setLoading(false);
         return;
       }
       // Sur iOS, signInWithPopup peut rejeter même quand l'auth réussit.
-      // On attend 1 s pour laisser onAuthStateChanged démonter ce composant
-      // si l'utilisateur est authentifié. Si on est toujours là → erreur réelle.
-      await new Promise(r => setTimeout(r, 1000));
+      // On attend 3 s pour laisser onAuthStateChanged démonter ce composant.
+      // Si Firebase a déjà un currentUser → auth réussie, on reste en loading
+      // et on attend le démontage sans afficher d'erreur.
+      await new Promise(r => setTimeout(r, 3000));
       if (mountedRef.current) {
+        if (auth.currentUser) return; // auth OK, onAuthStateChanged va arriver
         setError(tr('login.error'));
         setLoading(false);
       }
