@@ -15,7 +15,8 @@ export function LoginScreen({ onSignInWithGoogle }) {
 
   // Détecte si le composant est toujours monté (sur iOS, signInWithPopup peut
   // rejeter même quand l'auth réussit — onAuthStateChanged démonte ce composant).
-  const mountedRef = useRef(true);
+  const mountedRef  = useRef(true);
+  const attemptRef  = useRef(0);
   useEffect(() => () => { mountedRef.current = false; }, []);
 
   // Sur iOS, quand l'utilisateur fait "précédent" depuis la page Google,
@@ -53,6 +54,8 @@ export function LoginScreen({ onSignInWithGoogle }) {
   });
 
   const handle = (fn) => async () => {
+    const attempt = ++attemptRef.current;
+    const isCurrent = () => mountedRef.current && attempt === attemptRef.current;
     setError('');
     setLoading(true);
 
@@ -72,7 +75,7 @@ export function LoginScreen({ onSignInWithGoogle }) {
       returnCleanup?.();
       // Laisse 3s à Firebase pour confirmer l'auth avant de reset le loading.
       waitForAuthState(3000).then((succeeded) => {
-        if (mountedRef.current && !succeeded) setLoading(false);
+        if (isCurrent() && !succeeded) setLoading(false);
       });
     };
 
@@ -93,19 +96,19 @@ export function LoginScreen({ onSignInWithGoogle }) {
     } catch (e) {
       returnCleanup?.();
       if (IGNORED_CODES.includes(e?.code)) {
-        if (mountedRef.current) setLoading(false);
+        if (isCurrent()) setLoading(false);
         return;
       }
       // signInWithPopup peut rejeter même quand l'auth réussit (iOS).
       // On attend jusqu'à 8s pour laisser onAuthStateChanged confirmer.
       const authSucceeded = await waitForAuthState(8000);
-      if (mountedRef.current && !authSucceeded) {
+      if (isCurrent() && !authSucceeded) {
         setError(tr('login.error'));
         setLoading(false);
       }
       return;
     }
-    if (mountedRef.current) setLoading(false);
+    if (isCurrent()) setLoading(false);
   };
 
   return (
