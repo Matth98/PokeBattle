@@ -49,8 +49,8 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
             alt=""
             className="w-28 h-28"
             style={{
-              filter:
-                'drop-shadow(0 0 20px rgba(139,92,246,0.60)) drop-shadow(0 0 48px rgba(99,102,241,0.30))',
+              borderRadius: '100%',
+              boxShadow: '0 0 40px rgba(139,92,246,0.60), 0 0 80px rgba(99,102,241,0.30)',
             }}
           />
         </div>
