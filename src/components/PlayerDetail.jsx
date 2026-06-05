@@ -803,7 +803,7 @@ export const PlayerDetail = ({
                   <button
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { setPokemonSearch(''); onPokemonSearchChange?.(''); pokemonSearchRef.current?.focus(); }}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 p-0 leading-none ${t.clearBgOnWhite}`}
+                    className={`w-5 h-5 rounded-full grid place-items-center flex-shrink-0 p-0 ${t.clearBgOnWhite}`}
                     aria-label="Effacer"
                   >
                     <X size={11} strokeWidth={3} />
@@ -932,7 +932,7 @@ export const PlayerDetail = ({
                   <button
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { setTeamsSearch(''); onTeamsSearchChange?.(''); teamsSearchRef.current?.focus(); }}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 p-0 leading-none ${t.clearBgOnWhite}`}
+                    className={`w-5 h-5 rounded-full grid place-items-center flex-shrink-0 p-0 ${t.clearBgOnWhite}`}
                     aria-label="Effacer"
                   >
                     <X size={11} strokeWidth={3} />
