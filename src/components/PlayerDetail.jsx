@@ -54,10 +54,13 @@ export const PlayerDetail = ({
   initialActiveTab = 'pokemon',
   isDark,
   onViewPokemon,
+  onActiveTabChange,
   onSelectionModeChange = null,
   initialScrollY = 0,
   initialPokemonSearch = '',
   onPokemonSearchChange,
+  initialTeamsSearch = '',
+  onTeamsSearchChange,
   isBackground = false,
 }) => {
   const tr = useTranslation();
@@ -68,7 +71,7 @@ export const PlayerDetail = ({
 
   const [addingPokemon, setAddingPokemon] = useState(false);
   const [activeTab, setActiveTab] = useState(initialActiveTab);
-  useEffect(() => { setPokemonSearch(''); setTeamsSearch(''); exitSelection(); }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  const switchTab = (tab) => { setPokemonSearch(''); onPokemonSearchChange?.(''); setTeamsSearch(''); onTeamsSearchChange?.(''); exitSelection(); setActiveTab(tab); onActiveTabChange?.(tab); };
   const tabContentRef = useRef(null);
   const [tabMinHeight, setTabMinHeight] = useState(0);
   const [editingPlayer, setEditingPlayer] = useState(false);
@@ -96,7 +99,7 @@ export const PlayerDetail = ({
   const [deletingPokemon, setDeletingPokemon] = useState(null);
   const [pokemonSearch, setPokemonSearch] = useState(initialPokemonSearch);
   const pokemonSearchRef = useRef(null);
-  const [teamsSearch, setTeamsSearch] = useState('');
+  const [teamsSearch, setTeamsSearch] = useState(initialTeamsSearch);
   const teamsSearchRef = useRef(null);
   // Capture la hauteur au moment où la recherche commence (vide → non-vide).
   // La min-height est libérée dès que la recherche est vidée ou qu'on change d'onglet.
@@ -298,7 +301,7 @@ export const PlayerDetail = ({
     }
     resetTeamForm();
     setCreatingTeam(false);
-    setActiveTab('teams');
+    switchTab('teams');
   };
 
   const handleAddPokemon = async (pokemonOrArray) => {
@@ -754,7 +757,7 @@ export const PlayerDetail = ({
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => switchTab(tab.id)}
               className={`py-2.5 rounded-xl text-sm font-bold transition ${
                 activeTab === tab.id
                   ? isDark
@@ -921,18 +924,18 @@ export const PlayerDetail = ({
                   ref={teamsSearchRef}
                   type="text"
                   value={teamsSearch}
-                  onChange={(e) => setTeamsSearch(e.target.value)}
+                  onChange={(e) => { setTeamsSearch(e.target.value); onTeamsSearchChange?.(e.target.value); }}
                   placeholder="Rechercher…"
                   className={`flex-1 bg-transparent outline-none ${t.text} text-base`}
                 />
                 {teamsSearch && (
                   <button
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => { setTeamsSearch(''); teamsSearchRef.current?.focus(); }}
-                    className={t.textTertiary}
+                    onClick={() => { setTeamsSearch(''); onTeamsSearchChange?.(''); teamsSearchRef.current?.focus(); }}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${t.clearBgOnWhite}`}
                     aria-label="Effacer"
                   >
-                    <X size={14} />
+                    <X size={11} strokeWidth={3} />
                   </button>
                 )}
               </div>

@@ -673,8 +673,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           initialActiveTab={playerDetailTab}
           backLabel={backLabel}
           initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('playerDetail') || 0 : 0}
-          initialPokemonSearch={navDirection === 'pop' ? searchMemoryRef.current.get('playerDetail') || '' : ''}
-          onPokemonSearchChange={(v) => searchMemoryRef.current.set('playerDetail', v)}
+          initialPokemonSearch={navDirection === 'pop' ? searchMemoryRef.current.get('playerDetail-pokemon') || '' : ''}
+          onPokemonSearchChange={(v) => searchMemoryRef.current.set('playerDetail-pokemon', v)}
+          initialTeamsSearch={navDirection === 'pop' ? searchMemoryRef.current.get('playerDetail-teams') || '' : ''}
+          onTeamsSearchChange={(v) => searchMemoryRef.current.set('playerDetail-teams', v)}
           onBack={() => {
             setSelectedPlayer(null);
             navigateBack();
@@ -687,6 +689,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setSelectedTeam(team);
             navigateTo('teamDetail', { playerDetailTab: activeTab });
           }}
+          onActiveTabChange={(tab) => setPlayerDetailTab(tab)}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
           onSelectionModeChange={(active) => setHideNav(active)}
         />
