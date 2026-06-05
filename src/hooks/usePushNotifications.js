@@ -35,14 +35,19 @@ export const usePushNotifications = () => {
 
   // Resync la permission quand l'app repasse au premier plan
   // (ex : l'utilisateur vient de l'activer dans les Réglages système).
+  // On écoute visibilitychange + focus (iOS PWA) avec un léger délai car
+  // Notification.permission n'est pas mis à jour instantanément sur iOS.
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState !== 'visible') return;
+    const syncPermission = () => {
       if (typeof Notification === 'undefined') return;
-      setPermission(Notification.permission);
+      setTimeout(() => setPermission(Notification.permission), 300);
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('visibilitychange', syncPermission);
+    window.addEventListener('focus', syncPermission);
+    return () => {
+      document.removeEventListener('visibilitychange', syncPermission);
+      window.removeEventListener('focus', syncPermission);
+    };
   }, []);
 
   // Si permission déjà accordée mais token absent (ex : réinstallation PWA),
