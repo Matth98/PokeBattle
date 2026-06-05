@@ -21,6 +21,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
   const permission   = pushPermission;
   const isSubscribed = pushIsSubscribed;
   const isSuperAdmin = dbUser?.role === 'superadmin';
+  const [sendOpen, setSendOpen]     = useState(false);
   const [notifTitle, setNotifTitle] = useState('');
   const [notifBody, setNotifBody]   = useState('');
   const [sending, setSending]       = useState(false);
@@ -256,10 +257,12 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                   Notifications
                 </p>
                 <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
+
+                  {/* Ligne 1 : toggle activer/désactiver */}
                   <button
                     onClick={isSubscribed ? onPushUnsubscribe : onPushSubscribe}
                     disabled={pushLoading || permission === 'denied'}
-                    className="w-full flex items-center gap-3 px-4 py-4 disabled:opacity-50"
+                    className={`w-full flex items-center gap-3 px-4 py-4 disabled:opacity-50 ${isSuperAdmin ? `border-b ${t.divider}` : ''}`}
                   >
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       isSubscribed
@@ -278,7 +281,6 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                         </p>
                       )}
                     </div>
-                    {/* Toggle pill */}
                     {permission !== 'denied' && (
                       <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
                         isSubscribed ? 'bg-indigo-500' : isDark ? 'bg-zinc-600' : 'bg-gray-200'
@@ -289,82 +291,58 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                       </div>
                     )}
                   </button>
-                </div>
-              </section>
-            )}
 
-            {/* ── Langue ── */}
-            <section className="hidden">
-              <p className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 px-1`}>
-                {tr('settings.language')}
-              </p>
-              <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
-                <button
-                  onClick={() => setLangOpen(o => !o)}
-                  className="w-full flex items-center gap-3 px-4 py-4"
-                >
-                  <span className="text-2xl leading-none">{currentLang.flag}</span>
-                  <span className={`flex-1 text-left font-medium ${t.text}`}>{currentLang.label}</span>
-                  <ChevronRight
-                    size={16}
-                    className={`${t.textTertiary} transition-transform duration-200 ${langOpen ? 'rotate-90' : ''}`}
-                  />
-                </button>
-
-                {langOpen && (
-                  <div className={`border-t ${t.divider}`}>
-                    {LANGUAGES.map((lang, i) => (
+                  {/* Ligne 2 : envoyer une notification (superadmin uniquement) */}
+                  {isSuperAdmin && (
+                    <>
                       <button
-                        key={lang.code}
-                        onClick={() => { setLanguage(lang.code); setLangOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-4 py-3.5 ${i < LANGUAGES.length - 1 ? `border-b ${t.divider}` : ''}`}
+                        onClick={() => setSendOpen(o => !o)}
+                        className="w-full flex items-center gap-3 px-4 py-4"
                       >
-                        <span className="text-xl leading-none w-7 text-center">{lang.flag}</span>
-                        <span className={`flex-1 text-left text-sm font-medium ${t.text}`}>{lang.label}</span>
-                        {lang.code === language && (
-                          <Check size={16} className="text-indigo-500 flex-shrink-0" />
-                        )}
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-700 text-zinc-300' : 'bg-gray-100 text-gray-500'}`}>
+                          <Send size={18} />
+                        </div>
+                        <span className={`flex-1 text-left font-medium ${t.text}`}>Envoyer une notification</span>
+                        <ChevronRight
+                          size={16}
+                          className={`${t.textTertiary} transition-transform duration-200 ${sendOpen ? 'rotate-90' : ''}`}
+                        />
                       </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
 
-            {/* ── Admin : envoyer une notification ── */}
-            {isSuperAdmin && (
-              <section>
-                <p className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 px-1`}>
-                  Administration
-                </p>
-                <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden p-4 space-y-3`}>
-                  <input
-                    type="text"
-                    placeholder="Titre"
-                    value={notifTitle}
-                    onChange={e => setNotifTitle(e.target.value)}
-                    className={`w-full rounded-xl px-4 py-3 text-sm font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Message"
-                    value={notifBody}
-                    onChange={e => setNotifBody(e.target.value)}
-                    className={`w-full rounded-xl px-4 py-3 text-sm font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
-                  />
-                  <button
-                    onClick={sendNotification}
-                    disabled={sending || !notifTitle.trim() || !notifBody.trim()}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 bg-indigo-500 text-white font-semibold text-sm disabled:opacity-40 active:scale-[0.98] transition-transform"
-                  >
-                    <Send size={16} />
-                    {sending ? 'Envoi…' : 'Envoyer à tous'}
-                  </button>
-                  {sendResult && (
-                    <p className={`text-xs text-center font-medium ${sendResult.startsWith('Erreur') ? 'text-red-400' : 'text-green-500'}`}>
-                      {sendResult}
-                    </p>
+                      {sendOpen && (
+                        <div className={`border-t ${t.divider} p-4 space-y-3`}>
+                          <input
+                            type="text"
+                            placeholder="Titre"
+                            value={notifTitle}
+                            onChange={e => setNotifTitle(e.target.value)}
+                            className={`w-full rounded-xl px-4 py-3 text-sm font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Message"
+                            value={notifBody}
+                            onChange={e => setNotifBody(e.target.value)}
+                            className={`w-full rounded-xl px-4 py-3 text-sm font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
+                          />
+                          <button
+                            onClick={sendNotification}
+                            disabled={sending || !notifTitle.trim() || !notifBody.trim()}
+                            className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 bg-indigo-500 text-white font-semibold text-sm disabled:opacity-40 active:scale-[0.98] transition-transform"
+                          >
+                            <Send size={16} />
+                            {sending ? 'Envoi…' : 'Envoyer à tous'}
+                          </button>
+                          {sendResult && (
+                            <p className={`text-xs text-center font-medium ${sendResult.startsWith('Erreur') ? 'text-red-400' : 'text-green-500'}`}>
+                              {sendResult}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
+
                 </div>
               </section>
             )}
