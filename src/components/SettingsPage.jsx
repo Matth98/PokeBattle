@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, Send } from 'lucide-react';
+import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, Send, ExternalLink } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
@@ -22,6 +22,17 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
   const permission   = pushPermission;
   const isSubscribed = pushIsSubscribed;
   const isSuperAdmin = dbUser?.role === 'superadmin';
+
+  const openSystemNotificationSettings = useCallback(() => {
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    if (isIOS) {
+      // Tente d'ouvrir les réglages de notification sur iOS
+      window.location.href = 'App-Prefs:NOTIFICATIONS';
+    } else if (isAndroid) {
+      window.location.href = 'intent://notification_settings#Intent;scheme=android-app;end';
+    }
+  }, []);
   const [sendOpen, setSendOpen]     = useState(false);
   const [notifTitle, setNotifTitle] = useState('');
   const [notifBody, setNotifBody]   = useState('');
@@ -260,8 +271,8 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
 
                   {/* Ligne 1 : toggle activer/désactiver */}
                   <button
-                    onClick={isSubscribed ? onPushUnsubscribe : onPushSubscribe}
-                    disabled={pushLoading || permission === 'denied'}
+                    onClick={permission === 'denied' ? openSystemNotificationSettings : isSubscribed ? onPushUnsubscribe : onPushSubscribe}
+                    disabled={pushLoading}
                     className={`w-full flex items-center gap-3 px-4 py-4 disabled:opacity-50 ${isSuperAdmin ? `border-b ${t.divider}` : ''}`}
                   >
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -277,19 +288,22 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                       </p>
                       {permission === 'denied' && (
                         <p className={`text-xs ${t.textSecondary} mt-0.5`}>
-                          Autorisez les notifications dans les réglages de votre navigateur
+                          Ouvrir les réglages de notification
                         </p>
                       )}
                     </div>
-                    {permission !== 'denied' && (
-                      <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
-                        isSubscribed ? 'bg-indigo-500' : isDark ? 'bg-zinc-600' : 'bg-gray-200'
-                      }`}>
-                        <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                          isSubscribed ? 'translate-x-5' : 'translate-x-0'
-                        }`} />
-                      </div>
-                    )}
+                    {permission === 'denied'
+                      ? <ExternalLink size={16} className={t.textSecondary} />
+                      : (
+                        <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
+                          isSubscribed ? 'bg-indigo-500' : isDark ? 'bg-zinc-600' : 'bg-gray-200'
+                        }`}>
+                          <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                            isSubscribed ? 'translate-x-5' : 'translate-x-0'
+                          }`} />
+                        </div>
+                      )
+                    }
                   </button>
 
                   {/* Ligne 2 : envoyer une notification (superadmin uniquement) */}

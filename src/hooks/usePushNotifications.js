@@ -6,6 +6,7 @@ import { auth } from '../firebase';
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
 const VAPID_KEY = process.env.REACT_APP_FIREBASE_VAPID_KEY;
 const STORAGE_KEY = 'push_token';
+const UNSUBSCRIBED_KEY = 'push_unsubscribed';
 
 const getAuthHeaders = async () => {
   const token = await auth.currentUser?.getIdToken();
@@ -51,11 +52,11 @@ export const usePushNotifications = () => {
   }, []);
 
   // Si permission déjà accordée mais token absent (ex : réinstallation PWA),
-  // on re-subscribe silencieusement — mais seulement après le premier render
-  // pour que la bannière ait le temps de s'afficher.
+  // on re-subscribe silencieusement — sauf si l'utilisateur a explicitement désactivé.
   useEffect(() => {
     if (permission !== 'granted') return;
     if (token) return;
+    if (localStorage.getItem(UNSUBSCRIBED_KEY)) return;
     subscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [permission]);
@@ -69,9 +70,13 @@ export const usePushNotifications = () => {
 
     setLoading(true);
     try {
-      const perm = await Notification.requestPermission();
+      // Si déjà accordée, on ne rappelle pas requestPermission() (échoue sans geste utilisateur sur iOS)
+      const perm = Notification.permission === 'granted'
+        ? 'granted'
+        : await Notification.requestPermission();
       setPermission(perm);
       if (perm !== 'granted') return false;
+      localStorage.removeItem(UNSUBSCRIBED_KEY); // l'utilisateur a activé explicitement
 
       const messaging = await getFirebaseMessaging();
       if (!messaging) return false;
@@ -113,6 +118,7 @@ export const usePushNotifications = () => {
         body: JSON.stringify({ token }),
       });
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(UNSUBSCRIBED_KEY, '1'); // mémorise le choix explicite de l'utilisateur
       setToken(null); // mise à jour de l'état React → re-render garanti
     } catch (err) {
       console.error('[Push] Erreur unsubscribe:', err);
