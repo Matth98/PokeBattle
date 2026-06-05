@@ -38,8 +38,18 @@ const NORMALIZED_INDEX = POKEMON_LIST.map((p) => ({
   _normalized: normalize(p.name),
 }));
 
-export const usePokemon = () => {
-  const [searchResults, setSearchResults] = useState([]);
+const computeResults = (query) => {
+  const q = normalize((query || '').trim());
+  if (!q) return [];
+  return NORMALIZED_INDEX
+    .filter((p) => p._normalized.includes(q))
+    .sort((a, b) => a.pokeId - b.pokeId)
+    .slice(0, 20)
+    .map(({ pokeId, name }) => ({ pokeId, name }));
+};
+
+export const usePokemon = (initialQuery = '') => {
+  const [searchResults, setSearchResults] = useState(() => computeResults(initialQuery));
   const [searchLoading, setSearchLoading] = useState(false);
 
   const searchPokemon = useCallback((query) => {
@@ -49,13 +59,7 @@ export const usePokemon = () => {
       return;
     }
     setSearchLoading(true);
-    // Filtrage en mémoire, instantané
-    const filtered = NORMALIZED_INDEX
-      .filter((p) => p._normalized.includes(q))
-      .sort((a, b) => a.pokeId - b.pokeId)
-      .slice(0, 20)
-      .map(({ pokeId, name }) => ({ pokeId, name }));
-    setSearchResults(filtered);
+    setSearchResults(computeResults(query));
     setSearchLoading(false);
   }, []);
 

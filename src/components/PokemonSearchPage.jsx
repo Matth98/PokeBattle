@@ -4,10 +4,10 @@ import { ClearButton } from './ClearButton';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 import { useTranslation } from '../hooks/useTranslation';
 
-export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon, isBackground = false }, ref) => {
+export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon, isBackground = false, initialSearchTerm = '', onSearchChange }, ref) => {
   const tr = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const { searchResults, searchLoading, searchPokemon, getPokemonImageUrl } = usePokemon();
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+  const { searchResults, searchLoading, searchPokemon, getPokemonImageUrl } = usePokemon(initialSearchTerm);
   const inputRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
@@ -17,11 +17,13 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
   const handleChange = (e) => {
     setSearchTerm(e.target.value);
     searchPokemon(e.target.value);
+    onSearchChange?.(e.target.value);
   };
 
   const clear = () => {
     setSearchTerm('');
     searchPokemon('');
+    onSearchChange?.('');
     inputRef.current?.focus({ preventScroll: true });
   };
 
