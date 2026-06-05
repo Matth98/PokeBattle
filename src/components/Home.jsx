@@ -377,7 +377,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
           <button
             onClick={onPushSubscribe}
             className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"
-            style={{ boxShadow: 'rgb(100 0 173) 0px 18px 50px -26px' }}
+            style={{ boxShadow: 'rgba(100, 0, 173, 0.45) 0px 18px 50px -26px' }}
           >
             {/* Fond via background-image CSS */}
             <div
