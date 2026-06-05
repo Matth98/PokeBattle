@@ -33,6 +33,18 @@ export const usePushNotifications = () => {
   const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEY));
   const [loading, setLoading] = useState(false);
 
+  // Resync la permission quand l'app repasse au premier plan
+  // (ex : l'utilisateur vient de l'activer dans les Réglages système).
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (typeof Notification === 'undefined') return;
+      setPermission(Notification.permission);
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   // Si permission déjà accordée mais token absent (ex : réinstallation PWA),
   // on re-subscribe silencieusement — mais seulement après le premier render
   // pour que la bannière ait le temps de s'afficher.
@@ -41,7 +53,7 @@ export const usePushNotifications = () => {
     if (token) return;
     subscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [permission]);
 
   const subscribe = useCallback(async () => {
     if (typeof Notification === 'undefined') return false;
