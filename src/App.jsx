@@ -231,6 +231,18 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [battles, setBattles] = useState([]);
   const [teams, setTeams] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
+  // Sur iOS, Firebase peut fire onAuthStateChanged avec null puis avec l'utilisateur
+  // en deux passes distinctes. authSettled ajoute 250ms de stabilisation après que
+  // authLoading passe à false avant d'afficher LoginScreen, évitant le flash.
+  const [authSettled, setAuthSettled] = useState(false);
+  useEffect(() => {
+    if (!authLoading) {
+      const t = setTimeout(() => setAuthSettled(true), 250);
+      return () => clearTimeout(t);
+    } else {
+      setAuthSettled(false);
+    }
+  }, [authLoading]);
 
   // Tri alphabétique stable — utilisé partout (pages + modales)
   const sortedPlayers = useMemo(
@@ -513,6 +525,14 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   };
 
   if (authLoading) {
+    return (
+      <div className={`flex items-center justify-center h-screen ${isDark ? 'bg-[#09090b]' : 'bg-white'}`}>
+        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user && (!authSettled || authLoading)) {
     return (
       <div className={`flex items-center justify-center h-screen ${isDark ? 'bg-[#09090b]' : 'bg-white'}`}>
         <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />

@@ -1,7 +1,5 @@
 // src/components/LoginScreen.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import { auth } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
 import { useTranslation } from '../hooks/useTranslation';
 
 // Mobile navigateur → signInWithRedirect (page navigue vers Google)
@@ -91,16 +89,8 @@ export function LoginScreen({ onSignInWithGoogle }) {
         return;
       }
 
-      // iOS PWA : popup a fermé, auth peut être en IndexedDB.
-      // Attendre 2s qu'onAuthStateChanged confirme, sinon recharger.
-      const confirmed = await new Promise((resolve) => {
-        const t = setTimeout(() => { unsub(); resolve(false); }, 2000);
-        const unsub = onAuthStateChanged(auth, (user) => {
-          if (user) { clearTimeout(t); unsub(); resolve(true); }
-        });
-      });
-      if (!isCurrent()) return;
-      if (confirmed) return;
+      // iOS PWA : la communication popup→app a échoué mais l'auth est en IndexedDB.
+      // On recharge immédiatement : Firebase lira l'IndexedDB → utilisateur connecté.
       window.location.reload();
     }
   };
