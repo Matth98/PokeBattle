@@ -6,7 +6,6 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 
@@ -45,20 +44,19 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    // Sur mobile, on récupère le résultat d'un éventuel signInWithRedirect.
-    // Timeout de 5s : sur iOS, getRedirectResult peut bloquer onAuthStateChanged
-    // indéfiniment au premier lancement si Firebase initialise son IndexedDB.
-    if (isMobileWeb) {
-      Promise.race([
-        getRedirectResult(auth),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
-      ]).catch(() => {});
-    }
-    return onAuthStateChanged(auth, (firebaseUser) => {
+    // Filet de sécurité : si onAuthStateChanged ne fire pas dans les 5s
+    // (ex. Firebase bloqué sur iOS au premier lancement), on force authLoading=false
+    // pour que LoginScreen s'affiche et que le bouton soit cliquable.
+    const forceTimeout = setTimeout(() => setLoading(false), 5000);
+
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      clearTimeout(forceTimeout);
       setUser(firebaseUser);
       setLoading(false);
       fetchDbUser(firebaseUser);
     });
+
+    return () => { clearTimeout(forceTimeout); unsub(); };
   }, [fetchDbUser]);
 
   // Call after claiming/creating a player to refresh dbUser
