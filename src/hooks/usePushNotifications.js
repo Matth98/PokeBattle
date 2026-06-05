@@ -24,18 +24,21 @@ const registerServiceWorker = async () => {
 };
 
 export const usePushNotifications = () => {
-  // 'unknown' | 'granted' | 'denied' | 'unsupported'
+  // 'default' | 'granted' | 'denied' | 'unsupported'
   const [permission, setPermission] = useState(() => {
     if (typeof Notification === 'undefined') return 'unsupported';
-    return Notification.permission; // 'default' | 'granted' | 'denied'
+    return Notification.permission;
   });
+  // Token en état React — seule source de vérité, évite de lire localStorage à chaque render
+  const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEY));
   const [loading, setLoading] = useState(false);
 
-  // Si la permission est déjà accordée mais que le token n'est pas enregistré,
-  // on re-subscribe silencieusement (ex : réinstallation de la PWA).
+  // Si permission déjà accordée mais token absent (ex : réinstallation PWA),
+  // on re-subscribe silencieusement — mais seulement après le premier render
+  // pour que la bannière ait le temps de s'afficher.
   useEffect(() => {
     if (permission !== 'granted') return;
-    if (localStorage.getItem(STORAGE_KEY)) return;
+    if (token) return;
     subscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -65,6 +68,7 @@ export const usePushNotifications = () => {
       if (!fcmToken) return false;
 
       localStorage.setItem(STORAGE_KEY, fcmToken);
+      setToken(fcmToken); // mise à jour de l'état React → re-render garanti
 
       await fetch(`${API_BASE_URL}/push/subscribe`, {
         method: 'POST',
@@ -82,25 +86,25 @@ export const usePushNotifications = () => {
   }, []);
 
   const unsubscribe = useCallback(async () => {
-    const fcmToken = localStorage.getItem(STORAGE_KEY);
-    if (!fcmToken) return;
+    if (!token) return;
 
     setLoading(true);
     try {
       await fetch(`${API_BASE_URL}/push/subscribe`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
-        body: JSON.stringify({ token: fcmToken }),
+        body: JSON.stringify({ token }),
       });
       localStorage.removeItem(STORAGE_KEY);
+      setToken(null); // mise à jour de l'état React → re-render garanti
     } catch (err) {
       console.error('[Push] Erreur unsubscribe:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
-  const isSubscribed = permission === 'granted' && !!localStorage.getItem(STORAGE_KEY);
+  const isSubscribed = permission === 'granted' && !!token;
 
   return { permission, isSubscribed, loading, subscribe, unsubscribe };
 };
