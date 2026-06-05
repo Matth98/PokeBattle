@@ -775,7 +775,7 @@ export const PlayerDetail = ({
         <div ref={tabContentRef} style={{ minHeight: tabMinHeight || '65vh' }}>
         {activeTab === 'pokemon' && (
           <section>
-            <div className="flex justify-between items-baseline mb-3 px-1">
+            <div className="flex justify-between items-center mb-3 px-1">
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 Pokémon ({rosterSize})
               </h2>
@@ -903,7 +903,7 @@ export const PlayerDetail = ({
 
         {activeTab === 'teams' && (
           <section>
-            <div className="flex justify-between items-baseline mb-3 px-1">
+            <div className="flex justify-between items-center mb-3 px-1">
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 {tr('teams.title')} ({playerTeams.length})
               </h2>
@@ -1047,7 +1047,7 @@ export const PlayerDetail = ({
 
         {activeTab === 'facts' && (
           <section>
-            <div className="flex justify-between items-baseline mb-3 px-1">
+            <div className="flex justify-between items-center mb-3 px-1">
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 Fun facts
               </h2>
