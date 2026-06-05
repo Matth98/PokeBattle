@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Users, Camera, Loader2 } from 'lucide-react';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
+import { getRandomDefaultAvatar } from '../utils/defaultAvatars';
 import { AlertModal } from './AlertModal';
 import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -88,7 +89,7 @@ export const Players = ({
 
   const handleAddPlayer = async () => {
     if (!newPlayerName.trim()) return;
-    await onAddPlayer({ name: newPlayerName, avatar: newPlayerAvatar });
+    await onAddPlayer({ name: newPlayerName, avatar: newPlayerAvatar ?? getRandomDefaultAvatar() });
     resetForm();
     setShowForm(false);
   };

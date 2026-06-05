@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Swords, ArrowRight, Loader2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import { getRandomDefaultAvatar } from '../utils/defaultAvatars';
 
 /**
  * Shown on first login when dbUser.playerId === null.
@@ -21,7 +22,7 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
   const handleCreate = async () => {
     if (!name.trim()) { setError(tr('claim.nameError')); return; }
     setError('');
-    await onCreatePlayer({ name: name.trim(), avatar: null });
+    await onCreatePlayer({ name: name.trim(), avatar: getRandomDefaultAvatar() });
     setName('');
     setCreating(false);
   };
