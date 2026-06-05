@@ -5,17 +5,8 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
-
-// Mobile navigateur (Safari/Chrome) → signInWithRedirect
-// PWA standalone (écran d'accueil) → signInWithPopup (redirect ne revient pas dans la PWA)
-// Desktop → signInWithPopup
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-  || window.navigator.standalone === true;
-const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isStandalone;
 
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
 const AuthContext  = createContext(null);
@@ -50,12 +41,6 @@ export function AuthProvider({ children }) {
     // pour que LoginScreen s'affiche et que le bouton soit cliquable.
     const forceTimeout = setTimeout(() => setLoading(false), 5000);
 
-    // Sur mobile navigateur, après signInWithRedirect, Firebase a besoin de
-    // getRedirectResult() pour finaliser la session avant que onAuthStateChanged fire.
-    if (isMobileWeb) {
-      getRedirectResult(auth).catch(() => {/* erreur ignorée silencieusement */});
-    }
-
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       clearTimeout(forceTimeout);
       setUser(firebaseUser);
@@ -74,7 +59,6 @@ export function AuthProvider({ children }) {
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    if (isMobileWeb) return signInWithRedirect(auth, provider);
     return signInWithPopup(auth, provider);
   };
 
