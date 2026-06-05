@@ -15,9 +15,7 @@ import {
 // signInWithRedirect fonctionne dans le navigateur mobile, mais PAS en mode
 // standalone (PWA installée sur l'écran d'accueil) où la redirection ne revient
 // pas dans l'app. Dans ce cas on retombe sur signInWithPopup.
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-  || window.navigator.standalone === true;
-const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isStandalone;
+const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
 const AuthContext  = createContext(null);

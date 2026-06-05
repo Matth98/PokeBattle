@@ -7,9 +7,7 @@ import { useTranslation } from '../hooks/useTranslation';
 // Desktop              → signInWithPopup (fiable)
 // Mobile navigateur   → signInWithRedirect (géré dans useAuth)
 // iOS PWA standalone  → signInWithPopup + stratégie de récupération
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-  || window.navigator.standalone === true;
-const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isStandalone;
+const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 // Codes où l'utilisateur a fermé la popup volontairement
 const CANCELLED_CODES = [
