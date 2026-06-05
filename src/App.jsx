@@ -20,6 +20,7 @@ import { PokemonDetailPage } from './components/PokemonDetailPage';
 import { SettingsPage } from './components/SettingsPage';
 import { LanguageProvider } from './hooks/useLanguage';
 import { useThemeMode } from './hooks/useThemeMode';
+import { usePushNotifications } from './hooks/usePushNotifications';
 import { useEdgeSwipeBack } from './hooks/useEdgeSwipeBack';
 
 // Tailwind CDN
@@ -51,6 +52,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   } = useAuth();
   const toast = useToast();
   const t = isDark ? theme.dark : theme.light;
+  const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
   // ── Raccourci clavier thème (desktop) : Cmd/Ctrl + Shift + T ──
   useEffect(() => {
@@ -896,6 +898,11 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             themeMode={themeMode}
             setThemeMode={setThemeMode}
             t={t}
+            pushPermission={permission}
+            pushIsSubscribed={isSubscribed}
+            pushLoading={pushLoading}
+            onPushSubscribe={subscribe}
+            onPushUnsubscribe={unsubscribe}
             onClose={() => setSettingsOpen(false)}
             onSignOut={() => { setSettingsOpen(false); signOut(); }}
             onOpenPlayer={() => {
@@ -969,7 +976,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
 function App() {
   const { isDark, themeMode, setThemeMode } = useThemeMode();
-
   // Synchronise la couleur de la barre de navigation du navigateur avec le thème.
   // En mode "système" les deux <meta theme-color media="..."> de l'HTML gèrent déjà
   // la couleur avant que React s'initialise — on ne touche qu'en mode forcé pour

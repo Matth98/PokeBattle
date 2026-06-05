@@ -5,7 +5,6 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
-import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const THEME_OPTIONS = [
   { value: 'light',  Icon: Sun,     labelKey: 'settings.lightMode'  },
@@ -13,13 +12,14 @@ const THEME_OPTIONS = [
   { value: 'dark',   Icon: Moon,    labelKey: 'settings.darkMode'   },
 ];
 
-export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer }) => {
+export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer, pushPermission, pushIsSubscribed, pushLoading, onPushSubscribe, onPushUnsubscribe }) => {
   const tr = useTranslation();
   const displayName = linkedPlayer?.name || user?.displayName || user?.email || 'Utilisateur';
   const email       = user?.email || '';
   const { language, setLanguage } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
-  const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  const permission   = pushPermission;
+  const isSubscribed = pushIsSubscribed;
   const isSuperAdmin = dbUser?.role === 'superadmin';
   const [notifTitle, setNotifTitle] = useState('');
   const [notifBody, setNotifBody]   = useState('');
@@ -257,7 +257,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                 </p>
                 <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
                   <button
-                    onClick={isSubscribed ? unsubscribe : subscribe}
+                    onClick={isSubscribed ? onPushUnsubscribe : onPushSubscribe}
                     disabled={pushLoading || permission === 'denied'}
                     className="w-full flex items-center gap-3 px-4 py-4 disabled:opacity-50"
                   >
