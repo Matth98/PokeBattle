@@ -890,6 +890,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         {settingsOpen && (
           <SettingsPage
             user={user}
+            dbUser={dbUser}
             linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
             isDark={isDark}
             themeMode={themeMode}

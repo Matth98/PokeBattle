@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, Copy } from 'lucide-react';
+import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, Send } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
@@ -13,22 +13,39 @@ const THEME_OPTIONS = [
   { value: 'dark',   Icon: Moon,    labelKey: 'settings.darkMode'   },
 ];
 
-export const SettingsPage = ({ user, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer }) => {
+export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer }) => {
   const tr = useTranslation();
   const displayName = linkedPlayer?.name || user?.displayName || user?.email || 'Utilisateur';
   const email       = user?.email || '';
   const { language, setLanguage } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
   const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
-  const [tokenCopied, setTokenCopied] = useState(false);
+  const isSuperAdmin = dbUser?.role === 'superadmin';
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifBody, setNotifBody]   = useState('');
+  const [sending, setSending]       = useState(false);
+  const [sendResult, setSendResult] = useState(null);
 
-  const copyToken = useCallback(async () => {
-    const token = await user?.getIdToken?.();
-    if (!token) return;
-    await navigator.clipboard.writeText(token);
-    setTokenCopied(true);
-    setTimeout(() => setTokenCopied(false), 2000);
-  }, [user]);
+  const sendNotification = useCallback(async () => {
+    if (!notifTitle.trim() || !notifBody.trim()) return;
+    setSending(true);
+    setSendResult(null);
+    try {
+      const token = await user?.getIdToken?.();
+      const res = await fetch('https://pokebattle-backend.vercel.app/api/push/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title: notifTitle.trim(), body: notifBody.trim() }),
+      });
+      const data = await res.json();
+      setSendResult(res.ok ? `Envoyé à ${data.sent} appareil(s)` : `Erreur : ${data.error}`);
+      if (res.ok) { setNotifTitle(''); setNotifBody(''); }
+    } catch {
+      setSendResult('Erreur réseau');
+    } finally {
+      setSending(false);
+    }
+  }, [notifTitle, notifBody, user]);
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
   useBodyScrollLock();
@@ -314,23 +331,50 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, themeMode, setThemeMo
               </div>
             </section>
 
+            {/* ── Admin : envoyer une notification ── */}
+            {isSuperAdmin && (
+              <section>
+                <p className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 px-1`}>
+                  Administration
+                </p>
+                <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden p-4 space-y-3`}>
+                  <input
+                    type="text"
+                    placeholder="Titre"
+                    value={notifTitle}
+                    onChange={e => setNotifTitle(e.target.value)}
+                    className={`w-full rounded-xl px-4 py-3 text-sm font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Message"
+                    value={notifBody}
+                    onChange={e => setNotifBody(e.target.value)}
+                    className={`w-full rounded-xl px-4 py-3 text-sm font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
+                  />
+                  <button
+                    onClick={sendNotification}
+                    disabled={sending || !notifTitle.trim() || !notifBody.trim()}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 bg-indigo-500 text-white font-semibold text-sm disabled:opacity-40 active:scale-[0.98] transition-transform"
+                  >
+                    <Send size={16} />
+                    {sending ? 'Envoi…' : 'Envoyer à tous'}
+                  </button>
+                  {sendResult && (
+                    <p className={`text-xs text-center font-medium ${sendResult.startsWith('Erreur') ? 'text-red-400' : 'text-green-500'}`}>
+                      {sendResult}
+                    </p>
+                  )}
+                </div>
+              </section>
+            )}
+
             {/* ── Compte ── */}
             <section>
               <p className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 px-1`}>
                 {tr('settings.account')}
               </p>
               <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
-                <button
-                  onClick={copyToken}
-                  className={`w-full flex items-center gap-3 px-4 py-4 border-b ${t.divider}`}
-                >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-700 text-zinc-300' : 'bg-gray-100 text-gray-500'}`}>
-                    <Copy size={18} />
-                  </div>
-                  <span className={`flex-1 text-left font-medium ${t.text}`}>
-                    {tokenCopied ? 'Token copié ✓' : 'Copier mon token Firebase'}
-                  </span>
-                </button>
                 <button
                   onClick={onSignOut}
                   className="w-full flex items-center gap-3 px-4 py-4"
