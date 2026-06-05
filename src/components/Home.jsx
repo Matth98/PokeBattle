@@ -376,16 +376,34 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         {pushPermission === 'default' && onPushSubscribe && !isBackground && (
           <button
             onClick={onPushSubscribe}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left ${isDark ? 'bg-indigo-500/20 border border-indigo-400/30' : 'bg-indigo-50 border border-indigo-100'}`}
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left active:scale-[0.98] transition-transform duration-100"
+            style={{
+              background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 50%, #2d1b69 100%)',
+              boxShadow: '0 8px 32px rgba(99,102,241,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
+            }}
           >
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
-              <Bell size={18} />
+            {/* Icône gauche */}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(129,140,248,0.2)', border: '1px solid rgba(165,180,252,0.2)' }}
+            >
+              <Bell size={19} className="text-indigo-200" />
             </div>
+
+            {/* Texte */}
             <div className="flex-1 min-w-0">
-              <p className={`font-semibold text-sm ${isDark ? 'text-indigo-200' : 'text-indigo-900'}`}>Activer les notifications</p>
-              <p className={`text-xs mt-0.5 ${isDark ? 'text-indigo-300/70' : 'text-indigo-500'}`}>Sois averti des nouveaux combats</p>
+              <p className="font-semibold text-sm text-white leading-snug">Activer les notifications</p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(199,210,254,0.7)' }}>Sois averti des nouveaux combats</p>
             </div>
-            <ChevronRight size={16} className={isDark ? 'text-indigo-400' : 'text-indigo-400'} />
+
+            {/* Icône déco droite : Pokéball */}
+            <div className="flex-shrink-0 opacity-90">
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="17" stroke="rgba(165,180,252,0.3)" strokeWidth="1" fill="rgba(99,102,241,0.15)" />
+                <path d="M5.5 18h25M18 5.5C11.1 5.5 5.5 11.1 5.5 18M18 5.5C24.9 5.5 30.5 11.1 30.5 18M5.5 18C5.5 24.9 11.1 30.5 18 30.5M30.5 18C30.5 24.9 24.9 30.5 18 30.5" stroke="rgba(165,180,252,0.5)" strokeWidth="1.2" />
+                <circle cx="18" cy="18" r="4" fill="rgba(199,210,254,0.15)" stroke="rgba(165,180,252,0.6)" strokeWidth="1.2" />
+                <circle cx="18" cy="18" r="1.8" fill="rgba(224,231,255,0.9)" />
+              </svg>
+            </div>
           </button>
         )}
 
