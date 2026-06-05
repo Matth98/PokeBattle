@@ -36,13 +36,11 @@ export const usePushNotifications = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Synchronise l'état si la permission est déjà accordée et qu'un token est stocké
+  // Active les notifications automatiquement au premier chargement
   useEffect(() => {
+    if (permission === 'unsupported' || permission === 'denied') return;
     if (permission === 'granted' && localStorage.getItem(STORAGE_KEY)) return;
-    if (permission === 'granted') {
-      // Token enregistré dans une session précédente mais pas en localStorage : re-subscribe silencieusement
-      subscribe();
-    }
+    subscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
