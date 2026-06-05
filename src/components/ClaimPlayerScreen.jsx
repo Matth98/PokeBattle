@@ -108,7 +108,7 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
 
         {/* Baseline discrète */}
         <p className="text-zinc-700 text-xs mt-10 text-center">
-          PokéScores · Saison en cours
+          PokéScores ©{new Date().getFullYear()}
         </p>
       </div>
     );
