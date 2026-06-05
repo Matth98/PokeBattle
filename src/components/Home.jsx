@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Search, Users, Shield, Zap, ChevronRight, Trophy, Loader2, Bell } from 'lucide-react';
+import { Search, Users, Shield, Zap, ChevronRight, Trophy, Loader2 } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
@@ -376,33 +376,47 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         {pushPermission !== 'denied' && pushPermission !== 'unsupported' && !pushIsSubscribed && onPushSubscribe && !isBackground && (
           <button
             onClick={onPushSubscribe}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left active:scale-[0.98] transition-transform duration-100"
-            style={{
-              background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 50%, #2d1b69 100%)',
-              boxShadow: '0 8px 32px rgba(99,102,241,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
-            }}
+            className="w-full relative flex items-center gap-4 p-4 rounded-2xl text-left active:scale-[0.98] transition-transform duration-100"
           >
-            {/* Icône gauche */}
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(129,140,248,0.2)', border: '1px solid rgba(165,180,252,0.2)' }}
+            {/* Fond via background-image CSS */}
+            <div
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                backgroundImage: 'url(/banner/bg-glow.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'right center',
+              }}
+            />
+
+            {/* Texte + bouton */}
+            <div className="relative flex-1 min-w-0 flex flex-col gap-2.5">
+              <p className="font-bold text-white text-base leading-snug">
+                Reçois toutes les nouveautés directement dans ta poche !
+              </p>
+              <div className="inline-flex items-center gap-0.5 bg-white rounded-full pl-3 pr-2 py-1.5 self-start">
+                <span className="text-[#111827] text-sm font-semibold tracking-tight">Activer</span>
+                <ChevronRight size={14} className="text-[#111827]" />
+              </div>
+            </div>
+
+            {/* Pokéball — absolute sur le bouton, centrée sur l'icône */}
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                width: '140px',
+                height: '140px',
+                right: '0',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                mixBlendMode: 'overlay',
+              }}
             >
-              <Bell size={19} className="text-indigo-200" />
+              <img src="/banner/pokeball.svg" alt="" className="w-full h-full" />
             </div>
 
-            {/* Texte */}
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-white leading-snug">Activer les notifications</p>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(199,210,254,0.7)' }}>Sois averti des nouveaux combats</p>
-            </div>
-
-            {/* Icône déco droite : Pokéball */}
-            <div className="flex-shrink-0 opacity-90">
-              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                <circle cx="18" cy="18" r="17" stroke="rgba(165,180,252,0.3)" strokeWidth="1" fill="rgba(99,102,241,0.15)" />
-                <path d="M5.5 18h25M18 5.5C11.1 5.5 5.5 11.1 5.5 18M18 5.5C24.9 5.5 30.5 11.1 30.5 18M5.5 18C5.5 24.9 11.1 30.5 18 30.5M30.5 18C30.5 24.9 24.9 30.5 18 30.5" stroke="rgba(165,180,252,0.5)" strokeWidth="1.2" />
-                <circle cx="18" cy="18" r="4" fill="rgba(199,210,254,0.15)" stroke="rgba(165,180,252,0.6)" strokeWidth="1.2" />
-                <circle cx="18" cy="18" r="1.8" fill="rgba(224,231,255,0.9)" />
-              </svg>
+            {/* Icône PokeScores */}
+            <div className="relative flex-shrink-0 w-[51px] h-[39px]">
+              <img src="/banner/icon.svg" alt="" className="w-full h-full object-contain" />
             </div>
           </button>
         )}
