@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Search, Users, Shield, Zap, ChevronRight, Trophy, Loader2 } from 'lucide-react';
+import { Search, Users, Shield, Zap, ChevronRight, Trophy, Loader2, Bell } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';
@@ -21,7 +21,7 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0 }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, onPushSubscribe }) => {
   const tr = useTranslation();
   const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
 
@@ -371,6 +371,24 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       </div>
 
       <div className="relative z-[1] px-5 mt-4 pb-40 space-y-7">
+
+        {/* ── Bannière notifications ── */}
+        {pushPermission === 'default' && onPushSubscribe && !isBackground && (
+          <button
+            onClick={onPushSubscribe}
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left ${isDark ? 'bg-indigo-500/20 border border-indigo-400/30' : 'bg-indigo-50 border border-indigo-100'}`}
+          >
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
+              <Bell size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`font-semibold text-sm ${isDark ? 'text-indigo-200' : 'text-indigo-900'}`}>Activer les notifications</p>
+              <p className={`text-xs mt-0.5 ${isDark ? 'text-indigo-300/70' : 'text-indigo-500'}`}>Sois averti des nouveaux combats</p>
+            </div>
+            <ChevronRight size={16} className={isDark ? 'text-indigo-400' : 'text-indigo-400'} />
+          </button>
+        )}
+
         {/* ── Statistiques ── */}
         <section>
           <div className="grid grid-cols-3 gap-3">

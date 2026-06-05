@@ -651,6 +651,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           deleteAnimSnapshot={homeDeleteSnapshotRef.current}
           onDeleteAnimConsumed={() => { homeDeleteSnapshotRef.current = null; }}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
+          pushPermission={permission}
+          onPushSubscribe={subscribe}
         />
       )}
 
