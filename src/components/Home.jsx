@@ -376,11 +376,11 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         {pushPermission !== 'denied' && pushPermission !== 'unsupported' && !pushIsSubscribed && onPushSubscribe && !isBackground && (
           <button
             onClick={onPushSubscribe}
-            className="w-full relative flex items-center gap-4 p-4 rounded-2xl text-left active:scale-[0.98] transition-transform duration-100"
+            className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"
           >
             {/* Fond via background-image CSS */}
             <div
-              className="absolute inset-0 rounded-2xl pointer-events-none"
+              className="absolute inset-0 pointer-events-none"
               style={{
                 backgroundImage: 'url(/banner/bg-glow.png)',
                 backgroundSize: 'cover',
