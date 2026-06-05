@@ -42,18 +42,13 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)',
         }}
       >
-        {/* Decorative Pokéball */}
+        {/* App icon */}
         <div className="relative mb-10 select-none" aria-hidden="true">
-          <div className="w-24 h-24 rounded-full border-[6px] border-zinc-700 relative overflow-hidden shadow-[0_0_60px_rgba(139,92,246,0.25)]">
-            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-br from-purple-600 to-indigo-700" />
-            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-zinc-800" />
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[6px] bg-zinc-700" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-zinc-900 border-[3px] border-zinc-700 z-10 flex items-center justify-center">
-              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
-            </div>
+          <div className="w-24 h-24 rounded-[28px] overflow-hidden shadow-[0_0_60px_rgba(139,92,246,0.30)]">
+            <img src="/Match-button.svg" alt="" className="w-full h-full object-cover" />
           </div>
           {/* Glow ring */}
-          <div className="absolute inset-0 rounded-full ring-1 ring-purple-500/20 scale-110 pointer-events-none" />
+          <div className="absolute inset-0 rounded-[28px] ring-1 ring-purple-500/20 scale-110 pointer-events-none" />
         </div>
 
         {/* Titre + intro */}
@@ -109,7 +104,7 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
 
         {/* Baseline discrète */}
         <p className="text-zinc-700 text-xs mt-10 text-center">
-          Pokébattle · Saison en cours
+          PokéScores · Saison en cours
         </p>
       </div>
     );
