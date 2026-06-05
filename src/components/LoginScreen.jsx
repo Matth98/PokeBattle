@@ -19,6 +19,7 @@ const CANCELLED_CODES = [
 export function LoginScreen({ onSignInWithGoogle }) {
   const tr = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [debug, setDebug]     = useState('');
   const mountedRef = useRef(true);
   const attemptRef = useRef(0);
 
@@ -51,7 +52,13 @@ export function LoginScreen({ onSignInWithGoogle }) {
     // au lieu de naviguer la page courante, la PWA resterait avec loading=true
     // sans aucun moyen fiable de le reset.
     if (isMobileWeb) {
-      onSignInWithGoogle().catch(() => {});
+      setLoading(true);
+      onSignInWithGoogle().catch((err) => {
+        if (isCurrent()) {
+          setLoading(false);
+          setDebug('ERREUR: ' + (err?.code || err?.message || JSON.stringify(err)));
+        }
+      });
       return;
     }
 
@@ -164,6 +171,15 @@ export function LoginScreen({ onSignInWithGoogle }) {
           {tr('login.google')}
         </button>
       </div>
+
+      {/* Debug temporaire */}
+      {debug ? (
+        <p className="mt-4 text-yellow-400 text-xs text-center px-4 break-all">{debug}</p>
+      ) : (
+        <p className="mt-4 text-gray-600 text-xs text-center">
+          {`isMobile:${isMobileWeb} loading:${loading}`}
+        </p>
+      )}
 
       {/* Spinner */}
       {loading && (
