@@ -1,10 +1,11 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone } from 'lucide-react';
+import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const THEME_OPTIONS = [
   { value: 'light',  Icon: Sun,     labelKey: 'settings.lightMode'  },
@@ -18,6 +19,7 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, themeMode, setThemeMo
   const email       = user?.email || '';
   const { language, setLanguage } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
+  const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
   useBodyScrollLock();
@@ -220,6 +222,50 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, themeMode, setThemeMo
                 </div>
               </div>
             </section>
+
+            {/* ── Notifications ── */}
+            {permission !== 'unsupported' && (
+              <section>
+                <p className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 px-1`}>
+                  Notifications
+                </p>
+                <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
+                  <button
+                    onClick={isSubscribed ? unsubscribe : subscribe}
+                    disabled={pushLoading || permission === 'denied'}
+                    className="w-full flex items-center gap-3 px-4 py-4 disabled:opacity-50"
+                  >
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      isSubscribed
+                        ? isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'
+                        : isDark ? 'bg-zinc-700 text-zinc-400' : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {isSubscribed ? <Bell size={18} /> : <BellOff size={18} />}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className={`font-medium ${t.text}`}>
+                        {isSubscribed ? 'Notifications activées' : 'Activer les notifications'}
+                      </p>
+                      {permission === 'denied' && (
+                        <p className={`text-xs ${t.textSecondary} mt-0.5`}>
+                          Autorisez les notifications dans les réglages de votre navigateur
+                        </p>
+                      )}
+                    </div>
+                    {/* Toggle pill */}
+                    {permission !== 'denied' && (
+                      <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
+                        isSubscribed ? 'bg-indigo-500' : isDark ? 'bg-zinc-600' : 'bg-gray-200'
+                      }`}>
+                        <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                          isSubscribed ? 'translate-x-5' : 'translate-x-0'
+                        }`} />
+                      </div>
+                    )}
+                  </button>
+                </div>
+              </section>
+            )}
 
             {/* ── Langue ── */}
             <section className="hidden">

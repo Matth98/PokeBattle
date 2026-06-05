@@ -1,6 +1,7 @@
 // src/firebase.js
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getMessaging, isSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey:            process.env.REACT_APP_FIREBASE_API_KEY,
@@ -21,3 +22,11 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export { firebaseConfig };
+
+// getMessaging n'est disponible que dans les navigateurs supportant les SW
+export const getFirebaseMessaging = async () => {
+  const supported = await isSupported();
+  if (!supported) return null;
+  return getMessaging(app);
+};
