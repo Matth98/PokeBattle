@@ -12,9 +12,14 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Notifications reçues en background (app fermée ou en arrière-plan)
+// Notifications reçues en background (app fermée ou en arrière-plan).
+// Si le payload contient `notification`, Firebase l'affiche déjà automatiquement —
+// on n'affiche manuellement que pour les messages data-only pour éviter le doublon.
 messaging.onBackgroundMessage((payload) => {
-  const { title, body } = payload.notification ?? {};
+  if (payload.notification) return;
+
+  const title = payload.data?.title;
+  const body  = payload.data?.body;
   if (!title) return;
 
   self.registration.showNotification(title, {
