@@ -1,48 +1,28 @@
-// Service worker Firebase Cloud Messaging
-// Ce fichier DOIT être à la racine du domaine (public/) pour que FCM fonctionne.
-
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
-// Les variables Firebase sont injectées depuis le client via postMessage au moment
-// de l'enregistrement du SW. Jusqu'à réception, on initialise avec un objet vide.
-let messaging = null;
-
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'FIREBASE_CONFIG') {
-    if (firebase.apps.length === 0) {
-      firebase.initializeApp(event.data.config);
-      messaging = firebase.messaging();
-    }
-  }
+firebase.initializeApp({
+  apiKey:            "AIzaSyCgWbbVcZqMj-oX869WFdFA7fWz7ff3Elg",
+  authDomain:        "pokescores-1c33a.firebaseapp.com",
+  projectId:         "pokescores-1c33a",
+  storageBucket:     "pokescores-1c33a.firebasestorage.app",
+  messagingSenderId: "640927390983",
+  appId:             "1:640927390983:web:e33155d0a361316e1339a2",
 });
 
-// Gestion des notifications en arrière-plan (app fermée / en background)
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
+const messaging = firebase.messaging();
 
-  let payload;
-  try {
-    payload = event.data.json();
-  } catch {
-    payload = { notification: { title: 'PokéBattle', body: event.data.text() } };
-  }
+// Notifications reçues en background (app fermée ou en arrière-plan)
+messaging.onBackgroundMessage((payload) => {
+  const { title, body } = payload.notification ?? {};
+  if (!title) return;
 
-  const { title, body, icon, data } = {
-    title: payload.notification?.title ?? 'PokéBattle',
-    body:  payload.notification?.body  ?? '',
-    icon:  payload.notification?.icon  ?? '/icons/icon-192.png',
+  self.registration.showNotification(title, {
+    body:  body ?? '',
+    icon:  '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
     data:  payload.data ?? {},
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      icon,
-      badge: '/icons/icon-192.png',
-      data,
-    })
-  );
+  });
 });
 
 self.addEventListener('notificationclick', (event) => {

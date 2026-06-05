@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getToken } from 'firebase/messaging';
-import { getFirebaseMessaging, firebaseConfig } from '../firebase';
+import { getFirebaseMessaging } from '../firebase';
 import { auth } from '../firebase';
 
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
@@ -16,11 +16,6 @@ const registerServiceWorker = async () => {
   if (!('serviceWorker' in navigator)) return null;
   try {
     const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
-    // Transmet la config Firebase au SW (nécessaire pour initializeApp dans le SW)
-    const sw = reg.installing || reg.waiting || reg.active;
-    if (sw) {
-      sw.postMessage({ type: 'FIREBASE_CONFIG', config: firebaseConfig });
-    }
     await navigator.serviceWorker.ready;
     return reg;
   } catch {
