@@ -1,5 +1,6 @@
 import React, { useState, useRef, useImperativeHandle } from 'react';
-import { ChevronLeft, ChevronRight, Search, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ClearButton } from './ClearButton';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -54,11 +55,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
               className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
               style={{ fontSize: '16px' }}
             />
-            {searchTerm && (
-              <button onClick={clear} className={`flex-shrink-0 p-0 ${t.clearIcon}`} aria-label="Effacer">
-                <XCircle size={20} />
-              </button>
-            )}
+            {searchTerm && <ClearButton onClick={clear} color={t.clearIcon} />}
           </div>
         </div>
       </div>

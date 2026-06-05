@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Search, X, XCircle, Check, Plus } from 'lucide-react';
+import { Search, X, Check, Plus } from 'lucide-react';
+import { ClearButton } from './ClearButton';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -132,17 +133,10 @@ export const PokemonPicker = ({
               className={`flex-1 bg-transparent outline-none ${t.text} placeholder:${t.textTertiary} text-base`}
             />
             {hasQuery && (
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  searchPokemon('');
-                  inputRef.current?.focus({ preventScroll: true });
-                }}
-                className={`flex-shrink-0 p-0 ${t.clearIcon}`}
-                aria-label="Effacer"
-              >
-                <XCircle size={20} />
-              </button>
+              <ClearButton
+                onClick={() => { setSearchTerm(''); searchPokemon(''); inputRef.current?.focus({ preventScroll: true }); }}
+                color={t.clearIcon}
+              />
             )}
           </div>
         </div>

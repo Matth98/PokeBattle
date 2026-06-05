@@ -24,9 +24,9 @@ import {
   Check,
   CheckSquare,
   X,
-  XCircle,
   Zap,
 } from 'lucide-react';
+import { ClearButton } from './ClearButton';
 import { AlertModal } from './AlertModal';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
@@ -801,14 +801,11 @@ export const PlayerDetail = ({
                   className={`flex-1 bg-transparent outline-none ${t.text} text-base`}
                 />
                 {pokemonSearch && (
-                  <button
+                  <ClearButton
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { setPokemonSearch(''); onPokemonSearchChange?.(''); pokemonSearchRef.current?.focus(); }}
-                    className={`flex-shrink-0 p-0 ${t.clearIconOnWhite}`}
-                    aria-label="Effacer"
-                  >
-                    <XCircle size={20} />
-                  </button>
+                    color={t.clearIconOnWhite}
+                  />
                 )}
               </div>
             )}
@@ -930,14 +927,11 @@ export const PlayerDetail = ({
                   className={`flex-1 bg-transparent outline-none ${t.text} text-base`}
                 />
                 {teamsSearch && (
-                  <button
+                  <ClearButton
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { setTeamsSearch(''); onTeamsSearchChange?.(''); teamsSearchRef.current?.focus(); }}
-                    className={`flex-shrink-0 p-0 ${t.clearIconOnWhite}`}
-                    aria-label="Effacer"
-                  >
-                    <XCircle size={20} />
-                  </button>
+                    color={t.clearIconOnWhite}
+                  />
                 )}
               </div>
             )}
