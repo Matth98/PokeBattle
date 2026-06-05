@@ -31,10 +31,11 @@ export const usePushNotifications = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Active les notifications automatiquement au premier chargement
+  // Si la permission est déjà accordée mais que le token n'est pas enregistré,
+  // on re-subscribe silencieusement (ex : réinstallation de la PWA).
   useEffect(() => {
-    if (permission === 'unsupported' || permission === 'denied') return;
-    if (permission === 'granted' && localStorage.getItem(STORAGE_KEY)) return;
+    if (permission !== 'granted') return;
+    if (localStorage.getItem(STORAGE_KEY)) return;
     subscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
