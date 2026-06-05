@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff } from 'lucide-react';
+import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, Copy } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
@@ -20,6 +20,15 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, themeMode, setThemeMo
   const { language, setLanguage } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
   const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  const [tokenCopied, setTokenCopied] = useState(false);
+
+  const copyToken = useCallback(async () => {
+    const token = await user?.getIdToken?.();
+    if (!token) return;
+    await navigator.clipboard.writeText(token);
+    setTokenCopied(true);
+    setTimeout(() => setTokenCopied(false), 2000);
+  }, [user]);
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
   useBodyScrollLock();
@@ -311,6 +320,17 @@ export const SettingsPage = ({ user, linkedPlayer, isDark, themeMode, setThemeMo
                 {tr('settings.account')}
               </p>
               <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
+                <button
+                  onClick={copyToken}
+                  className={`w-full flex items-center gap-3 px-4 py-4 border-b ${t.divider}`}
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-700 text-zinc-300' : 'bg-gray-100 text-gray-500'}`}>
+                    <Copy size={18} />
+                  </div>
+                  <span className={`flex-1 text-left font-medium ${t.text}`}>
+                    {tokenCopied ? 'Token copié ✓' : 'Copier mon token Firebase'}
+                  </span>
+                </button>
                 <button
                   onClick={onSignOut}
                   className="w-full flex items-center gap-3 px-4 py-4"
