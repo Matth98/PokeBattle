@@ -26,10 +26,19 @@ export function LoginScreen({ onSignInWithGoogle }) {
 
   // Sur iOS, "précédent" depuis la page Google peut restaurer la page depuis le
   // bfcache (état React préservé avec loading=true). pageshow débloque le bouton.
+  // Deux cas où loading peut rester true alors que l'auth n'est plus en cours :
+  // 1. bfcache : iOS restaure la page depuis le cache (pageshow avec persisted=true)
+  // 2. Suspension : iOS suspend la PWA avant que la navigation soit terminée,
+  //    l'état React est préservé avec loading=true (visibilitychange au retour)
   useEffect(() => {
-    const handler = (e) => { if (e.persisted) setLoading(false); };
-    window.addEventListener('pageshow', handler);
-    return () => window.removeEventListener('pageshow', handler);
+    const onPageShow = (e) => { if (e.persisted) setLoading(false); };
+    const onVisible  = () => { if (document.visibilityState === 'visible') setLoading(false); };
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
   const handleSignIn = async () => {
