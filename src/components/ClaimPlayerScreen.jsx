@@ -1,5 +1,5 @@
-// src/components/ClaimPlayerScreen.jsx
 import React, { useState } from 'react';
+import { Swords, ArrowRight, Loader2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 
 /**
@@ -26,6 +26,96 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
     setCreating(false);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleCreate();
+  };
+
+  // ── Écran d'onboarding (aucun profil à revendiquer) ──────────────────────
+  if (availablePlayers.length === 0) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center px-6 pb-10 overflow-hidden"
+        style={{
+          background:
+            'radial-gradient(130% 75% at 0% 0%, rgba(0,203,255,0.08) 0%, rgba(0,203,255,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(199,255,231,0.06) 0%, rgba(199,255,231,0) 100%), #09090b',
+          paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)',
+        }}
+      >
+        {/* Decorative Pokéball */}
+        <div className="relative mb-10 select-none" aria-hidden="true">
+          <div className="w-24 h-24 rounded-full border-[6px] border-zinc-700 relative overflow-hidden shadow-[0_0_60px_rgba(139,92,246,0.25)]">
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-br from-purple-600 to-indigo-700" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-zinc-800" />
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[6px] bg-zinc-700" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-zinc-900 border-[3px] border-zinc-700 z-10 flex items-center justify-center">
+              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+            </div>
+          </div>
+          {/* Glow ring */}
+          <div className="absolute inset-0 rounded-full ring-1 ring-purple-500/20 scale-110 pointer-events-none" />
+        </div>
+
+        {/* Titre + intro */}
+        <div className="text-center mb-10 max-w-xs">
+          <h1 className="text-3xl font-black text-white tracking-tight leading-tight">
+            Bienvenue dans<br />l'arène !
+          </h1>
+          <p className="text-zinc-400 mt-3 text-sm leading-relaxed">
+            Crée ton profil de dresseur pour suivre tes combats, gérer tes équipes et affronter les autres joueurs.
+          </p>
+        </div>
+
+        {/* Formulaire */}
+        <div className="w-full max-w-sm space-y-3">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Ton pseudo de dresseur"
+              value={name}
+              onChange={(e) => { setName(e.target.value); if (error) setError(''); }}
+              onKeyDown={handleKeyDown}
+              className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500 rounded-2xl px-4 py-4 text-base outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all"
+              maxLength={30}
+              autoFocus
+            />
+            {name.trim().length > 0 && (
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-zinc-600 font-mono select-none">
+                {name.trim().length}/30
+              </span>
+            )}
+          </div>
+
+          {error && (
+            <p className="text-red-400 text-sm pl-1">{error}</p>
+          )}
+
+          <button
+            onClick={handleCreate}
+            disabled={loading || !name.trim()}
+            className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 active:scale-[0.98] text-white font-bold py-4 rounded-2xl transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
+          >
+            {loading ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <>
+                <Swords size={18} />
+                Créer mon profil
+                <ArrowRight size={16} className="ml-1 opacity-70" />
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Baseline discrète */}
+        <p className="text-zinc-700 text-xs mt-10 text-center">
+          Pokébattle · Saison en cours
+        </p>
+      </div>
+    );
+  }
+
+  // ── Écran de revendication (profils disponibles à choisir) ───────────────
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-start pt-16 px-6 pb-6">
       <div className="text-center mb-8">
@@ -62,12 +152,6 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
             <span>{player.name}</span>
           </button>
         ))}
-
-        {availablePlayers.length === 0 && !creating && (
-          <p className="text-center text-gray-500 text-sm py-4">
-            Aucune fiche disponible — crée ton profil ci-dessous.
-          </p>
-        )}
       </div>
 
       {/* Separator */}
@@ -89,6 +173,7 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
             placeholder={tr('claim.namePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="w-full bg-zinc-900 text-white placeholder-gray-500 rounded-xl
                        px-4 py-3.5 outline-none focus:ring-2 focus:ring-purple-500"
             maxLength={30}
