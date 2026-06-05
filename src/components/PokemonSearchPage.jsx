@@ -55,7 +55,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
               className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
               style={{ fontSize: '16px' }}
             />
-            {searchTerm && <ClearButton onClick={clear} color={t.clearIcon} />}
+            {searchTerm && <ClearButton onClick={clear} color={t.clearIcon} strokeColor={t.clearStroke} />}
           </div>
         </div>
       </div>

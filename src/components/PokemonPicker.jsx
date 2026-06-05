@@ -136,6 +136,7 @@ export const PokemonPicker = ({
               <ClearButton
                 onClick={() => { setSearchTerm(''); searchPokemon(''); inputRef.current?.focus({ preventScroll: true }); }}
                 color={t.clearIcon}
+                strokeColor={t.clearStroke}
               />
             )}
           </div>

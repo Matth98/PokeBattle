@@ -63,7 +63,9 @@ export const theme = {
     clearBg: 'bg-gray-400 text-gray-100',
     clearBgOnWhite: 'bg-gray-400 text-white',
     clearIcon: 'text-gray-400',
-    clearIconOnWhite: 'text-gray-300',
+    clearIconOnWhite: 'text-gray-400',
+    clearStroke: '#f3f4f6',
+    clearStrokeOnWhite: '#ffffff',
 
     // Pictos colorés (pour les "stat tiles" — fond pastel + texte coloré)
     iconTileBlue: 'bg-blue-50 text-blue-500',
@@ -125,8 +127,10 @@ export const theme = {
     inputSoft: 'bg-zinc-800 border-transparent text-white placeholder-zinc-500',
     clearBg: 'bg-zinc-600 text-zinc-900',
     clearBgOnWhite: 'bg-zinc-600 text-zinc-900',
-    clearIcon: 'text-zinc-600',
+    clearIcon: 'text-zinc-500',
     clearIconOnWhite: 'text-zinc-500',
+    clearStroke: '#27272a',
+    clearStrokeOnWhite: '#18181b',
 
     iconTileBlue: 'bg-blue-500/15 text-blue-400',
     iconTileIndigo: 'bg-indigo-500/15 text-indigo-400',

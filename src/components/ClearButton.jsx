@@ -10,7 +10,7 @@ import React from 'react';
  *   size          — taille du SVG en px (défaut 20)
  *   aria-label    — label accessibilité
  */
-export const ClearButton = ({ onClick, onMouseDown, color = 'text-gray-400', size = 20, 'aria-label': ariaLabel = 'Effacer' }) => (
+export const ClearButton = ({ onClick, onMouseDown, color = 'text-gray-400', strokeColor = '#f3f4f6', size = 20, 'aria-label': ariaLabel = 'Effacer' }) => (
   <button
     onClick={onClick}
     onMouseDown={onMouseDown}
@@ -25,8 +25,8 @@ export const ClearButton = ({ onClick, onMouseDown, color = 'text-gray-400', siz
       aria-hidden="true"
     >
       <circle cx="10" cy="10" r="10" />
-      <line x1="6.5" y1="6.5" x2="13.5" y2="13.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
-      <line x1="13.5" y1="6.5" x2="6.5" y2="13.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+      <line x1="7.5" y1="7.5" x2="12.5" y2="12.5" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="12.5" y1="7.5" x2="7.5" y2="12.5" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   </button>
 );

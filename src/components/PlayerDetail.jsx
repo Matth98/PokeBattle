@@ -805,6 +805,7 @@ export const PlayerDetail = ({
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { setPokemonSearch(''); onPokemonSearchChange?.(''); pokemonSearchRef.current?.focus(); }}
                     color={t.clearIconOnWhite}
+                    strokeColor={t.clearStrokeOnWhite}
                   />
                 )}
               </div>
@@ -931,6 +932,7 @@ export const PlayerDetail = ({
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { setTeamsSearch(''); onTeamsSearchChange?.(''); teamsSearchRef.current?.focus(); }}
                     color={t.clearIconOnWhite}
+                    strokeColor={t.clearStrokeOnWhite}
                   />
                 )}
               </div>

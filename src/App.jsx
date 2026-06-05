@@ -52,6 +52,19 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const toast = useToast();
   const t = isDark ? theme.dark : theme.light;
 
+  // ── Raccourci clavier thème (desktop) : Cmd/Ctrl + Shift + T ──
+  useEffect(() => {
+    const MODES = ['light', 'dark', 'system'];
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === 'k') {
+        e.preventDefault();
+        setThemeMode(MODES[(MODES.indexOf(themeMode) + 1) % MODES.length]);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [themeMode, setThemeMode]);
+
   const [currentTab, _setCurrentTabState] = useState('home');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedBattle, setSelectedBattle] = useState(null);
