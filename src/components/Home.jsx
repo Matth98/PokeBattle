@@ -21,7 +21,7 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, onPushSubscribe }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, pushIsSubscribed, onPushSubscribe }) => {
   const tr = useTranslation();
   const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
 
@@ -373,7 +373,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       <div className="relative z-[1] px-5 mt-4 pb-40 space-y-7">
 
         {/* ── Bannière notifications ── */}
-        {pushPermission === 'default' && onPushSubscribe && !isBackground && (
+        {pushPermission !== 'denied' && pushPermission !== 'unsupported' && !pushIsSubscribed && onPushSubscribe && !isBackground && (
           <button
             onClick={onPushSubscribe}
             className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left active:scale-[0.98] transition-transform duration-100"

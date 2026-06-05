@@ -4,7 +4,6 @@ import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, S
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
-import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 const THEME_OPTIONS = [
   { value: 'light',  Icon: Sun,     labelKey: 'settings.lightMode'  },
@@ -49,7 +48,6 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
   }, [notifTitle, notifBody, user]);
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
-  useBodyScrollLock();
 
   // ── Framer-motion spring bottom sheet ──
   const H = typeof window !== 'undefined' ? window.innerHeight : 800;
@@ -316,14 +314,14 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                             placeholder="Titre"
                             value={notifTitle}
                             onChange={e => setNotifTitle(e.target.value)}
-                            className={`w-full rounded-xl px-4 py-3 text-sm font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
+                            className={`w-full rounded-xl px-4 py-3 text-base font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
                           />
                           <input
                             type="text"
                             placeholder="Message"
                             value={notifBody}
                             onChange={e => setNotifBody(e.target.value)}
-                            className={`w-full rounded-xl px-4 py-3 text-sm font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
+                            className={`w-full rounded-xl px-4 py-3 text-base font-medium outline-none ${isDark ? 'bg-zinc-700 text-white placeholder:text-zinc-500' : 'bg-gray-100 text-gray-900 placeholder:text-gray-400'}`}
                           />
                           <button
                             onClick={sendNotification}
