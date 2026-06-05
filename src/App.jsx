@@ -21,7 +21,6 @@ import { SettingsPage } from './components/SettingsPage';
 import { LanguageProvider } from './hooks/useLanguage';
 import { useThemeMode } from './hooks/useThemeMode';
 import { usePushNotifications } from './hooks/usePushNotifications';
-import { useBodyScrollLock } from './hooks/useBodyScrollLock';
 import { useEdgeSwipeBack } from './hooks/useEdgeSwipeBack';
 
 // Tailwind CDN
@@ -78,7 +77,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
   const [prevTab, setPrevTab] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  useBodyScrollLock(settingsOpen);
   const [hideNav, setHideNav] = useState(false);
   // Snapshot du top 3 avant une suppression depuis BattleDetail → permet l'animation sur Home
   const homeDeleteSnapshotRef = useRef(null);

@@ -4,6 +4,7 @@ import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, S
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 const THEME_OPTIONS = [
   { value: 'light',  Icon: Sun,     labelKey: 'settings.lightMode'  },
@@ -13,6 +14,7 @@ const THEME_OPTIONS = [
 
 export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer, pushPermission, pushIsSubscribed, pushLoading, onPushSubscribe, onPushUnsubscribe }) => {
   const tr = useTranslation();
+  useBodyScrollLock();
   const displayName = linkedPlayer?.name || user?.displayName || user?.email || 'Utilisateur';
   const email       = user?.email || '';
   const { language, setLanguage } = useLanguage();
