@@ -3,57 +3,42 @@ import { useEffect } from 'react';
 /**
  * Locks body scroll when a modal is open — works on iOS Safari / PWA.
  *
- * Two layers of protection:
- * 1. `overflow: hidden` on <html> — prevents programmatic scroll.
- * 2. Non-passive `touchmove` listener on `document` — stops iOS momentum /
- *    elastic-bounce scroll from bleeding through the modal overlay.
+ * Uses `position: fixed` on body (the only approach reliable on iOS) :
+ * saves scrollY, freezes the body at that position, restores on unlock.
  *
- * Scroll is allowed when the touch target (or any of its ancestors up to
- * <html>) is an element that:
- *   - carries a `data-scroll-lock-ignore` attribute, OR
- *   - has `overflow-y: auto | scroll` AND actually has overflowing content
- *     (scrollHeight > clientHeight).
- *
- * @param {boolean} isActive - Pass `true` (default) to lock immediately on
- *   mount. Pass a state boolean for inline modals.
+ * @param {boolean} isActive - true to lock (default), false to unlock.
  */
 export const useBodyScrollLock = (isActive = true) => {
   useEffect(() => {
     if (!isActive) return;
 
-    const html = document.documentElement;
-    const prev = html.style.overflow;
-    html.style.overflow = 'hidden';
+    const scrollY = window.scrollY;
+    const body    = document.body;
 
-    const preventTouchMove = (e) => {
-      let node = e.target;
-
-      while (node && node !== html) {
-        // Explicit opt-out via data attribute
-        if (node.dataset?.scrollLockIgnore !== undefined) return;
-
-        // Auto-detect scrollable containers
-        if (node.nodeType === 1) {
-          const overflowY = window.getComputedStyle(node).overflowY;
-          if (
-            (overflowY === 'auto' || overflowY === 'scroll') &&
-            node.scrollHeight > node.clientHeight
-          ) {
-            return;
-          }
-        }
-
-        node = node.parentElement;
-      }
-
-      e.preventDefault();
+    const prev = {
+      position:  body.style.position,
+      top:       body.style.top,
+      left:      body.style.left,
+      right:     body.style.right,
+      overflowY: body.style.overflowY,
+      width:     body.style.width,
     };
 
-    document.addEventListener('touchmove', preventTouchMove, { passive: false });
+    body.style.position  = 'fixed';
+    body.style.top       = `-${scrollY}px`;
+    body.style.left      = '0';
+    body.style.right     = '0';
+    body.style.overflowY = 'scroll';   // évite le layout shift lié à la disparition de la scrollbar
+    body.style.width     = '100%';
 
     return () => {
-      html.style.overflow = prev;
-      document.removeEventListener('touchmove', preventTouchMove);
+      body.style.position  = prev.position;
+      body.style.top       = prev.top;
+      body.style.left      = prev.left;
+      body.style.right     = prev.right;
+      body.style.overflowY = prev.overflowY;
+      body.style.width     = prev.width;
+      window.scrollTo(0, scrollY);
     };
   }, [isActive]);
 };
