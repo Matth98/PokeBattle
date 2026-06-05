@@ -6,6 +6,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 
@@ -48,6 +49,12 @@ export function AuthProvider({ children }) {
     // (ex. Firebase bloqué sur iOS au premier lancement), on force authLoading=false
     // pour que LoginScreen s'affiche et que le bouton soit cliquable.
     const forceTimeout = setTimeout(() => setLoading(false), 5000);
+
+    // Sur mobile navigateur, après signInWithRedirect, Firebase a besoin de
+    // getRedirectResult() pour finaliser la session avant que onAuthStateChanged fire.
+    if (isMobileWeb) {
+      getRedirectResult(auth).catch(() => {/* erreur ignorée silencieusement */});
+    }
 
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       clearTimeout(forceTimeout);

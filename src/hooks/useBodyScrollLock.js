@@ -3,8 +3,9 @@ import { useEffect } from 'react';
 /**
  * Locks body scroll when a modal is open — works on iOS Safari / PWA.
  *
- * Uses `position: fixed` on body (the only approach reliable on iOS) :
- * saves scrollY, freezes the body at that position, restores on unlock.
+ * Applies overflow:hidden on both <html> and <body> (needed for iOS),
+ * and blocks touchmove events as a safety net for momentum scroll bleed.
+ * Does NOT use position:fixed to avoid layout shifts on safe-area / nav bar.
  *
  * @param {boolean} isActive - true to lock (default), false to unlock.
  */
@@ -12,24 +13,37 @@ export const useBodyScrollLock = (isActive = true) => {
   useEffect(() => {
     if (!isActive) return;
 
-    const scrollY = window.scrollY;
-    const body    = document.body;
+    const html = document.documentElement;
+    const body = document.body;
 
-    const prev = {
-      position: body.style.position,
-      top:      body.style.top,
-      width:    body.style.width,
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+
+    const preventTouchMove = (e) => {
+      let node = e.target;
+      while (node && node !== html) {
+        if (node.dataset?.scrollLockIgnore !== undefined) return;
+        if (node.nodeType === 1) {
+          const overflowY = window.getComputedStyle(node).overflowY;
+          if (
+            (overflowY === 'auto' || overflowY === 'scroll') &&
+            node.scrollHeight > node.clientHeight
+          ) return;
+        }
+        node = node.parentElement;
+      }
+      e.preventDefault();
     };
 
-    body.style.position  = 'fixed';
-    body.style.top       = `-${scrollY}px`;
-    body.style.width     = '100%';
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
 
     return () => {
-      body.style.position = prev.position;
-      body.style.top      = prev.top;
-      body.style.width    = prev.width;
-      window.scrollTo(0, scrollY);
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      document.removeEventListener('touchmove', preventTouchMove);
     };
   }, [isActive]);
 };
