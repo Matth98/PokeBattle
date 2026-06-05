@@ -650,6 +650,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
           onOpenSettings={() => setSettingsOpen(true)}
           onRefresh={refreshAll}
+          refreshEnabled={!settingsOpen}
           deleteAnimSnapshot={homeDeleteSnapshotRef.current}
           onDeleteAnimConsumed={() => { homeDeleteSnapshotRef.current = null; }}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}

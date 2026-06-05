@@ -1,7 +1,18 @@
 // public/service-worker.js
 const CACHE_NAME = 'pokescores-v3';
 
-self.addEventListener('install', () => self.skipWaiting());
+// Assets critiques pré-cachés dès l'installation du SW
+const PRECACHE_ASSETS = [
+  '/pokeball-button.png',
+  '/logo192.png',
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
+  );
+  self.skipWaiting();
+});
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(

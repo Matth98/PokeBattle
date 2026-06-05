@@ -21,7 +21,7 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, pushIsSubscribed, onPushSubscribe }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, refreshEnabled = true, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, pushIsSubscribed, onPushSubscribe }) => {
   const tr = useTranslation();
   const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
 
@@ -232,7 +232,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
   }, [onRefresh]);
 
   useEffect(() => {
-    if (isBackground || !onRefresh) return;
+    if (isBackground || !onRefresh || !refreshEnabled) return;
 
     const onTouchStart = (e) => {
       if (window.scrollY > 0) return;
@@ -267,7 +267,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
       window.removeEventListener('touchmove',  onTouchMove);
       window.removeEventListener('touchend',   onTouchEnd);
     };
-  }, [isBackground, onRefresh, handleRefresh]);
+  }, [isBackground, onRefresh, handleRefresh, refreshEnabled]);
 
   const indicatorY = isRefreshing ? 16 : pullY - 44;
   const indicatorOpacity = isRefreshing ? 1 : Math.min(pullY / THRESHOLD, 1);

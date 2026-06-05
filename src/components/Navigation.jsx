@@ -65,6 +65,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
               alt=""
               className="w-[60px] h-[60px]"
               aria-hidden="true"
+              onError={(e) => { e.target.style.display = 'none'; }}
             />
           </span>
           <span className="text-xs tracking-wide font-bold" style={{ background: 'linear-gradient(90deg, #FF9D38 0.18%, #E35BEE 100.18%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
