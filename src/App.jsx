@@ -68,6 +68,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   // ── Mémoire de scroll par onglet ──
   const scrollMemoryRef = useRef(new Map());
+  const searchMemoryRef = useRef(new Map());
   const shouldRestoreRef = useRef(false);
   const navStack = useRef([]);
   const searchPageRef = useRef(null);
@@ -672,6 +673,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           initialActiveTab={playerDetailTab}
           backLabel={backLabel}
           initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('playerDetail') || 0 : 0}
+          initialPokemonSearch={navDirection === 'pop' ? searchMemoryRef.current.get('playerDetail') || '' : ''}
+          onPokemonSearchChange={(v) => searchMemoryRef.current.set('playerDetail', v)}
           onBack={() => {
             setSelectedPlayer(null);
             navigateBack();

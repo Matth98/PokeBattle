@@ -56,6 +56,8 @@ export const PlayerDetail = ({
   onViewPokemon,
   onSelectionModeChange = null,
   initialScrollY = 0,
+  initialPokemonSearch = '',
+  onPokemonSearchChange,
   isBackground = false,
 }) => {
   const tr = useTranslation();
@@ -92,7 +94,7 @@ export const PlayerDetail = ({
   }, [player, battles]);
   const pokemonTypes = usePokemonTypes(allPokeIdsForTypes);
   const [deletingPokemon, setDeletingPokemon] = useState(null);
-  const [pokemonSearch, setPokemonSearch] = useState('');
+  const [pokemonSearch, setPokemonSearch] = useState(initialPokemonSearch);
   const pokemonSearchRef = useRef(null);
   const [teamsSearch, setTeamsSearch] = useState('');
   const teamsSearchRef = useRef(null);
@@ -790,18 +792,18 @@ export const PlayerDetail = ({
                   ref={pokemonSearchRef}
                   type="text"
                   value={pokemonSearch}
-                  onChange={(e) => setPokemonSearch(e.target.value)}
+                  onChange={(e) => { setPokemonSearch(e.target.value); onPokemonSearchChange?.(e.target.value); }}
                   placeholder="Rechercher…"
                   className={`flex-1 bg-transparent outline-none ${t.text} text-base`}
                 />
                 {pokemonSearch && (
                   <button
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => { setPokemonSearch(''); pokemonSearchRef.current?.focus(); }}
-                    className={t.textTertiary}
+                    onClick={() => { setPokemonSearch(''); onPokemonSearchChange?.(''); pokemonSearchRef.current?.focus(); }}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${t.clearBgOnWhite}`}
                     aria-label="Effacer"
                   >
-                    <X size={14} />
+                    <X size={11} strokeWidth={3} />
                   </button>
                 )}
               </div>

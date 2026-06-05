@@ -138,10 +138,10 @@ export const PokemonPicker = ({
                   searchPokemon('');
                   inputRef.current?.focus({ preventScroll: true });
                 }}
-                className={`${t.textTertiary} flex-shrink-0`}
+                className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${t.clearBg}`}
                 aria-label="Effacer"
               >
-                <X size={14} />
+                <X size={11} strokeWidth={3} />
               </button>
             )}
           </div>
