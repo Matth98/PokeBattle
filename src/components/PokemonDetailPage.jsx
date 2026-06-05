@@ -127,7 +127,6 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       return;
     }
     scrollPositions.current[activeTab] = window.scrollY;
-    window.scrollTo({ top: 0, behavior: 'instant' });
     setActiveTab(tab);
   }, [activeTab]);
 
