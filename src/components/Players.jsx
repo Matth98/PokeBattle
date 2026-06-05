@@ -247,7 +247,7 @@ export const Players = ({
                         ? setSelectedItems(prev => prev.includes(p._id) ? prev.filter((id) => id !== p._id) : [...prev, p._id])
                         : onSelectPlayer(p)
                     }
-                    className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left touch-manipulation`}
                   >
                     <span className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inSelection ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}>
                       {isSelected && <Check size={14} className="text-white" />}
