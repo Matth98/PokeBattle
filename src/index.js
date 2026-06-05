@@ -10,6 +10,13 @@ root.render(
   </React.StrictMode>
 );
 
+// Sur iOS, la restauration depuis le bfcache (back/forward cache) préserve le DOM
+// mais pas le système d'événements de React → les boutons semblent bloqués.
+// Un rechargement garantit un état propre à chaque retour dans l'app.
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) window.location.reload();
+});
+
 if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
   window.addEventListener('load', () => {
     navigator.serviceWorker
