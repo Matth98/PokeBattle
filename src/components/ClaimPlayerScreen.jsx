@@ -47,10 +47,10 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
           <img
             src="/Match-button.svg"
             alt=""
-            className="w-28 h-28 rounded-[30px] object-cover"
+            className="w-28 h-28"
             style={{
-              boxShadow:
-                '0 0 0 1px rgba(255,255,255,0.10), 0 0 40px rgba(139,92,246,0.50), 0 0 80px rgba(99,102,241,0.25)',
+              filter:
+                'drop-shadow(0 0 20px rgba(139,92,246,0.60)) drop-shadow(0 0 48px rgba(99,102,241,0.30))',
             }}
           />
         </div>
