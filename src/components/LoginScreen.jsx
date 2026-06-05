@@ -24,17 +24,13 @@ export function LoginScreen({ onSignInWithGoogle }) {
   useEffect(() => () => { mountedRef.current = false; }, []);
 
   // Quand iOS restaure la page depuis le bfcache, loading peut être resté true.
-  // pageshow (persisted) + visibilitychange le réinitialisent.
+  // pageshow (persisted) le réinitialise. On NE reset PAS sur visibilitychange :
+  // cet event fire aussi quand la popup Google se ferme, ce qui ferait réapparaître
+  // le formulaire avant que onAuthStateChanged ait eu le temps de setter l'user.
   useEffect(() => {
-    const reset = () => setLoading(false);
-    const onPageShow = (e) => { if (e.persisted) reset(); };
-    const onVisible  = () => { if (document.visibilityState === 'visible') reset(); };
+    const onPageShow = (e) => { if (e.persisted) setLoading(false); };
     window.addEventListener('pageshow', onPageShow);
-    document.addEventListener('visibilitychange', onVisible);
-    return () => {
-      window.removeEventListener('pageshow', onPageShow);
-      document.removeEventListener('visibilitychange', onVisible);
-    };
+    return () => window.removeEventListener('pageshow', onPageShow);
   }, []);
 
   const handleSignIn = async () => {
