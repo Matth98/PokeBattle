@@ -713,7 +713,7 @@ export const Teams = ({
           <PokemonPicker
             t={t}
             isDark={isDark}
-            title={tr('teams.choosePokemon')}
+            title="Ajouter un Pokémon"
             alreadyPickedIds={newTeamData.pokemon.map((p) => p.pokeId)}
             defaultResults={ownerRoster}
             defaultLabel={owner ? `Pokémon de ${owner.name}` : null}

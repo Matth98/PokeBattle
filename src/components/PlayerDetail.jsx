@@ -1158,7 +1158,7 @@ export const PlayerDetail = ({
         <PokemonPicker
           t={t}
           isDark={isDark}
-          title={tr('common.add') + ' Pokémon'}
+          title="Ajouter un Pokémon"
           alreadyPickedIds={(player.pokemon || []).map((p) => p.pokeId)}
           onSelect={handleAddPokemon}
           onClose={() => setAddingPokemon(false)}
@@ -1389,7 +1389,7 @@ export const PlayerDetail = ({
         <PokemonPicker
           t={t}
           isDark={isDark}
-          title={tr('teams.choosePokemon')}
+          title="Ajouter un Pokémon"
           alreadyPickedIds={newTeamData.pokemon.map((p) => p.pokeId)}
           defaultResults={(player.pokemon || []).map((p) => ({ pokeId: p.pokeId, name: p.name }))}
           defaultLabel={`Pokémon de ${player.name}`}

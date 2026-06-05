@@ -1205,20 +1205,34 @@ export const Battles = ({
               Génère une équipe aléatoire à partir du roster du joueur.
             </p>
             <div className="flex flex-col gap-2">
-              {newBattleData.player1 && newBattleData.player2 && (
-                <button
-                  onClick={() => handleRandomize('both')}
-                  className={`w-full py-3 rounded-xl font-semibold ${t.accentBg} text-white`}
-                >
-                  Les deux joueurs
-                </button>
-              )}
-              <button
-                onClick={() => handleRandomize(randomizePickerSlot)}
-                className={`w-full py-3 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText}`}
-              >
-                Seulement {players.find((p) => p._id === newBattleData[randomizePickerSlot])?.name || 'ce joueur'}
-              </button>
+              {newBattleData.player1 && newBattleData.player2 && (() => {
+                const p1 = players.find((p) => p._id === newBattleData.player1);
+                const p2 = players.find((p) => p._id === newBattleData.player2);
+                return (
+                  <button
+                    onClick={() => handleRandomize('both')}
+                    className={`w-full py-3 px-4 rounded-xl font-semibold ${t.accentBg} text-white relative flex items-center justify-center`}
+                  >
+                    <div className="absolute left-4 flex items-center">
+                      <PlayerAvatar player={p1} size={22} textSize="text-[9px]" />
+                      <div className="-ml-1"><PlayerAvatar player={p2} size={22} textSize="text-[9px]" className="ring-2 ring-indigo-500" /></div>
+                    </div>
+                    <span>Les 2 joueurs</span>
+                  </button>
+                );
+              })()}
+              {(() => {
+                const solo = players.find((p) => p._id === newBattleData[randomizePickerSlot]);
+                return (
+                  <button
+                    onClick={() => handleRandomize(randomizePickerSlot)}
+                    className={`w-full py-3 px-4 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText} relative flex items-center justify-center`}
+                  >
+                    {solo && <div className="absolute left-4"><PlayerAvatar player={solo} size={22} textSize="text-[9px]" /></div>}
+                    <span>Seulement {solo?.name || 'ce joueur'}</span>
+                  </button>
+                );
+              })()}
               <button
                 onClick={() => setRandomizePickerSlot(null)}
                 className={`w-full py-3 rounded-xl font-semibold ${t.textSecondary}`}
