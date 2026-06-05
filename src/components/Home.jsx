@@ -423,7 +423,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         )}
 
         {/* ── Statistiques ── */}
-        <section>
+        <section className="relative z-10">
           <div className="grid grid-cols-3 gap-3">
             <StatTile Icon={Users}  value={players.length} label={tr('nav.players')}  tile={t.iconTileBlue}   t={t} onClick={() => setCurrentTab('players')} />
             <StatTile Icon={Zap}    value={battles.length} label={tr('nav.battles')}  tile={t.iconTileAmber}  t={t} onClick={() => setCurrentTab('battles')} />
