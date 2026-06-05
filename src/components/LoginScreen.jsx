@@ -22,8 +22,33 @@ export function LoginScreen({ onSignInWithGoogle }) {
   const [debug, setDebug]     = useState('');
   const mountedRef = useRef(true);
   const attemptRef = useRef(0);
+  const btnRef     = useRef(null);
 
   useEffect(() => () => { mountedRef.current = false; }, []);
+
+  // Diagnostic : listener natif sur le document (bypass React)
+  useEffect(() => {
+    const onAnyTouch = () => setDebug(d => d.includes('TOUCH') ? d : d + ' | TOUCH_OK');
+    document.addEventListener('touchstart', onAnyTouch, { passive: true });
+    return () => document.removeEventListener('touchstart', onAnyTouch);
+  }, []);
+
+  // Listener natif sur le bouton (bypass React event delegation)
+  useEffect(() => {
+    const btn = btnRef.current;
+    if (!btn) return;
+    const onNativeClick = () => {
+      setDebug(d => d + ' | BTN_NATIVE');
+      handleSignIn();
+    };
+    btn.addEventListener('click', onNativeClick);
+    btn.addEventListener('touchend', onNativeClick, { passive: true });
+    return () => {
+      btn.removeEventListener('click', onNativeClick);
+      btn.removeEventListener('touchend', onNativeClick);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sur iOS, "précédent" depuis la page Google peut restaurer la page depuis le
   // bfcache (état React préservé avec loading=true). pageshow débloque le bouton.
@@ -156,8 +181,8 @@ export function LoginScreen({ onSignInWithGoogle }) {
       {/* Bouton */}
       <div className="w-full max-w-xs">
         <button
+          ref={btnRef}
           onClick={handleSignIn}
-          onTouchEnd={(e) => { e.preventDefault(); handleSignIn(); }}
           disabled={loading}
           className="w-full flex items-center justify-center gap-3 bg-white text-gray-900
                      font-semibold py-3.5 rounded-xl shadow disabled:opacity-50 active:scale-95
