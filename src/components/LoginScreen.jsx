@@ -45,16 +45,17 @@ export function LoginScreen({ onSignInWithGoogle }) {
     const attempt = ++attemptRef.current;
     const isCurrent = () => mountedRef.current && attempt === attemptRef.current;
 
-    setLoading(true);
-
     // ── Mobile navigateur ──────────────────────────────────────────────────
     // signInWithRedirect navigue la page vers Google.
-    // getRedirectResult() dans useAuth traite le résultat au retour.
+    // On ne met PAS loading=true : si iOS ouvre l'auth dans une fenêtre séparée
+    // au lieu de naviguer la page courante, la PWA resterait avec loading=true
+    // sans aucun moyen fiable de le reset.
     if (isMobileWeb) {
-      await onSignInWithGoogle().catch(() => {});
-      if (isCurrent()) setLoading(false);
+      onSignInWithGoogle().catch(() => {});
       return;
     }
+
+    setLoading(true);
 
     // ── Desktop + iOS PWA standalone ───────────────────────────────────────
     //
