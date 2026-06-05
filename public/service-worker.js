@@ -14,11 +14,10 @@ self.addEventListener('activate', (event) => {
             .map((name) => caches.delete(name))
         )
       ),
-    ]).then(() =>
-      clients.matchAll({ type: 'window' }).then((windowClients) =>
-        Promise.all(windowClients.map((client) => client.navigate(client.url)))
-      )
-    )
+    ])
+    // Supprimé : clients.navigate() forçait un rechargement de tous les onglets
+    // à chaque activation du SW, ce qui interférait avec le premier lancement de la PWA.
+    // Le rechargement est déjà géré par l'event 'controllerchange' dans index.js.
   );
 });
 

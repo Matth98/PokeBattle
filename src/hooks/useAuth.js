@@ -9,12 +9,12 @@ import {
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 
-// Sur iOS/Android, signInWithPopup est peu fiable quand aucun compte n'est
-// pré-sélectionné. On utilise signInWithRedirect à la place.
-// signInWithRedirect fonctionne dans le navigateur mobile, mais PAS en mode
-// standalone (PWA installée sur l'écran d'accueil) où la redirection ne revient
-// pas dans l'app. Dans ce cas on retombe sur signInWithPopup.
-const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+// Mobile navigateur (Safari/Chrome) → signInWithRedirect
+// PWA standalone (écran d'accueil) → signInWithPopup (redirect ne revient pas dans la PWA)
+// Desktop → signInWithPopup
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isStandalone;
 
 const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
 const AuthContext  = createContext(null);

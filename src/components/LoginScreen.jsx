@@ -4,12 +4,13 @@ import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useTranslation } from '../hooks/useTranslation';
 
-// Desktop              → signInWithPopup (fiable)
-// Mobile navigateur   → signInWithRedirect (géré dans useAuth)
-// iOS PWA standalone  → signInWithPopup + stratégie de récupération
-const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+// Mobile navigateur → signInWithRedirect (page navigue vers Google)
+// PWA standalone    → signInWithPopup (redirect ne revient pas dans la PWA sur iOS)
+// Desktop           → signInWithPopup
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+const isMobileWeb = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isStandalone;
 
-// Codes où l'utilisateur a fermé la popup volontairement
 const CANCELLED_CODES = [
   'auth/popup-closed-by-user',
   'auth/cancelled-popup-request',
@@ -19,46 +20,17 @@ const CANCELLED_CODES = [
 export function LoginScreen({ onSignInWithGoogle }) {
   const tr = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [debug, setDebug]     = useState('');
   const mountedRef = useRef(true);
   const attemptRef = useRef(0);
-  const btnRef     = useRef(null);
 
   useEffect(() => () => { mountedRef.current = false; }, []);
 
-  // Diagnostic : listener natif sur le document (bypass React)
+  // Quand iOS restaure la page depuis le bfcache, loading peut être resté true.
+  // pageshow (persisted) + visibilitychange le réinitialisent.
   useEffect(() => {
-    const onAnyTouch = () => setDebug(d => d.includes('TOUCH') ? d : d + ' | TOUCH_OK');
-    document.addEventListener('touchstart', onAnyTouch, { passive: true });
-    return () => document.removeEventListener('touchstart', onAnyTouch);
-  }, []);
-
-  // Listener natif sur le bouton (bypass React event delegation)
-  useEffect(() => {
-    const btn = btnRef.current;
-    if (!btn) return;
-    const onNativeClick = () => {
-      setDebug(d => d + ' | BTN_NATIVE');
-      handleSignIn();
-    };
-    btn.addEventListener('click', onNativeClick);
-    btn.addEventListener('touchend', onNativeClick, { passive: true });
-    return () => {
-      btn.removeEventListener('click', onNativeClick);
-      btn.removeEventListener('touchend', onNativeClick);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Sur iOS, "précédent" depuis la page Google peut restaurer la page depuis le
-  // bfcache (état React préservé avec loading=true). pageshow débloque le bouton.
-  // Deux cas où loading peut rester true alors que l'auth n'est plus en cours :
-  // 1. bfcache : iOS restaure la page depuis le cache (pageshow avec persisted=true)
-  // 2. Suspension : iOS suspend la PWA avant que la navigation soit terminée,
-  //    l'état React est préservé avec loading=true (visibilitychange au retour)
-  useEffect(() => {
-    const onPageShow = (e) => { if (e.persisted) setLoading(false); };
-    const onVisible  = () => { if (document.visibilityState === 'visible') setLoading(false); };
+    const reset = () => setLoading(false);
+    const onPageShow = (e) => { if (e.persisted) reset(); };
+    const onVisible  = () => { if (document.visibilityState === 'visible') reset(); };
     window.addEventListener('pageshow', onPageShow);
     document.addEventListener('visibilitychange', onVisible);
     return () => {
@@ -72,141 +44,90 @@ export function LoginScreen({ onSignInWithGoogle }) {
     const isCurrent = () => mountedRef.current && attempt === attemptRef.current;
 
     // ── Mobile navigateur ──────────────────────────────────────────────────
-    // signInWithRedirect navigue la page vers Google.
-    // On ne met PAS loading=true : si iOS ouvre l'auth dans une fenêtre séparée
-    // au lieu de naviguer la page courante, la PWA resterait avec loading=true
-    // sans aucun moyen fiable de le reset.
+    // signInWithRedirect navigue la page entière vers Google.
+    // Pas de setLoading(true) : si iOS suspend l'app avant la navigation,
+    // loading resterait bloqué à true sans moyen de le reset.
     if (isMobileWeb) {
-      setLoading(true);
-      onSignInWithGoogle().catch((err) => {
-        if (isCurrent()) {
-          setLoading(false);
-          setDebug('ERREUR: ' + (err?.code || err?.message || JSON.stringify(err)));
-        }
-      });
+      onSignInWithGoogle().catch(() => {});
       return;
     }
 
+    // ── Desktop + PWA standalone ───────────────────────────────────────────
+    // signInWithPopup ouvre une fenêtre. Sur iOS PWA, la communication
+    // popup→app peut échouer mais l'auth est écrite en IndexedDB.
     setLoading(true);
-
-    // ── Desktop + iOS PWA standalone ───────────────────────────────────────
-    //
-    // Sur iOS PWA, signInWithPopup ouvre une fenêtre Safari. Deux problèmes :
-    //
-    // A) "Quitter" : l'utilisateur ferme la popup avant de choisir un compte.
-    //    Firebase parfois ne détecte pas la fermeture → promesse qui ne settle
-    //    jamais → loading infini.
-    //    Fix : quand l'app redevient visible (popup fermée), on lance un timer
-    //    de 5s. Si la promesse n'a pas encore settled → reset loading.
-    //
-    // B) Double authentification : l'utilisateur prend >N secondes dans la popup.
-    //    Ne surtout pas recharger pendant ce temps.
-    //    Fix : attendre que signInWithPopup settle (quelle que soit la durée),
-    //    PUIS recharger si c'est une erreur non-annulation (auth en IndexedDB).
-    //
-    // C) Filet : timeout absolu de 3 min si la promesse ne settle jamais du tout.
 
     let settled = false;
     const cleanup = [];
 
-    // Surveillance du retour dans l'app (cas A)
+    // Si l'utilisateur revient dans l'app et que la promesse n'a pas settlé
+    // dans les 5s → l'abandon n'a pas été détecté → reset loading.
     const onVisible = () => {
       if (document.visibilityState !== 'visible') return;
-      // Popup vient de fermer — si la promesse ne settle pas dans les 5s,
-      // c'est un abandon sans erreur → reset loading.
-      const timer = setTimeout(() => {
-        if (!settled && isCurrent()) setLoading(false);
-      }, 5000);
-      cleanup.push(() => clearTimeout(timer));
+      const t = setTimeout(() => { if (!settled && isCurrent()) setLoading(false); }, 5000);
+      cleanup.push(() => clearTimeout(t));
     };
     document.addEventListener('visibilitychange', onVisible);
     cleanup.push(() => document.removeEventListener('visibilitychange', onVisible));
 
-    // Timeout absolu (cas C)
-    const absoluteTimeout = setTimeout(() => {
-      if (!settled && isCurrent()) setLoading(false);
-    }, 180_000);
-    cleanup.push(() => clearTimeout(absoluteTimeout));
+    // Filet : 3 min max
+    const abs = setTimeout(() => { if (!settled && isCurrent()) setLoading(false); }, 180_000);
+    cleanup.push(() => clearTimeout(abs));
 
-    const runCleanup = () => { cleanup.forEach(fn => fn()); };
+    const runCleanup = () => cleanup.forEach(fn => fn());
 
     try {
       await onSignInWithGoogle();
-      // Résolu normalement (desktop) → onAuthStateChanged va démonter ce composant
       settled = true;
       runCleanup();
+      // Résolu normalement → onAuthStateChanged démonte ce composant
     } catch (e) {
       settled = true;
       runCleanup();
-
       if (!isCurrent()) return;
 
       if (CANCELLED_CODES.includes(e?.code)) {
-        // Fermeture volontaire détectée par Firebase → reset loading
         setLoading(false);
         return;
       }
 
-      // Erreur non-annulation après fermeture de la popup (cas iOS typique) :
-      // Firebase a écrit l'auth en IndexedDB mais la communication popup→app a échoué.
-      // Attendre 2s qu'onAuthStateChanged confirme (cas rare où ça fonctionne).
-      // Sinon recharger pour que Firebase lise l'IndexedDB.
+      // iOS PWA : popup a fermé, auth peut être en IndexedDB.
+      // Attendre 2s qu'onAuthStateChanged confirme, sinon recharger.
       const confirmed = await new Promise((resolve) => {
         const t = setTimeout(() => { unsub(); resolve(false); }, 2000);
         const unsub = onAuthStateChanged(auth, (user) => {
           if (user) { clearTimeout(t); unsub(); resolve(true); }
         });
       });
-
       if (!isCurrent()) return;
-      if (confirmed) return; // composant va se démonter via App.jsx
-
+      if (confirmed) return;
       window.location.reload();
     }
   };
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
-      {/* Logo + titre */}
       <div className="text-center mb-12">
-        <img
-          src="/app-icon.png"
-          alt="PokéScores"
-          className="w-24 h-24 mx-auto mb-4 rounded-2xl shadow-lg"
-        />
+        <img src="/app-icon.png" alt="PokéScores"
+          className="w-24 h-24 mx-auto mb-4 rounded-2xl shadow-lg" />
         <h1 className="text-4xl font-black text-white tracking-tight">PokéScores</h1>
         <p className="text-gray-400 mt-2 text-sm">{tr('login.subtitle')}</p>
       </div>
 
-      {/* Bouton */}
       <div className="w-full max-w-xs">
         <button
-          ref={btnRef}
           onClick={handleSignIn}
           disabled={loading}
           className="w-full flex items-center justify-center gap-3 bg-white text-gray-900
                      font-semibold py-3.5 rounded-xl shadow disabled:opacity-50 active:scale-95
                      transition-transform"
         >
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt=""
-            className="w-5 h-5"
-          />
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="" className="w-5 h-5" />
           {tr('login.google')}
         </button>
       </div>
 
-      {/* Debug temporaire */}
-      {debug ? (
-        <p className="mt-4 text-yellow-400 text-xs text-center px-4 break-all">{debug}</p>
-      ) : (
-        <p className="mt-4 text-gray-600 text-xs text-center">
-          {`isMobile:${isMobileWeb} loading:${loading}`}
-        </p>
-      )}
-
-      {/* Spinner */}
       {loading && (
         <div className="mt-8 flex items-center gap-2 text-gray-400 text-sm">
           <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
