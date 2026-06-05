@@ -150,6 +150,7 @@ export function LoginScreen({ onSignInWithGoogle }) {
       <div className="w-full max-w-xs">
         <button
           onClick={handleSignIn}
+          onTouchEnd={(e) => { e.preventDefault(); handleSignIn(); }}
           disabled={loading}
           className="w-full flex items-center justify-center gap-3 bg-white text-gray-900
                      font-semibold py-3.5 rounded-xl shadow disabled:opacity-50 active:scale-95

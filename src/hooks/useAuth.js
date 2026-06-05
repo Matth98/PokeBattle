@@ -45,10 +45,14 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    // Sur mobile, on récupère le résultat d'un éventuel signInWithRedirect
-    // avant d'écouter onAuthStateChanged (évite un flash "non connecté").
+    // Sur mobile, on récupère le résultat d'un éventuel signInWithRedirect.
+    // Timeout de 5s : sur iOS, getRedirectResult peut bloquer onAuthStateChanged
+    // indéfiniment au premier lancement si Firebase initialise son IndexedDB.
     if (isMobileWeb) {
-      getRedirectResult(auth).catch(() => {});
+      Promise.race([
+        getRedirectResult(auth),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+      ]).catch(() => {});
     }
     return onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
