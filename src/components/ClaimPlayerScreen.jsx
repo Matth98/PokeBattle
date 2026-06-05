@@ -44,11 +44,15 @@ export function ClaimPlayerScreen({ availablePlayers, onClaim, onCreatePlayer, l
       >
         {/* App icon */}
         <div className="relative mb-10 select-none" aria-hidden="true">
-          <div className="w-24 h-24 rounded-[28px] overflow-hidden shadow-[0_0_60px_rgba(139,92,246,0.30)]">
-            <img src="/Match-button.svg" alt="" className="w-full h-full object-cover" />
-          </div>
-          {/* Glow ring */}
-          <div className="absolute inset-0 rounded-[28px] ring-1 ring-purple-500/20 scale-110 pointer-events-none" />
+          <img
+            src="/Match-button.svg"
+            alt=""
+            className="w-28 h-28 rounded-[30px] object-cover"
+            style={{
+              boxShadow:
+                '0 0 0 1px rgba(255,255,255,0.10), 0 0 40px rgba(139,92,246,0.50), 0 0 80px rgba(99,102,241,0.25)',
+            }}
+          />
         </div>
 
         {/* Titre + intro */}
