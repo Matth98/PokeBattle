@@ -842,7 +842,7 @@ export const PlayerDetail = ({
                     >
                       <button
                         onClick={() => inPokemonSelection
-                          ? setSelectedItems(isSelected ? selectedItems.filter((id) => id !== p.id) : [...selectedItems, p.id])
+                          ? setSelectedItems(prev => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])
                           : onViewPokemon?.({ pokeId: p.pokeId, name: p.name })
                         }
                         className={`w-full flex items-center gap-3 pr-4 py-3 ${t.surface} text-left relative`}
@@ -1005,7 +1005,7 @@ export const PlayerDetail = ({
 
                   const inner = inTeamsSelection ? (
                     <button
-                      onClick={() => setSelectedItems(isSelected ? selectedItems.filter((id) => id !== team._id) : [...selectedItems, team._id])}
+                      onClick={() => setSelectedItems(prev => prev.includes(team._id) ? prev.filter((id) => id !== team._id) : [...prev, team._id])}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface}`}
                     >
                       {rowContent}
