@@ -1006,7 +1006,7 @@ export const Battles = ({
                                       <span
                                         {...dragHandleProps}
                                         onClick={(e) => e.stopPropagation()}
-                                        className={`${t.textTertiary} active:${t.text} flex-shrink-0 px-2 py-2 select-none`}
+                                        className={`${t.textTertiary} active:${t.text} flex-shrink-0 px-2 py-2.5 select-none`}
                                         aria-label="Réorganiser"
                                         title="Glisse pour réordonner"
                                       >
@@ -1015,12 +1015,12 @@ export const Battles = ({
                                       {/* Ligne cliquable pour cocher/décocher */}
                                       <button
                                         onClick={() => handleToggleEliminated(slot, p.id)}
-                                        className="flex-1 flex items-center gap-2 pr-3 py-2 text-left active:bg-black/5 dark:active:bg-white/5 transition"
+                                        className="flex-1 flex items-center gap-3 pr-4 py-2.5 text-left active:bg-black/5 dark:active:bg-white/5 transition touch-manipulation"
                                         aria-label={p.eliminated ? 'Marquer non éliminé' : 'Marquer éliminé'}
                                       >
                                         {/* Pastille d'élimination */}
                                         <span
-                                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition ${
+                                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition ${
                                             p.eliminated
                                               ? 'bg-red-500 border-transparent'
                                               : `${t.textTertiary} border-current`
@@ -1031,7 +1031,7 @@ export const Battles = ({
                                         <img
                                           src={getPokemonImageUrl(p.pokeId)}
                                           alt={p.name}
-                                          className={`w-9 h-9 object-contain flex-shrink-0 ${p.eliminated ? 'grayscale opacity-50' : ''}`}
+                                          className={`w-10 h-10 object-contain flex-shrink-0 ${p.eliminated ? 'grayscale opacity-50' : ''}`}
                                           onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                                         />
                                         <span className={`flex-1 font-semibold text-sm truncate ${p.eliminated ? `${t.textTertiary} line-through` : t.text}`}>
