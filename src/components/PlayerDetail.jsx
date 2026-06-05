@@ -24,6 +24,7 @@ import {
   Check,
   CheckSquare,
   X,
+  XCircle,
   Zap,
 } from 'lucide-react';
 import { AlertModal } from './AlertModal';
@@ -803,10 +804,10 @@ export const PlayerDetail = ({
                   <button
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { setPokemonSearch(''); onPokemonSearchChange?.(''); pokemonSearchRef.current?.focus(); }}
-                    className={`w-5 h-5 rounded-full grid place-items-center flex-shrink-0 p-0 ${t.clearBgOnWhite}`}
+                    className={`flex-shrink-0 p-0 ${t.clearIconOnWhite}`}
                     aria-label="Effacer"
                   >
-                    <X size={11} strokeWidth={3} />
+                    <XCircle size={20} />
                   </button>
                 )}
               </div>
@@ -932,10 +933,10 @@ export const PlayerDetail = ({
                   <button
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => { setTeamsSearch(''); onTeamsSearchChange?.(''); teamsSearchRef.current?.focus(); }}
-                    className={`w-5 h-5 rounded-full grid place-items-center flex-shrink-0 p-0 ${t.clearBgOnWhite}`}
+                    className={`flex-shrink-0 p-0 ${t.clearIconOnWhite}`}
                     aria-label="Effacer"
                   >
-                    <X size={11} strokeWidth={3} />
+                    <XCircle size={20} />
                   </button>
                 )}
               </div>

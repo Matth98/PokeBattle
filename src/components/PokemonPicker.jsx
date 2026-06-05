@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Search, X, Check, Plus } from 'lucide-react';
+import { Search, X, XCircle, Check, Plus } from 'lucide-react';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -138,10 +138,10 @@ export const PokemonPicker = ({
                   searchPokemon('');
                   inputRef.current?.focus({ preventScroll: true });
                 }}
-                className={`w-5 h-5 rounded-full grid place-items-center flex-shrink-0 p-0 ${t.clearBg}`}
+                className={`flex-shrink-0 p-0 ${t.clearIcon}`}
                 aria-label="Effacer"
               >
-                <X size={11} strokeWidth={3} />
+                <XCircle size={20} />
               </button>
             )}
           </div>
