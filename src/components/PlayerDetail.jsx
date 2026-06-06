@@ -71,6 +71,14 @@ export const PlayerDetail = ({
     (dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id));
   const isOwner = dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id);
 
+  // Décode explicitement les images des empty states dès le montage du composant
+  useEffect(() => {
+    ['/pokeball-open.png', '/pokemon-faces.png'].forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.decode?.().catch(() => {});
+    });
+  }, []);
 
   const [addingPokemon, setAddingPokemon] = useState(false);
   const [activeTab, setActiveTab] = useState(initialActiveTab);
@@ -631,11 +639,11 @@ export const PlayerDetail = ({
 
   return (
     <div className="min-h-screen">
-      {/* Images toujours dans le rendering tree à la taille réelle → décodées une fois, jamais re-décodées */}
-      <img src="/pokeball-open.png"  aria-hidden="true" alt="" style={{ position:'absolute', width:40,  height:40,  opacity:0, pointerEvents:'none' }} />
-      <img src="/pokemon-faces.png" aria-hidden="true" alt="" style={{ position:'absolute', width:40,  height:40,  opacity:0, pointerEvents:'none' }} />
+      {/* Images toujours dans le rendering tree à la taille réelle → Safari les décode et ne les re-décode plus */}
+      <img src="/pokeball-open.png"  aria-hidden="true" alt="" style={{ position:'absolute', width:40, height:40, visibility:'hidden', pointerEvents:'none' }} />
+      <img src="/pokemon-faces.png" aria-hidden="true" alt="" style={{ position:'absolute', width:40, height:40, visibility:'hidden', pointerEvents:'none' }} />
       {player?.avatar && (
-        <img src={player.avatar} aria-hidden="true" alt="" style={{ position:'absolute', width:96, height:96, opacity:0, pointerEvents:'none' }} />
+        <img src={player.avatar} aria-hidden="true" alt="" style={{ position:'absolute', width:96, height:96, visibility:'hidden', pointerEvents:'none' }} />
       )}
       <div
         aria-hidden="true"

@@ -351,7 +351,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         return;
       }
       await refetchDbUser().catch(() => toast.error('Impossible de synchroniser le profil'));
-      if (!isTourDone()) startTour();
+      startTour();
     } finally {
       setClaimLoading(false);
     }
@@ -374,7 +374,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       const { player } = await res.json();
       setPlayers((prev) => [...prev, player]);
       await refetchDbUser().catch(() => toast.error('Impossible de synchroniser le profil'));
-      if (!isTourDone()) startTour();
+      startTour();
     } finally {
       setClaimLoading(false);
     }
