@@ -631,9 +631,6 @@ export const PlayerDetail = ({
 
   return (
     <div className="min-h-screen">
-      {/* Préchargement des images empty state — restent dans le DOM pour éviter le re-décodage */}
-      <img src="/pokeball-open.png" alt="" aria-hidden="true" style={{ display: 'none' }} />
-      <img src="/pokemon-faces.png" alt="" aria-hidden="true" style={{ display: 'none' }} />
       <div
         aria-hidden="true"
         className="fixed inset-0 -z-10"
@@ -763,6 +760,7 @@ export const PlayerDetail = ({
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              data-tour={`tab-${tab.id}`}
               onClick={() => switchTab(tab.id)}
               className={`py-2.5 rounded-xl text-sm font-bold transition ${
                 activeTab === tab.id
@@ -818,7 +816,7 @@ export const PlayerDetail = ({
             )}
 
             {!player.pokemon || player.pokemon.length === 0 ? (
-              <div className={`${t.surface} rounded-2xl p-6 text-center flex flex-col items-center gap-0`}>
+              <div data-tour="pokemon-empty-state" className={`${t.surface} rounded-2xl p-6 text-center flex flex-col items-center gap-0`}>
                 <img src="/pokeball-open.png" alt="" className="w-10 h-10 object-contain" />
                 <p className={`font-black text-base ${t.text} mt-1`}>{tr('pokemon.nonePlayer')}</p>
                 <p className={`${t.textSecondary} text-sm`}>
@@ -960,7 +958,7 @@ export const PlayerDetail = ({
             {(() => {
               const filtered = filteredTeams;
               if (playerTeams.length === 0) return (
-              <div className={`${t.surface} rounded-2xl p-6 text-center flex flex-col items-center gap-0`}>
+              <div data-tour="teams-empty-state" className={`${t.surface} rounded-2xl p-6 text-center flex flex-col items-center gap-0`}>
                 <img src="/pokemon-faces.png" alt="" className="w-10 h-10 object-contain" />
                 <p className={`font-black text-base ${t.text} mt-1`}>{tr('teams.none')}</p>
                 <p className={`${t.textSecondary} text-sm`}>

@@ -253,7 +253,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   const tourSteps = React.useMemo(() => [
     {
-      selector: '[data-tour="add-pokemon"]',
+      selector: '[data-tour="pokemon-empty-state"]',
       title: 'Ajoute tes Pokémon',
       description: 'Commence par ajouter les Pokémon que tu utilises en combat.',
       beforeShow: () => {
@@ -264,15 +264,19 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setPlayerDetailTab('pokemon');
             _setCurrentTabState('playerDetail');
           }
+        } else {
+          // Cliquer sur l'onglet Pokémon pour s'assurer qu'on y est
+          document.querySelector('[data-tour="tab-pokemon"]')?.click();
         }
       },
     },
     {
-      selector: '[data-tour="add-team"]',
+      selector: '[data-tour="teams-empty-state"]',
       title: 'Crée ton équipe',
       description: 'Regroupe tes Pokémon en équipes pour organiser tes stratégies.',
       beforeShow: () => {
-        setPlayerDetailTab('teams');
+        // Cliquer directement sur l'onglet Équipes dans PlayerDetail
+        document.querySelector('[data-tour="tab-teams"]')?.click();
       },
     },
     {
