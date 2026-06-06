@@ -196,14 +196,16 @@ export const Players = ({
                 <CheckSquare size={20} />
               </button>
             )}
-            <button
-              onClick={() => setShowForm(true)}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${t.accentBg} text-white transition-all duration-200 ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
-              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-              aria-label="Nouveau joueur"
-            >
-              <Plus size={22} />
-            </button>
+            {isSuperAdmin && (
+              <button
+                onClick={() => setShowForm(true)}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${t.accentBg} text-white transition-all duration-200 ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+                aria-label="Nouveau joueur"
+              >
+                <Plus size={22} />
+              </button>
+            )}
           </div>
         </div>
       </div>
