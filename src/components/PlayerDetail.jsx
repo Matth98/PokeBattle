@@ -812,14 +812,14 @@ export const PlayerDetail = ({
             )}
 
             {!player.pokemon || player.pokemon.length === 0 ? (
-              <div className={`${t.surface} rounded-2xl p-8 text-center flex flex-col items-center gap-0`}>
+              <div className={`${t.surface} rounded-2xl p-6 text-center flex flex-col items-center gap-0`}>
                 <img src="/pokeball-open.png" alt="" className="w-10 h-10 object-contain" />
                 <p className={`font-black text-base ${t.text} mt-1`}>{tr('pokemon.nonePlayer')}</p>
                 <p className={`${t.textSecondary} text-sm`}>{tr('pokemon.nonePlayerDesc')}</p>
                 {canEdit && (
                   <button
                     onClick={() => setAddingPokemon(true)}
-                    className={`mt-2 bg-indigo-500 ${t.accentBgHover} text-white text-sm font-semibold rounded-full px-5 py-2 transition-colors flex items-center gap-1.5`}
+                    className={`mt-2 bg-indigo-500 ${t.accentBgHover} text-white text-sm font-semibold rounded-full pl-2.5 pr-3 py-1.5 transition-colors flex items-center gap-1`}
                   >
                     <Plus size={14} strokeWidth={2.5} />{tr('common.add')}
                   </button>
@@ -951,14 +951,14 @@ export const PlayerDetail = ({
             {(() => {
               const filtered = filteredTeams;
               if (playerTeams.length === 0) return (
-              <div className={`${t.surface} rounded-2xl p-8 text-center flex flex-col items-center gap-0`}>
+              <div className={`${t.surface} rounded-2xl p-6 text-center flex flex-col items-center gap-0`}>
                 <img src="/pokemon-faces.png" alt="" className="w-10 h-10 object-contain" />
                 <p className={`font-black text-base ${t.text} mt-1`}>{tr('teams.none')}</p>
                 <p className={`${t.textSecondary} text-sm`}>{tr('teams.nonePlayerDesc')}</p>
                 {canEdit && onAddTeam && (
                   <button
                     onClick={openCreateTeam}
-                    className={`mt-2 bg-indigo-500 ${t.accentBgHover} text-white text-sm font-semibold rounded-full px-5 py-2 transition-colors flex items-center gap-1.5`}
+                    className={`mt-2 bg-indigo-500 ${t.accentBgHover} text-white text-sm font-semibold rounded-full pl-2.5 pr-3 py-1.5 transition-colors flex items-center gap-1`}
                   >
                     <Plus size={14} strokeWidth={2.5} />{tr('common.add')}
                   </button>
