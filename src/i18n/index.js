@@ -54,6 +54,7 @@ const fr = {
   teams: {
     title: 'Équipes', new: 'Nouvelle équipe', none: 'Aucune équipe',
     noneDesc: 'Crée une équipe pour commencer.',
+    nonePlayerDesc: 'Réunis tes meilleurs Pokémon !',
     selectPlayer: 'Sélectionner un joueur',
     namePlaceholder: 'Ex: Mon équipe de feu',
     nameLabel: 'Nom',
@@ -82,6 +83,7 @@ const fr = {
     effortPoints: "Points d'efforts donnés", baseExp: 'Base exp. donnée',
     base: 'BASE', asexual: 'Asexué', hidden: 'Caché',
     notFound: 'Pokémon introuvable',
+    nonePlayer: 'Aucun pokémon', nonePlayerDesc: 'Es-tu vraiment un dresseur ?',
   },
   settings: {
     title: 'Paramètres', appearance: 'Apparence',
@@ -188,6 +190,7 @@ const en = {
   teams: {
     title: 'Teams', new: 'New team', none: 'No teams',
     noneDesc: 'Create a team to get started.',
+    nonePlayerDesc: 'Gather your best Pokémon!',
     selectPlayer: 'Select a player',
     namePlaceholder: 'Ex: My fire team',
     nameLabel: 'Name',
@@ -216,6 +219,7 @@ const en = {
     effortPoints: 'Effort points', baseExp: 'Base exp.',
     base: 'TOTAL', asexual: 'Genderless', hidden: 'Hidden',
     notFound: 'Pokémon not found',
+    nonePlayer: 'No Pokémon', nonePlayerDesc: 'Are you really a trainer?',
   },
   settings: {
     title: 'Settings', appearance: 'Appearance',
@@ -317,6 +321,7 @@ const es = {
   teams: {
     title: 'Equipos', new: 'Nuevo equipo', none: 'Sin equipos',
     noneDesc: 'Crea un equipo para empezar.',
+    nonePlayerDesc: '¡Reúne tus mejores Pokémon!',
     selectPlayer: 'Seleccionar jugador',
     namePlaceholder: 'Ej: Mi equipo fuego',
     nameLabel: 'Nombre', choosePokemon: 'Elegir Pokémon',
@@ -341,6 +346,7 @@ const es = {
     species: 'Especie', effortPoints: 'Puntos de esfuerzo',
     baseExp: 'Exp. base', base: 'TOTAL', asexual: 'Sin género',
     hidden: 'Oculta', notFound: 'Pokémon no encontrado',
+    nonePlayer: 'Sin Pokémon', nonePlayerDesc: '¿Eres realmente un entrenador?',
   },
   settings: {
     title: 'Ajustes', appearance: 'Apariencia',
@@ -442,6 +448,7 @@ const de = {
   teams: {
     title: 'Teams', new: 'Neues Team', none: 'Keine Teams',
     noneDesc: 'Erstelle ein Team, um loszulegen.',
+    nonePlayerDesc: 'Stell dein bestes Team zusammen!',
     selectPlayer: 'Spieler auswählen',
     namePlaceholder: 'Z.B.: Mein Feuer-Team',
     nameLabel: 'Name', choosePokemon: 'Pokémon wählen',
@@ -466,6 +473,7 @@ const de = {
     species: 'Typ', effortPoints: 'EP-Werte',
     baseExp: 'Basis-EP', base: 'GESAMT', asexual: 'Geschlechtslos',
     hidden: 'Verborgen', notFound: 'Pokémon nicht gefunden',
+    nonePlayer: 'Keine Pokémon', nonePlayerDesc: 'Bist du wirklich ein Trainer?',
   },
   settings: {
     title: 'Einstellungen', appearance: 'Aussehen',
@@ -567,6 +575,7 @@ const ja = {
   teams: {
     title: 'チーム', new: '新規チーム', none: 'チームなし',
     noneDesc: 'チームを作って始めよう。',
+    nonePlayerDesc: '最強チームを作ろう！',
     selectPlayer: 'プレイヤーを選択',
     namePlaceholder: '例：ほのおチーム',
     nameLabel: '名前', choosePokemon: 'ポケモンを選ぶ',
@@ -591,6 +600,7 @@ const ja = {
     effortPoints: '努力値', baseExp: '基礎経験値',
     base: '合計', asexual: '性別不明', hidden: '隠れ',
     notFound: 'ポケモンが見つかりません',
+    nonePlayer: 'ポケモンなし', nonePlayerDesc: '本当にトレーナー？',
   },
   settings: {
     title: '設定', appearance: '外観',
