@@ -71,6 +71,13 @@ export const PlayerDetail = ({
     (dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id));
   const isOwner = dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id);
 
+  useEffect(() => {
+    ['/pokeball-open.png', '/pokemon-faces.png'].forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
   const [addingPokemon, setAddingPokemon] = useState(false);
   const [activeTab, setActiveTab] = useState(initialActiveTab);
   const switchTab = (tab) => { setPokemonSearch(''); onPokemonSearchChange?.(''); setTeamsSearch(''); onTeamsSearchChange?.(''); exitSelection(); setActiveTab(tab); onActiveTabChange?.(tab); };
@@ -814,10 +821,10 @@ export const PlayerDetail = ({
 
             {!player.pokemon || player.pokemon.length === 0 ? (
               <div className={`${t.surface} rounded-2xl p-6 text-center flex flex-col items-center gap-0`}>
-                <img src="/pokeball-open.png" alt="" className="w-10 h-10 object-contain" loading="lazy" />
+                <img src="/pokeball-open.png" alt="" className="w-10 h-10 object-contain" />
                 <p className={`font-black text-base ${t.text} mt-1`}>{tr('pokemon.nonePlayer')}</p>
                 <p className={`${t.textSecondary} text-sm`}>
-                  {isOwner || isSuperAdmin ? tr('pokemon.nonePlayerDesc') : tr('pokemon.nonePlayerDescOther')}
+                  {isOwner ? tr('pokemon.nonePlayerDesc') : tr('pokemon.nonePlayerDescOther')}
                 </p>
                 {canEdit && (
                   <button
@@ -955,10 +962,10 @@ export const PlayerDetail = ({
               const filtered = filteredTeams;
               if (playerTeams.length === 0) return (
               <div className={`${t.surface} rounded-2xl p-6 text-center flex flex-col items-center gap-0`}>
-                <img src="/pokemon-faces.png" alt="" className="w-10 h-10 object-contain" loading="lazy" />
+                <img src="/pokemon-faces.png" alt="" className="w-10 h-10 object-contain" />
                 <p className={`font-black text-base ${t.text} mt-1`}>{tr('teams.none')}</p>
                 <p className={`${t.textSecondary} text-sm`}>
-                  {isOwner || isSuperAdmin ? tr('teams.nonePlayerDesc') : tr('teams.nonePlayerDescOther', player?.name)}
+                  {isOwner ? tr('teams.nonePlayerDesc') : tr('teams.nonePlayerDescOther', player?.name)}
                 </p>
                 {canEdit && onAddTeam && (
                   <button

@@ -55,7 +55,7 @@ const fr = {
     title: 'Équipes', new: 'Nouvelle équipe', none: 'Aucune équipe',
     noneDesc: 'Crée une équipe pour commencer.',
     nonePlayerDesc: 'Réunis tes meilleurs Pokémon !',
-    nonePlayerDescOther: (name) => `La stratégie de ${name} est encore un mystère.`,
+    nonePlayerDescOther: (name) => `La stratégie de ${name} est encore un mystère…`,
     selectPlayer: 'Sélectionner un joueur',
     namePlaceholder: 'Ex: Mon équipe de feu',
     nameLabel: 'Nom',
