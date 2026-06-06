@@ -13,7 +13,6 @@ export default function ProductTour({ steps, onDone, onSkip, isDark }) {
     const el = document.querySelector(step.selector);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-      // Wait for scroll to settle
       setTimeout(() => {
         const rect = el.getBoundingClientRect();
         setTargetRect(rect);
@@ -37,7 +36,7 @@ export default function ProductTour({ steps, onDone, onSkip, isDark }) {
     return () => clearTimeout(timerRef.current);
   }, [currentStep]); // eslint-disable-line
 
-  // Update rect on scroll/resize
+  // Mettre à jour la position sur scroll/resize
   useEffect(() => {
     const update = () => {
       const el = document.querySelector(step.selector);
@@ -61,7 +60,6 @@ export default function ProductTour({ steps, onDone, onSkip, isDark }) {
 
   const isLast = currentStep === steps.length - 1;
 
-  // Tooltip dimensions
   const TOOLTIP_W = 272;
   const TOOLTIP_H_EST = 140;
 
@@ -85,7 +83,6 @@ export default function ProductTour({ steps, onDone, onSkip, isDark }) {
     return { left, top: spotBottom + 12 };
   };
 
-  const tooltipStyle = targetRect ? getTooltipStyle() : {};
   const rx = targetRect ? Math.max(0, targetRect.x - PAD) : 0;
   const ry = targetRect ? Math.max(0, targetRect.y - PAD) : 0;
   const rw = targetRect ? targetRect.width + PAD * 2 : 0;
@@ -93,9 +90,16 @@ export default function ProductTour({ steps, onDone, onSkip, isDark }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }}>
-      {/* SVG Overlay with cutout */}
+
+      {/* 1. Zone cliquable "skip" — derrière tout */}
+      <div
+        style={{ position: 'absolute', inset: 0, zIndex: 0 }}
+        onClick={onSkip}
+      />
+
+      {/* 2. SVG overlay visuel — sans pointer events */}
       <svg
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}
       >
         <defs>
           <mask id="tour-spotlight-mask">
@@ -109,18 +113,17 @@ export default function ProductTour({ steps, onDone, onSkip, isDark }) {
           x="0" y="0" width="100%" height="100%"
           fill={isDark ? 'rgba(0,0,0,0.78)' : 'rgba(0,0,0,0.55)'}
           mask="url(#tour-spotlight-mask)"
-          onClick={onSkip}
-          style={{ cursor: 'pointer' }}
         />
       </svg>
 
-      {/* Tooltip */}
+      {/* 3. Tooltip — au-dessus de tout */}
       {visible && targetRect && (
         <div
           style={{
-            position: 'fixed',
+            position: 'absolute',
+            zIndex: 2,
             width: TOOLTIP_W,
-            ...tooltipStyle,
+            ...getTooltipStyle(),
             animation: 'tourFadeIn 0.22s ease',
           }}
           className={`rounded-2xl shadow-2xl p-4 ${isDark ? 'bg-zinc-800 border border-zinc-700' : 'bg-white border border-gray-100'}`}
