@@ -57,6 +57,15 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
 
+  // ── Préchargement des avatars par défaut (après le premier paint) ──
+  useEffect(() => {
+    ['/avatars/lilie.png','/avatars/cynthia.png','/avatars/erika.png','/avatars/professeur_chen.png',
+     '/avatars/pepper.png','/avatars/gladio.png','/avatars/serena.png','/avatars/giovanni.png',
+     '/avatars/mashynn.png','/avatars/red.jpg',
+     '/pokeball-open.png','/pokemon-faces.png',
+    ].forEach((src) => { const img = new Image(); img.src = src; });
+  }, []);
+
   // ── Raccourci clavier thème (desktop) : Cmd/Ctrl + Shift + T ──
   useEffect(() => {
     const MODES = ['light', 'dark', 'system'];

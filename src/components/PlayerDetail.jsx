@@ -631,9 +631,12 @@ export const PlayerDetail = ({
 
   return (
     <div className="min-h-screen">
-      {/* Images empty state toujours dans le rendering tree → décodées une fois, jamais re-décodées */}
-      <img src="/pokeball-open.png"  aria-hidden="true" alt="" style={{ position:'absolute', width:1, height:1, opacity:0, pointerEvents:'none' }} />
-      <img src="/pokemon-faces.png" aria-hidden="true" alt="" style={{ position:'absolute', width:1, height:1, opacity:0, pointerEvents:'none' }} />
+      {/* Images toujours dans le rendering tree à la taille réelle → décodées une fois, jamais re-décodées */}
+      <img src="/pokeball-open.png"  aria-hidden="true" alt="" style={{ position:'absolute', width:40,  height:40,  opacity:0, pointerEvents:'none' }} />
+      <img src="/pokemon-faces.png" aria-hidden="true" alt="" style={{ position:'absolute', width:40,  height:40,  opacity:0, pointerEvents:'none' }} />
+      {player?.avatar && (
+        <img src={player.avatar} aria-hidden="true" alt="" style={{ position:'absolute', width:96, height:96, opacity:0, pointerEvents:'none' }} />
+      )}
       <div
         aria-hidden="true"
         className="fixed inset-0 -z-10"
