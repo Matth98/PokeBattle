@@ -20,21 +20,9 @@
           var bg = dark ? '#09090b' : '#ffffff';
           document.documentElement.style.background = bg;
           document.body.style.background = bg;
-          document.documentElement.style.setProperty('--app-bg', bg);
         } catch (e) {}
       })();
     </script>
-    <style>
-      :root { --app-bg: #ffffff; }
-      @media (prefers-color-scheme: dark) { :root { --app-bg: #09090b; } }
-      #safe-area-top, #safe-area-bottom {
-        position: fixed; left: 0; right: 0;
-        background: var(--app-bg);
-        z-index: 9999; pointer-events: none;
-      }
-      #safe-area-top    { top: 0;    height: env(safe-area-inset-top, 0px); }
-      #safe-area-bottom { bottom: 0; height: env(safe-area-inset-bottom, 0px); }
-    </style>
     <meta name="description" content="PokéScores - Enregistre tes combats Pokémon" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -55,8 +43,6 @@
     <title>PokéScores</title>
   </head>
   <body>
-    <div id="safe-area-top"></div>
-    <div id="safe-area-bottom"></div>
     <noscript>Tu as besoin d'activer JavaScript pour utiliser cette app.</noscript>
     <div id="root"></div>
   </body>
