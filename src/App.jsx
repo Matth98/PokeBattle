@@ -56,6 +56,15 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const t = isDark ? theme.dark : theme.light;
   const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
+  // ── Préchargement des assets empty state (après le premier paint) ──
+  useEffect(() => {
+    const srcs = ['/pokeball-open.png', '/pokemon-faces.png'];
+    srcs.forEach((src) => { const img = new Image(); img.src = src; });
+    // Retire les covers safe-area dès que React a rendu (elles n'étaient là que pour le flash initial)
+    document.getElementById('safe-area-top')?.remove();
+    document.getElementById('safe-area-bottom')?.remove();
+  }, []);
+
   // ── Raccourci clavier thème (desktop) : Cmd/Ctrl + Shift + T ──
   useEffect(() => {
     const MODES = ['light', 'dark', 'system'];
