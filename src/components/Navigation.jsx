@@ -33,6 +33,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
           return (
             <button
               key={id}
+              data-tour={`nav-${id}`}
               onClick={() => setCurrentTab(id)}
               className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
                 isActive ? t.accent : t.textTertiary
@@ -55,6 +56,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
           );
         })}
         <button
+          data-tour="nav-battle-btn"
           onClick={onCreateBattle}
           className="relative -mt-5 mx-auto flex flex-col items-center justify-end gap-1"
           aria-label="Créer un combat"
@@ -79,6 +81,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
           return (
             <button
               key={id}
+              data-tour={`nav-${id}`}
               onClick={() => setCurrentTab(id)}
               className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
                 isActive ? t.accent : t.textTertiary

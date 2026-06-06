@@ -71,12 +71,6 @@ export const PlayerDetail = ({
     (dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id));
   const isOwner = dbUser?._id && player?.userId && String(player.userId) === String(dbUser._id);
 
-  useEffect(() => {
-    ['/pokeball-open.png', '/pokemon-faces.png'].forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
 
   const [addingPokemon, setAddingPokemon] = useState(false);
   const [activeTab, setActiveTab] = useState(initialActiveTab);
@@ -637,6 +631,9 @@ export const PlayerDetail = ({
 
   return (
     <div className="min-h-screen">
+      {/* Préchargement des images empty state — restent dans le DOM pour éviter le re-décodage */}
+      <img src="/pokeball-open.png" alt="" aria-hidden="true" style={{ display: 'none' }} />
+      <img src="/pokemon-faces.png" alt="" aria-hidden="true" style={{ display: 'none' }} />
       <div
         aria-hidden="true"
         className="fixed inset-0 -z-10"
@@ -788,6 +785,7 @@ export const PlayerDetail = ({
                 Pokémon ({rosterSize})
               </h2>
               <button
+                data-tour="add-pokemon"
                 onClick={canEdit ? () => setAddingPokemon(true) : undefined}
                 className={`${t.accent} text-sm font-semibold flex items-center gap-1${canEdit ? '' : ' invisible pointer-events-none select-none'}`}
                 aria-hidden={!canEdit}
@@ -928,6 +926,7 @@ export const PlayerDetail = ({
                 {tr('teams.title')} ({playerTeams.length})
               </h2>
               <button
+                data-tour="add-team"
                 onClick={canEdit && onAddTeam ? openCreateTeam : undefined}
                 className={`${t.accent} text-sm font-semibold flex items-center gap-1${canEdit && onAddTeam ? '' : ' invisible pointer-events-none select-none'}`}
                 aria-hidden={!(canEdit && onAddTeam)}

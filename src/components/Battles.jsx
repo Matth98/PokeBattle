@@ -534,6 +534,7 @@ export const Battles = ({
               }}
               className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${t.accentBg} text-white ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
               style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+              data-tour="add-battle"
               aria-label="Nouveau combat"
             >
               <Plus size={22} />

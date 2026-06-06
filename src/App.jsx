@@ -18,6 +18,8 @@ import { ClaimPlayerScreen } from './components/ClaimPlayerScreen';
 import { PokemonSearchPage } from './components/PokemonSearchPage';
 import { PokemonDetailPage } from './components/PokemonDetailPage';
 import { SettingsPage } from './components/SettingsPage';
+import ProductTour from './components/ProductTour';
+import { useTour } from './hooks/useTour';
 import { LanguageProvider } from './hooks/useLanguage';
 import { useThemeMode } from './hooks/useThemeMode';
 import { usePushNotifications } from './hooks/usePushNotifications';
@@ -78,6 +80,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [prevTab, setPrevTab] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hideNav, setHideNav] = useState(false);
+  const { tourActive, startTour, endTour, isTourDone, resetTour } = useTour();
   // Snapshot du top 3 avant une suppression depuis BattleDetail → permet l'animation sur Home
   const homeDeleteSnapshotRef = useRef(null);
 
@@ -247,6 +250,47 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [battles, setBattles] = useState([]);
   const [teams, setTeams] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
+
+  const tourSteps = React.useMemo(() => [
+    {
+      selector: '[data-tour="add-pokemon"]',
+      title: 'Ajoute tes Pokémon',
+      description: 'Commence par ajouter les Pokémon que tu utilises en combat.',
+      beforeShow: () => {
+        if (currentTab !== 'playerDetail') {
+          const myPlayer = players.find(p => p._id === dbUser?.playerId);
+          if (myPlayer) {
+            setSelectedPlayer(myPlayer);
+            setPlayerDetailTab('pokemon');
+            _setCurrentTabState('playerDetail');
+          }
+        }
+      },
+    },
+    {
+      selector: '[data-tour="add-team"]',
+      title: 'Crée ton équipe',
+      description: 'Regroupe tes Pokémon en équipes pour organiser tes stratégies.',
+      beforeShow: () => {
+        setPlayerDetailTab('teams');
+      },
+    },
+    {
+      selector: '[data-tour="nav-battles"]',
+      title: 'Tes combats',
+      description: "Retrouve ici l'historique de tous tes combats enregistrés.",
+    },
+    {
+      selector: '[data-tour="nav-battle-btn"]',
+      title: 'Lance un combat',
+      description: 'Appuie sur la Pokéball pour enregistrer un nouveau combat.',
+    },
+    {
+      selector: '[data-tour="nav-home"]',
+      title: "Page d'accueil",
+      description: 'Retrouve un résumé de ton activité et tes derniers combats.',
+    },
+  ], [currentTab, players, dbUser]); // eslint-disable-line react-hooks/exhaustive-deps
   // Sur iOS, Firebase peut fire onAuthStateChanged avec null puis avec l'utilisateur
   // en deux passes distinctes. authSettled ajoute 250ms de stabilisation après que
   // authLoading passe à false avant d'afficher LoginScreen, évitant le flash.
@@ -290,6 +334,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         return;
       }
       await refetchDbUser().catch(() => toast.error('Impossible de synchroniser le profil'));
+      if (!isTourDone()) startTour();
     } finally {
       setClaimLoading(false);
     }
@@ -312,6 +357,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       const { player } = await res.json();
       setPlayers((prev) => [...prev, player]);
       await refetchDbUser().catch(() => toast.error('Impossible de synchroniser le profil'));
+      if (!isTourDone()) startTour();
     } finally {
       setClaimLoading(false);
     }
@@ -910,6 +956,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             onPushUnsubscribe={unsubscribe}
             onClose={() => setSettingsOpen(false)}
             onSignOut={() => { setSettingsOpen(false); signOut(); }}
+            onRestartTour={() => { resetTour(); startTour(); }}
             onOpenPlayer={() => {
               setSettingsOpen(false);
               const p = players.find(pl => pl._id === dbUser?.playerId);
@@ -975,6 +1022,15 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           />
         )}
       </div>
+
+      {tourActive && (
+        <ProductTour
+          steps={tourSteps}
+          onDone={endTour}
+          onSkip={endTour}
+          isDark={isDark}
+        />
+      )}
     </div>
   );
 }

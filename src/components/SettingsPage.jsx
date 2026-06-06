@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, Send, ExternalLink } from 'lucide-react';
+import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, Send, ExternalLink, RotateCcw } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
@@ -12,7 +12,7 @@ const THEME_OPTIONS = [
   { value: 'dark',   Icon: Moon,    labelKey: 'settings.darkMode'   },
 ];
 
-export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer, pushPermission, pushIsSubscribed, pushLoading, onPushSubscribe, onPushUnsubscribe }) => {
+export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer, pushPermission, pushIsSubscribed, pushLoading, onPushSubscribe, onPushUnsubscribe, onRestartTour }) => {
   const tr = useTranslation();
   useBodyScrollLock();
   const displayName = linkedPlayer?.name || user?.displayName || user?.email || 'Utilisateur';
@@ -357,6 +357,23 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                     </>
                   )}
 
+                </div>
+              </section>
+            )}
+
+            {/* ── Tour ── */}
+            {onRestartTour && (
+              <section>
+                <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
+                  <button
+                    onClick={() => { handleClose(); setTimeout(() => onRestartTour(), 350); }}
+                    className="w-full flex items-center gap-3 px-4 py-4"
+                  >
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-500/15 text-indigo-500'}`}>
+                      <RotateCcw size={18} />
+                    </div>
+                    <span className={`flex-1 text-left font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Relancer le tour</span>
+                  </button>
                 </div>
               </section>
             )}
