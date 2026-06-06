@@ -85,7 +85,7 @@ const fr = {
     base: 'BASE', asexual: 'Asexué', hidden: 'Caché',
     notFound: 'Pokémon introuvable',
     nonePlayer: 'Aucun pokémon', nonePlayerDesc: 'Es-tu vraiment un dresseur ?',
-    nonePlayerDescOther: 'Le Professeur Chen attend toujours son premier rapport.',
+    nonePlayerDescOther: 'Le Professeur Chen attend toujours son premier rapport…',
   },
   settings: {
     title: 'Paramètres', appearance: 'Apparence',

@@ -252,31 +252,34 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [teams, setTeams] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
 
-  const tourSteps = React.useMemo(() => [
+  const tourSteps = React.useMemo(() => {
+    const myPlayer = players.find(p => p._id === dbUser?.playerId);
+    const hasPokemon = (myPlayer?.pokemon?.length ?? 0) > 0;
+    const myTeams = myPlayer ? teams.filter(t => t.ownerId === myPlayer._id) : [];
+    const hasTeams = myTeams.length > 0;
+
+    return [
     {
-      selector: '[data-tour="pokemon-empty-state"]',
+      selector: hasPokemon ? '[data-tour="add-pokemon"]' : '[data-tour="pokemon-empty-state"]',
       title: 'Ajoute tes Pokémon',
       description: 'Commence par ajouter les Pokémon que tu utilises en combat.',
       beforeShow: () => {
         if (currentTab !== 'playerDetail') {
-          const myPlayer = players.find(p => p._id === dbUser?.playerId);
           if (myPlayer) {
             setSelectedPlayer(myPlayer);
             setPlayerDetailTab('pokemon');
             _setCurrentTabState('playerDetail');
           }
         } else {
-          // Cliquer sur l'onglet Pokémon pour s'assurer qu'on y est
           document.querySelector('[data-tour="tab-pokemon"]')?.click();
         }
       },
     },
     {
-      selector: '[data-tour="teams-empty-state"]',
+      selector: hasTeams ? '[data-tour="add-team"]' : '[data-tour="teams-empty-state"]',
       title: 'Crée ton équipe',
       description: 'Regroupe tes Pokémon en équipes pour organiser tes stratégies.',
       beforeShow: () => {
-        // Cliquer directement sur l'onglet Équipes dans PlayerDetail
         document.querySelector('[data-tour="tab-teams"]')?.click();
       },
     },
@@ -295,7 +298,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       title: "Page d'accueil",
       description: 'Retrouve un résumé de ton activité et tes derniers combats.',
     },
-  ], [currentTab, players, dbUser]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]; }, [currentTab, players, teams, dbUser]); // eslint-disable-line react-hooks/exhaustive-deps
   // Sur iOS, Firebase peut fire onAuthStateChanged avec null puis avec l'utilisateur
   // en deux passes distinctes. authSettled ajoute 250ms de stabilisation après que
   // authLoading passe à false avant d'afficher LoginScreen, évitant le flash.
