@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getToken } from 'firebase/messaging';
 import { getFirebaseMessaging } from '../firebase';
 import { auth } from '../firebase';
@@ -14,7 +14,7 @@ const getAuthHeaders = async () => {
 };
 
 const registerServiceWorker = async () => {
-  if (!('serviceWorker' in navigator)) return null;
+  if (!("serviceWorker" in navigator)) return null;
   try {
     const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
     await navigator.serviceWorker.ready;
@@ -33,23 +33,72 @@ export const usePushNotifications = () => {
   // Token en état React — seule source de vérité, évite de lire localStorage à chaque render
   const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEY));
   const [loading, setLoading] = useState(false);
+  const refreshing = useRef(false);
 
-  // Resync la permission quand l'app repasse au premier plan
-  // (ex : l'utilisateur vient de l'activer dans les Réglages système).
-  // On écoute visibilitychange + focus (iOS PWA) avec un léger délai car
-  // Notification.permission n'est pas mis à jour instantanément sur iOS.
+  // Refresh FCM token silently if it rotated (e.g. after PWA kill/restart).
+  // getToken() is idempotent: returns the same token if still valid,
+  // or a new one if the browser rotated the underlying push subscription.
+  const refreshTokenSilently = useCallback(async () => {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission !== 'granted') return;
+    if (localStorage.getItem(UNSUBSCRIBED_KEY)) return;
+    if (!VAPID_KEY) return;
+    if (refreshing.current) return;
+    refreshing.current = true;
+    try {
+      const messaging = await getFirebaseMessaging();
+      if (!messaging) return;
+      const swReg = await registerServiceWorker();
+      const fcmToken = await getToken(messaging, {
+        vapidKey: VAPID_KEY,
+        serviceWorkerRegistration: swReg ?? undefined,
+      });
+      if (!fcmToken) return;
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (fcmToken === stored) return; // unchanged
+      // Token rotated — update storage and re-register with backend
+      localStorage.setItem(STORAGE_KEY, fcmToken);
+      setToken(fcmToken);
+      await fetch(`${API_BASE_URL}/push/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+        body: JSON.stringify({ token: fcmToken }),
+      });
+    } catch {
+      // fail silently — token refresh is a best-effort background operation
+    } finally {
+      refreshing.current = false;
+    }
+  }, []);
+
+  // On mount: refresh token in case it rotated while the PWA was killed.
+  useEffect(() => {
+    refreshTokenSilently();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Resync permission + refresh token when app regains focus
+  // (e.g. user enabled notifs from system settings, or PWA re-opened after kill).
   useEffect(() => {
     const syncPermission = () => {
       if (typeof Notification === 'undefined') return;
       setTimeout(() => setPermission(Notification.permission), 300);
     };
-    document.addEventListener('visibilitychange', syncPermission);
-    window.addEventListener('focus', syncPermission);
-    return () => {
-      document.removeEventListener('visibilitychange', syncPermission);
-      window.removeEventListener('focus', syncPermission);
+    const onVisibility = () => {
+      syncPermission();
+      if (document.visibilityState === 'visible') refreshTokenSilently();
     };
-  }, []);
+    const onFocus = () => {
+      syncPermission();
+      refreshTokenSilently();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [refreshTokenSilently]);
 
   // Si permission déjà accordée mais token absent (ex : réinstallation PWA),
   // on re-subscribe silencieusement — sauf si l'utilisateur a explicitement désactivé.
