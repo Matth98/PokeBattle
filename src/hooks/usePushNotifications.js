@@ -14,7 +14,7 @@ const getAuthHeaders = async () => {
 };
 
 const registerServiceWorker = async () => {
-  if (!("serviceWorker" in navigator)) return null;
+  if (!('serviceWorker' in navigator)) return null;
   try {
     const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
     await navigator.serviceWorker.ready;
@@ -38,6 +38,8 @@ export const usePushNotifications = () => {
   // Refresh FCM token silently if it rotated (e.g. after PWA kill/restart).
   // getToken() is idempotent: returns the same token if still valid,
   // or a new one if the browser rotated the underlying push subscription.
+  // Uses getRegistration() instead of register() to avoid triggering a SW
+  // update cycle that would fire controllerchange → window.location.reload().
   const refreshTokenSilently = useCallback(async () => {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'granted') return;
@@ -48,10 +50,13 @@ export const usePushNotifications = () => {
     try {
       const messaging = await getFirebaseMessaging();
       if (!messaging) return;
-      const swReg = await registerServiceWorker();
+      // Read the existing SW registration without re-registering (safe for frequent calls).
+      const swReg = 'serviceWorker' in navigator
+        ? await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js')
+        : undefined;
       const fcmToken = await getToken(messaging, {
         vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: swReg ?? undefined,
+        serviceWorkerRegistration: swReg,
       });
       if (!fcmToken) return;
       const stored = localStorage.getItem(STORAGE_KEY);
