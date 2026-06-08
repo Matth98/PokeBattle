@@ -205,6 +205,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         ...entry,
         player: players.find(pl => String(pl._id) === entry.playerId) || null,
       }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battles, players, pokemonTypes]);
   const { getPokemonImageUrl } = usePokemon();
   // Même logique que Players : initialScrollY évite le flash de topbar au retour.
