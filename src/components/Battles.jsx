@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, X, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, ChevronRight, Shield, GripVertical, Loader2, Trophy, Dices } from 'lucide-react';
+import { Plus, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2, Trophy, Dices } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
 import { usePokemon } from '../hooks/usePokemon';

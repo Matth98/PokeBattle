@@ -49,13 +49,12 @@ export const usePushNotifications = () => {
     if (typeof Notification === 'undefined') return 'unsupported';
     return Notification.permission;
   });
-  // Token en état React — seule source de vérité, évite de lire localStorage à chaque render
+  // Token in React state — single source of truth, avoids reading localStorage on every render.
   const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEY));
   const [loading, setLoading] = useState(false);
   const refreshing = useRef(false);
 
   // Re-subscribe to FCM once per PWA session (sessionStorage is cleared on kill).
-  // Steps:
   //   1. deleteToken() clears Firebase's IDB cache, forcing a new push subscription.
   //      Required because iOS can invalidate the APNs subscription after a force-quit
   //      while Firebase's cache still holds the old (now-invalid) token.
@@ -133,8 +132,8 @@ export const usePushNotifications = () => {
     };
   }, [refreshTokenSilently]);
 
-  // Si permission déjà accordée mais token absent (ex : réinstallation PWA),
-  // on re-subscribe silencieusement — sauf si l'utilisateur a explicitement désactivé.
+  // Re-subscribe if permission already granted but token absent (e.g. PWA reinstall),
+  // unless the user has explicitly unsubscribed.
   useEffect(() => {
     if (permission !== 'granted') return;
     if (token) return;
@@ -152,13 +151,13 @@ export const usePushNotifications = () => {
 
     setLoading(true);
     try {
-      // Si déjà accordée, on ne rappelle pas requestPermission() (échoue sans geste utilisateur sur iOS)
+      // If already granted, skip requestPermission() — it fails without a user gesture on iOS.
       const perm = Notification.permission === 'granted'
         ? 'granted'
         : await Notification.requestPermission();
       setPermission(perm);
       if (perm !== 'granted') return false;
-      localStorage.removeItem(UNSUBSCRIBED_KEY); // l'utilisateur a activé explicitement
+      localStorage.removeItem(UNSUBSCRIBED_KEY);
 
       const messaging = await getFirebaseMessaging();
       if (!messaging) return false;
@@ -173,13 +172,14 @@ export const usePushNotifications = () => {
 
       localStorage.setItem(STORAGE_KEY, fcmToken);
       setToken(fcmToken);
-      sessionStorage.setItem(SESSION_KEY, '1');
 
-      await fetch(`${API_BASE_URL}/push/subscribe`, {
+      const res = await fetch(`${API_BASE_URL}/push/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify({ token: fcmToken }),
       });
+      if (!res.ok) throw new Error(`subscribe ${res.status}`);
+      sessionStorage.setItem(SESSION_KEY, '1');
 
       return true;
     } catch (err) {
@@ -201,7 +201,7 @@ export const usePushNotifications = () => {
         body: JSON.stringify({ token }),
       });
       localStorage.removeItem(STORAGE_KEY);
-      localStorage.setItem(UNSUBSCRIBED_KEY, '1'); // mémorise le choix explicite de l'utilisateur
+      localStorage.setItem(UNSUBSCRIBED_KEY, '1');
       sessionStorage.removeItem(SESSION_KEY);
       setToken(null);
     } catch (err) {

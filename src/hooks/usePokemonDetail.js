@@ -270,6 +270,7 @@ export function usePokemonDetail(pokeId, pokemonNameOverride = null) {
 
     load();
     return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pokeId, language]);
 
   return { data, loading, error };

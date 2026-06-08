@@ -257,7 +257,8 @@ export function useEdgeSwipeBack({ onBack, enabled, bgRef = null, fgOverlayRef =
       activeRef.current = false;
       pendingFgResetRef.current = false;
     };
-  }, [enabled]); // bgRef est un objet ref stable (useRef) - son identité ne change jamais
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled]); // bgRef, bgOverlayRef, fgOverlayRef are stable refs — identity never changes
 
   return { pageRef, resetFg };
 }

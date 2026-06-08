@@ -90,7 +90,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [prevTab, setPrevTab] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hideNav, setHideNav] = useState(false);
-  const { tourActive, startTour, endTour, isTourDone, resetTour } = useTour();
+  const { tourActive, startTour, endTour, resetTour } = useTour();
   // Snapshot du top 3 avant une suppression depuis BattleDetail → permet l'animation sur Home
   const homeDeleteSnapshotRef = useRef(null);
 
@@ -104,6 +104,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const TAB_LABELS = { home: 'Accueil', battles: 'Combats', teams: 'Équipes', players: 'Joueurs', pokemonSearch: 'Recherche' };
   const getTabLabel = useCallback((tab) =>
     tab === 'playerDetail' ? (selectedPlayer?.name || 'Joueur') : (TAB_LABELS[tab] || ''),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   [selectedPlayer]);
 
   // Navigation principale (onglets) — réinitialise la pile
@@ -142,6 +143,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players', pokemonDetail: 'pokemonSearch', pokemonSearch: 'home' };
 
   // Retour — dépile et restaure. Fallback si le stack est vide.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const navigateBack = useCallback(() => {
     setNavDirection('pop');
     const prev = navStack.current.pop();
@@ -156,6 +158,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     shouldRestoreRef.current = !!prev;
     setPrevTab(navStack.current[navStack.current.length - 1]?.tab ?? null);
     _setCurrentTabState(target.tab);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab]);
 
   const handleBack = useCallback(() => {
@@ -240,7 +243,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   };
 
   const {
-    loading,
     fetchPlayers,
     fetchBattles,
     fetchTeams,

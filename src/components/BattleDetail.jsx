@@ -7,7 +7,7 @@ import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { PlayerAvatar } from './PlayerAvatar';
-import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
+import { usePokemonTypes, TYPE_FR, TYPE_HEX } from '../hooks/usePokemonTypes';
 
 import { TYPE_SUPER_EFFECTIVE } from '../utils/mvp';
 
@@ -197,6 +197,7 @@ export const BattleDetail = ({
         );
       })
       .catch(() => { setMvpStats(null); setMvpArtwork(null); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mvpPokemon?.pokeId]);
 
   // Vérifie si une équipe identique (mêmes pokeIds) existe déjà pour un joueur
