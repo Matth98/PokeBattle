@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronRight, ChevronDown, Plus, Trash2, X, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -145,8 +145,6 @@ export const Teams = ({
   const requiredPokemonForFormat = (format) => (format === '1v1' ? 3 : 4);
   const required = requiredPokemonForFormat(newTeamData.format);
   const currentCount = newTeamData.pokemon.length;
-  const isAtMax = currentCount >= required;
-
   const handleSelectPokemon = (pokemonOrArray) => {
     const toAdd = Array.isArray(pokemonOrArray) ? pokemonOrArray : [pokemonOrArray];
     setNewTeamData((prev) => {
