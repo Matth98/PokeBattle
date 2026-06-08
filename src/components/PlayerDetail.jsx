@@ -20,7 +20,6 @@ import {
   TrendingUp,
   Trophy,
   Search,
-  Trash2,
   Check,
   CheckSquare,
   X,
@@ -193,24 +192,10 @@ export const PlayerDetail = ({
     }, 240);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
   const editNameInputRef = useRef(null);
   const newTeamNameInputRef = useRef(null);
 
-
-  const handleAvatarPick = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const dataUrl = await resizeImageToDataUrl(file);
-      await onUpdate(player._id, { ...player, avatar: dataUrl });
-    } catch (err) {
-      setAlertMessage({ title: 'Image invalide', message: err.message });
-    } finally {
-      e.target.value = '';
-    }
-  };
 
   const openEditPlayer = () => {
     setEditName(player.name || '');
@@ -1287,8 +1272,6 @@ export const PlayerDetail = ({
       {creatingTeam && (() => {
         const required = requiredPokemonForFormat(newTeamData.format);
         const currentCount = newTeamData.pokemon.length;
-        const isAtMax = currentCount >= required;
-
         return createPortal(
           <div className={`fixed inset-0 ${t.overlay} ${isCreateTeamClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex flex-col`}>
             <div className={`${t.surfaceModal} flex-1 overflow-hidden flex flex-col rounded-t-3xl ${isCreateTeamClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ marginTop: 'calc(env(safe-area-inset-top) + 1.5rem)' }}>
