@@ -158,6 +158,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     shouldRestoreRef.current = !!prev;
     setPrevTab(navStack.current[navStack.current.length - 1]?.tab ?? null);
     _setCurrentTabState(target.tab);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab]);
 
   const handleBack = useCallback(() => {
