@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Pencil, Shield } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
-import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
+import { usePokemonTypes, TYPE_FR, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 

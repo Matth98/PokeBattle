@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, ChevronRight, LogOut, Moon, Sun, Check, Smartphone, Bell, BellOff, Send, ExternalLink, RotateCcw } from 'lucide-react';
+import { X, ChevronRight, LogOut, Moon, Sun, Smartphone, Bell, BellOff, Send, ExternalLink, RotateCcw } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage, LANGUAGES } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
@@ -17,8 +17,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
   useBodyScrollLock();
   const displayName = linkedPlayer?.name || user?.displayName || user?.email || 'Utilisateur';
   const email       = user?.email || '';
-  const { language, setLanguage } = useLanguage();
-  const [langOpen, setLangOpen] = useState(false);
+  const { language } = useLanguage();
   const permission   = pushPermission;
   const isSubscribed = pushIsSubscribed;
   const isSuperAdmin = dbUser?.role === 'superadmin';
@@ -59,7 +58,6 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
       setSending(false);
     }
   }, [notifTitle, notifBody, user]);
-  const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
 
   // ── Framer-motion spring bottom sheet ──

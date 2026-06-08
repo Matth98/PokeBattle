@@ -9,7 +9,6 @@ const getAuthHeaders = async () => {
 };
 
 export const useAPI = () => {
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchPlayers = useCallback(async () => {
@@ -214,7 +213,6 @@ export const useAPI = () => {
   }, []);
 
   return {
-    loading,
     error,
     fetchPlayers,
     fetchBattles,
