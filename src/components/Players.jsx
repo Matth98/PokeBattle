@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, ChevronRight, Trash2, X, Check, CheckSquare, Users, Camera, Loader2 } from 'lucide-react';
+import { Plus, ChevronRight, Check, CheckSquare, Users, Camera, Loader2 } from 'lucide-react';
 import { SwipeableRow } from './SwipeableRow';
 import { PlayerAvatar } from './PlayerAvatar';
 import { getRandomDefaultAvatar } from '../utils/defaultAvatars';
@@ -30,11 +30,6 @@ export const Players = ({
 }) => {
   const tr = useTranslation();
   const { dbUser, isSuperAdmin } = useAuth();
-  const canEditPlayer = (player) =>
-    isSuperAdmin ||
-    !player.userId ||
-    (dbUser?._id && String(player.userId) === String(dbUser._id));
-
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerAvatar, setNewPlayerAvatar] = useState(null); // data URL
   const [deletingSelected, setDeletingSelected] = useState(false);
@@ -115,10 +110,6 @@ export const Players = ({
     setSelectedItems([]);
     setDeletingSelected(false);
   };
-
-  const playerToDelete = confirmingDeleteId
-    ? players.find((p) => p._id === confirmingDeleteId)
-    : null;
 
   const handleConfirmSingleDelete = async () => {
     if (confirmingDeleteId) {
