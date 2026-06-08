@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getToken } from 'firebase/messaging';
+import { getToken, deleteToken } from 'firebase/messaging';
 import { getFirebaseMessaging } from '../firebase';
 import { auth } from '../firebase';
 
@@ -7,6 +7,7 @@ const API_BASE_URL = 'https://pokebattle-backend.vercel.app/api';
 const VAPID_KEY = process.env.REACT_APP_FIREBASE_VAPID_KEY;
 const STORAGE_KEY = 'push_token';
 const UNSUBSCRIBED_KEY = 'push_unsubscribed';
+const SESSION_KEY = 'push_refreshed';
 
 const getAuthHeaders = async () => {
   const token = await auth.currentUser?.getIdToken();
@@ -14,7 +15,7 @@ const getAuthHeaders = async () => {
 };
 
 const registerServiceWorker = async () => {
-  if (!("serviceWorker" in navigator)) return null;
+  if (!('serviceWorker' in navigator)) return null;
   try {
     const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
     await navigator.serviceWorker.ready;
@@ -24,61 +25,88 @@ const registerServiceWorker = async () => {
   }
 };
 
+// Prefer existing SW registration to avoid triggering update cycles.
+// Falls back to register() only if the SW has never been registered.
+const getSwRegistration = async () => {
+  if (!('serviceWorker' in navigator)) return undefined;
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    const existing = registrations.find(
+      (r) =>
+        r.active?.scriptURL?.endsWith('firebase-messaging-sw.js') ||
+        r.installing?.scriptURL?.endsWith('firebase-messaging-sw.js') ||
+        r.waiting?.scriptURL?.endsWith('firebase-messaging-sw.js')
+    );
+    return existing ?? (await registerServiceWorker()) ?? undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export const usePushNotifications = () => {
   // 'default' | 'granted' | 'denied' | 'unsupported'
   const [permission, setPermission] = useState(() => {
     if (typeof Notification === 'undefined') return 'unsupported';
     return Notification.permission;
   });
-  // Token en état React — seule source de vérité, évite de lire localStorage à chaque render
   const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEY));
   const [loading, setLoading] = useState(false);
   const refreshing = useRef(false);
 
-  // Refresh FCM token silently if it rotated (e.g. after PWA kill/restart).
-  // getToken() is idempotent: returns the same token if still valid,
-  // or a new one if the browser rotated the underlying push subscription.
+  // Re-subscribe to FCM once per PWA session (sessionStorage is cleared on kill).
+  // 1. deleteToken() clears Firebase's IDB cache → forces new push subscription.
+  //    Required because iOS can invalidate the APNs subscription after force-quit
+  //    while Firebase's cache still holds the old (now-invalid) token.
+  // 2. getToken() negotiates a fresh subscription with FCM.
+  // 3. POST to backend — it deduplicates. Recovers from the case where the backend
+  //    purged the token after a failed delivery.
   const refreshTokenSilently = useCallback(async () => {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'granted') return;
     if (localStorage.getItem(UNSUBSCRIBED_KEY)) return;
     if (!VAPID_KEY) return;
     if (refreshing.current) return;
+    if (sessionStorage.getItem(SESSION_KEY)) return;
     refreshing.current = true;
     try {
       const messaging = await getFirebaseMessaging();
       if (!messaging) return;
-      const swReg = await registerServiceWorker();
+      const swReg = await getSwRegistration();
+      // Force a new push subscription — handles iOS APNs invalidation after kill.
+      try { await deleteToken(messaging); } catch { /* no token cached yet */ }
       const fcmToken = await getToken(messaging, {
         vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: swReg ?? undefined,
+        serviceWorkerRegistration: swReg,
       });
       if (!fcmToken) return;
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (fcmToken === stored) return; // unchanged
-      // Token rotated — update storage and re-register with backend
-      localStorage.setItem(STORAGE_KEY, fcmToken);
-      setToken(fcmToken);
-      await fetch(`${API_BASE_URL}/push/subscribe`, {
+      if (fcmToken !== stored) {
+        localStorage.setItem(STORAGE_KEY, fcmToken);
+        setToken(fcmToken);
+      }
+      // Always POST to backend (deduplication is server-side).
+      const res = await fetch(`${API_BASE_URL}/push/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify({ token: fcmToken }),
       });
+      if (!res.ok) throw new Error(`subscribe ${res.status}`);
+      // Only mark done after successful registration so we retry on failure.
+      sessionStorage.setItem(SESSION_KEY, '1');
     } catch {
-      // fail silently — token refresh is a best-effort background operation
+      // fail silently — will retry on next visibility/focus event
     } finally {
       refreshing.current = false;
     }
   }, []);
 
-  // On mount: refresh token in case it rotated while the PWA was killed.
+  // On mount: run once per restart (sessionStorage cleared on kill)
   useEffect(() => {
     refreshTokenSilently();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Resync permission + refresh token when app regains focus
-  // (e.g. user enabled notifs from system settings, or PWA re-opened after kill).
+  // Resync permission + re-register on focus (sessionStorage guard = no-op after first run)
   useEffect(() => {
     const syncPermission = () => {
       if (typeof Notification === 'undefined') return;
@@ -88,10 +116,7 @@ export const usePushNotifications = () => {
       syncPermission();
       if (document.visibilityState === 'visible') refreshTokenSilently();
     };
-    const onFocus = () => {
-      syncPermission();
-      refreshTokenSilently();
-    };
+    const onFocus = () => { syncPermission(); refreshTokenSilently(); };
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('focus', onFocus);
     return () => {
@@ -100,8 +125,7 @@ export const usePushNotifications = () => {
     };
   }, [refreshTokenSilently]);
 
-  // Si permission déjà accordée mais token absent (ex : réinstallation PWA),
-  // on re-subscribe silencieusement — sauf si l'utilisateur a explicitement désactivé.
+  // Re-subscribe if permission granted but token absent (e.g. PWA reinstall)
   useEffect(() => {
     if (permission !== 'granted') return;
     if (token) return;
@@ -119,13 +143,12 @@ export const usePushNotifications = () => {
 
     setLoading(true);
     try {
-      // Si déjà accordée, on ne rappelle pas requestPermission() (échoue sans geste utilisateur sur iOS)
       const perm = Notification.permission === 'granted'
         ? 'granted'
         : await Notification.requestPermission();
       setPermission(perm);
       if (perm !== 'granted') return false;
-      localStorage.removeItem(UNSUBSCRIBED_KEY); // l'utilisateur a activé explicitement
+      localStorage.removeItem(UNSUBSCRIBED_KEY);
 
       const messaging = await getFirebaseMessaging();
       if (!messaging) return false;
@@ -139,13 +162,15 @@ export const usePushNotifications = () => {
       if (!fcmToken) return false;
 
       localStorage.setItem(STORAGE_KEY, fcmToken);
-      setToken(fcmToken); // mise à jour de l'état React → re-render garanti
+      setToken(fcmToken);
 
-      await fetch(`${API_BASE_URL}/push/subscribe`, {
+      const res = await fetch(`${API_BASE_URL}/push/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify({ token: fcmToken }),
       });
+      if (!res.ok) throw new Error(`subscribe ${res.status}`);
+      sessionStorage.setItem(SESSION_KEY, '1');
 
       return true;
     } catch (err) {
@@ -167,8 +192,9 @@ export const usePushNotifications = () => {
         body: JSON.stringify({ token }),
       });
       localStorage.removeItem(STORAGE_KEY);
-      localStorage.setItem(UNSUBSCRIBED_KEY, '1'); // mémorise le choix explicite de l'utilisateur
-      setToken(null); // mise à jour de l'état React → re-render garanti
+      localStorage.setItem(UNSUBSCRIBED_KEY, '1');
+      sessionStorage.removeItem(SESSION_KEY);
+      setToken(null);
     } catch (err) {
       console.error('[Push] Erreur unsubscribe:', err);
     } finally {

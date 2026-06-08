@@ -24,8 +24,8 @@ messaging.onBackgroundMessage((payload) => {
 
   self.registration.showNotification(title, {
     body:  body ?? '',
-    icon:  '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    icon:  '/app-icon.png',
+    badge: '/app-icon.png',
     data:  payload.data ?? {},
   });
 });
