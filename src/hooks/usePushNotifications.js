@@ -25,7 +25,7 @@ const registerServiceWorker = async () => {
   }
 };
 
-// Prefer existing SW registration to avoid triggering update cycles.
+// Prefer the existing SW registration to avoid triggering an update cycle.
 // Falls back to register() only if the SW has never been registered.
 const getSwRegistration = async () => {
   if (!('serviceWorker' in navigator)) return undefined;
@@ -49,17 +49,18 @@ export const usePushNotifications = () => {
     if (typeof Notification === 'undefined') return 'unsupported';
     return Notification.permission;
   });
+  // Token in React state — single source of truth, avoids reading localStorage on every render.
   const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEY));
   const [loading, setLoading] = useState(false);
   const refreshing = useRef(false);
 
   // Re-subscribe to FCM once per PWA session (sessionStorage is cleared on kill).
-  // 1. deleteToken() clears Firebase's IDB cache → forces new push subscription.
-  //    Required because iOS can invalidate the APNs subscription after force-quit
-  //    while Firebase's cache still holds the old (now-invalid) token.
-  // 2. getToken() negotiates a fresh subscription with FCM.
-  // 3. POST to backend — it deduplicates. Recovers from the case where the backend
-  //    purged the token after a failed delivery.
+  //   1. deleteToken() clears Firebase's IDB cache, forcing a new push subscription.
+  //      Required because iOS can invalidate the APNs subscription after a force-quit
+  //      while Firebase's cache still holds the old (now-invalid) token.
+  //   2. getToken() negotiates a fresh subscription with FCM.
+  //   3. POST to backend — it deduplicates. Recovers from the case where the backend
+  //      purged the token after a failed delivery.
   const refreshTokenSilently = useCallback(async () => {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'granted') return;
@@ -79,6 +80,7 @@ export const usePushNotifications = () => {
         serviceWorkerRegistration: swReg,
       });
       if (!fcmToken) return;
+      // Update local state only if the token changed.
       const stored = localStorage.getItem(STORAGE_KEY);
       if (fcmToken !== stored) {
         localStorage.setItem(STORAGE_KEY, fcmToken);
@@ -91,7 +93,7 @@ export const usePushNotifications = () => {
         body: JSON.stringify({ token: fcmToken }),
       });
       if (!res.ok) throw new Error(`subscribe ${res.status}`);
-      // Only mark done after successful registration so we retry on failure.
+      // Only mark done after a successful registration so we retry on failure.
       sessionStorage.setItem(SESSION_KEY, '1');
     } catch {
       // fail silently — will retry on next visibility/focus event
@@ -100,13 +102,15 @@ export const usePushNotifications = () => {
     }
   }, []);
 
-  // On mount: run once per restart (sessionStorage cleared on kill)
+  // On mount: re-subscribe in case the backend purged the token while the PWA
+  // was killed (sessionStorage is cleared on kill so this runs once per restart).
   useEffect(() => {
     refreshTokenSilently();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Resync permission + re-register on focus (sessionStorage guard = no-op after first run)
+  // Resync permission + re-register token when app regains focus.
+  // The sessionStorage guard makes these no-ops after the first successful run.
   useEffect(() => {
     const syncPermission = () => {
       if (typeof Notification === 'undefined') return;
@@ -116,7 +120,10 @@ export const usePushNotifications = () => {
       syncPermission();
       if (document.visibilityState === 'visible') refreshTokenSilently();
     };
-    const onFocus = () => { syncPermission(); refreshTokenSilently(); };
+    const onFocus = () => {
+      syncPermission();
+      refreshTokenSilently();
+    };
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('focus', onFocus);
     return () => {
@@ -125,7 +132,8 @@ export const usePushNotifications = () => {
     };
   }, [refreshTokenSilently]);
 
-  // Re-subscribe if permission granted but token absent (e.g. PWA reinstall)
+  // Re-subscribe if permission already granted but token absent (e.g. PWA reinstall),
+  // unless the user has explicitly unsubscribed.
   useEffect(() => {
     if (permission !== 'granted') return;
     if (token) return;
@@ -143,6 +151,7 @@ export const usePushNotifications = () => {
 
     setLoading(true);
     try {
+      // If already granted, skip requestPermission() — it fails without a user gesture on iOS.
       const perm = Notification.permission === 'granted'
         ? 'granted'
         : await Notification.requestPermission();
