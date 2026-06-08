@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getToken } from 'firebase/messaging';
+import { getToken, deleteToken } from 'firebase/messaging';
 import { getFirebaseMessaging } from '../firebase';
 import { auth } from '../firebase';
 
@@ -54,10 +54,14 @@ export const usePushNotifications = () => {
   const [loading, setLoading] = useState(false);
   const refreshing = useRef(false);
 
-  // Re-register the FCM token with the backend once per PWA session.
-  // sessionStorage is cleared on kill/restart (unlike localStorage), so this
-  // runs exactly once after each force-quit, recovering from the case where
-  // the backend purged the token after a failed FCM delivery.
+  // Re-subscribe to FCM once per PWA session (sessionStorage is cleared on kill).
+  // Steps:
+  //   1. deleteToken() clears Firebase's IDB cache, forcing a new push subscription.
+  //      Required because iOS can invalidate the APNs subscription after a force-quit
+  //      while Firebase's cache still holds the old (now-invalid) token.
+  //   2. getToken() negotiates a fresh subscription with FCM.
+  //   3. POST to backend — it deduplicates. Recovers from the case where the backend
+  //      purged the token after a failed delivery.
   const refreshTokenSilently = useCallback(async () => {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'granted') return;
@@ -70,25 +74,27 @@ export const usePushNotifications = () => {
       const messaging = await getFirebaseMessaging();
       if (!messaging) return;
       const swReg = await getSwRegistration();
+      // Force a new push subscription — handles iOS APNs invalidation after kill.
+      try { await deleteToken(messaging); } catch { /* no token cached yet */ }
       const fcmToken = await getToken(messaging, {
         vapidKey: VAPID_KEY,
         serviceWorkerRegistration: swReg,
       });
       if (!fcmToken) return;
-      // Update local state only if the token actually changed.
+      // Update local state only if the token changed.
       const stored = localStorage.getItem(STORAGE_KEY);
       if (fcmToken !== stored) {
         localStorage.setItem(STORAGE_KEY, fcmToken);
         setToken(fcmToken);
       }
-      // Always POST to backend — it deduplicates. This re-adds the token if
-      // the backend purged it after a failed delivery (PWA kill on iOS).
-      await fetch(`${API_BASE_URL}/push/subscribe`, {
+      // Always POST to backend (deduplication is server-side).
+      const res = await fetch(`${API_BASE_URL}/push/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
         body: JSON.stringify({ token: fcmToken }),
       });
-      // Mark done only after success so we retry if the fetch failed.
+      if (!res.ok) throw new Error(`subscribe ${res.status}`);
+      // Only mark done after a successful registration so we retry on failure.
       sessionStorage.setItem(SESSION_KEY, '1');
     } catch {
       // fail silently — will retry on next visibility/focus event
@@ -97,7 +103,7 @@ export const usePushNotifications = () => {
     }
   }, []);
 
-  // On mount: re-register in case the backend purged the token while the PWA
+  // On mount: re-subscribe in case the backend purged the token while the PWA
   // was killed (sessionStorage is cleared on kill so this runs once per restart).
   useEffect(() => {
     refreshTokenSilently();
