@@ -24,6 +24,7 @@ import { LanguageProvider } from './hooks/useLanguage';
 import { useThemeMode } from './hooks/useThemeMode';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useEdgeSwipeBack } from './hooks/useEdgeSwipeBack';
+import { fetchAndCache } from './utils/imageCache';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -57,13 +58,13 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
 
-  // ── Préchargement des avatars par défaut (après le premier paint) ──
+  // ── Préchargement dans le cache blob (après le premier paint) ──
   useEffect(() => {
     ['/avatars/lilie.png','/avatars/cynthia.png','/avatars/erika.png','/avatars/professeur_chen.png',
      '/avatars/pepper.png','/avatars/gladio.png','/avatars/serena.png','/avatars/giovanni.png',
      '/avatars/mashynn.png','/avatars/red.jpg',
      '/pokeball-open.png','/pokemon-faces.png',
-    ].forEach((src) => { const img = new Image(); img.src = src; });
+    ].forEach((src) => fetchAndCache(src).catch(() => {}));
   }, []);
 
   // ── Raccourci clavier thème (desktop) : Cmd/Ctrl + Shift + T ──
