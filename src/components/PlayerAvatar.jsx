@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useBlobUrl } from '../utils/imageCache';
 
 const AVATAR_PALETTE = [
   'bg-indigo-500',
@@ -19,21 +20,17 @@ export const avatarColor = (name = '') => {
 
 export const initials = (name = '?') => name.trim().charAt(0).toUpperCase() || '?';
 
-/**
- * Avatar de joueur : affiche la photo si présente, sinon initiale + couleur.
- * - size : taille en pixels (carré). Défaut 44.
- * - textSize : classe Tailwind pour la taille du texte initiale (ex 'text-base').
- */
 export const PlayerAvatar = ({ player, size = 44, textSize = 'text-base', className = '' }) => {
   const name = player?.name || '';
   const avatar = player?.avatar;
   const style = { width: size, height: size };
   const [imgError, setImgError] = useState(false);
+  const src = useBlobUrl(imgError ? null : avatar);
 
-  if (avatar && !imgError) {
+  if (src) {
     return (
       <img
-        src={avatar}
+        src={src}
         alt={name}
         style={style}
         className={`rounded-full object-cover ${className}`}
