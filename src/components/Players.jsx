@@ -163,7 +163,7 @@ export const Players = ({
             ? 'linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, transparent 100%)'
             : 'linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, transparent 100%)',
         }} />
-        <div className="flex justify-between items-center relative">
+        <div className="flex justify-between items-center relative h-11">
           <h1 className={`${scrolled ? 'text-xl' : 'text-3xl'} font-black tracking-tight transition-all duration-300 ${t.text}`}>{tr('players.title')}</h1>
           <div className="relative flex items-center gap-2">
             {/* Bouton Check — quitter sélection */}
