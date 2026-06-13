@@ -643,7 +643,7 @@ export const PlayerDetail = ({
       {/* ── En-tête sticky ── */}
       <div
         className={`sticky top-0 ${isBackground ? 'z-[10000]' : 'z-10'} px-4 relative`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.25rem' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0rem' }}
       >
         <div className={`absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300`} style={{
           opacity: scrolled ? 1 : 0,

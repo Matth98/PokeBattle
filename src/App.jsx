@@ -1054,8 +1054,31 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   );
 }
 
+const DEFAULT_AVATAR_URLS = [
+  '/avatars/lilie.png',
+  '/avatars/cynthia.png',
+  '/avatars/erika.png',
+  '/avatars/professeur_chen.png',
+  '/avatars/pepper.png',
+  '/avatars/gladio.png',
+  '/avatars/serena.png',
+  '/avatars/giovanni.png',
+  '/avatars/mashynn.png',
+  '/avatars/red.jpg',
+  '/pokeball-open.png',
+  '/pokemon-faces.png',
+];
+
 function App() {
   const { isDark, themeMode, setThemeMode } = useThemeMode();
+
+  useEffect(() => {
+    DEFAULT_AVATAR_URLS.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
   // Synchronise la couleur de la barre de navigation du navigateur avec le thème.
   // En mode "système" les deux <meta theme-color media="..."> de l'HTML gèrent déjà
   // la couleur avant que React s'initialise — on ne touche qu'en mode forcé pour
