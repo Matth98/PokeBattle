@@ -348,14 +348,15 @@ function MoveSheet({ move, isDark, onClose }) {
 
 // ─── Nature / Item / Ability sheets ──────────────────────────────────────────
 
-// Noms complets avec article français correct — espace inclus sauf après apostrophe
+// name = nom complet pour la phrase (accord avec article)
+// display = étiquette dans les encarts
 const STAT_FR = {
-  hp:  { name: 'PV',               art: 'les ' },
-  atk: { name: 'Attaque',          art: "l'"   },
-  def: { name: 'Défense',          art: 'la '  },
-  spa: { name: 'Attaque Spéciale', art: "l'"   },
-  spd: { name: 'Défense Spéciale', art: 'la '  },
-  spe: { name: 'Vitesse',          art: 'la '  },
+  hp:  { name: 'PV',               art: 'les ', display: 'PV'        },
+  atk: { name: 'Attaque',          art: "l'",   display: 'Attaque'   },
+  def: { name: 'Défense',          art: 'la ',  display: 'Défense'   },
+  spa: { name: 'Attaque Spéciale', art: "l'",   display: 'Att. Spé.' },
+  spd: { name: 'Défense Spéciale', art: 'la ',  display: 'Déf. Spé.' },
+  spe: { name: 'Vitesse',          art: 'la ',  display: 'Vitesse'   },
 };
 
 function NatureSheet({ nature, isDark, accentHex, onClose, pokeId }) {
@@ -365,23 +366,14 @@ function NatureSheet({ nature, isDark, accentHex, onClose, pokeId }) {
   const natureFR = NATURES_FR[nature] || nature;
   const bStat = STAT_FR[boosted];
   const lStat = STAT_FR[lowered];
-  const bShort = STATS.find(s => s.key === boosted)?.fr;
-  const lShort = STATS.find(s => s.key === lowered)?.fr;
 
   return (
     <BaseSheet isDark={isDark} onClose={onClose}>
       <div className="px-6 pt-3 pb-10">
         <div className="flex items-center gap-4 mb-4">
-          {pokeId && (
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
-              <img
-                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`}
-                alt=""
-                className="w-12 h-12 object-contain"
-                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-              />
-            </div>
-          )}
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-3xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
+            🌿
+          </div>
           <h2 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{natureFR}</h2>
         </div>
         {effects ? (
@@ -392,12 +384,12 @@ function NatureSheet({ nature, isDark, accentHex, onClose, pokeId }) {
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: isDark ? '#16a34a22' : '#16a34a11' }}>
                 <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: isDark ? '#4ade80' : '#16a34a' }}>Augmentée</p>
-                <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{bShort}</p>
+                <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{bStat.display}</p>
                 <p className="text-xs font-semibold mt-0.5" style={{ color: isDark ? '#4ade80' : '#16a34a' }}>+10 %</p>
               </div>
               <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: isDark ? '#dc262622' : '#dc262611' }}>
                 <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: isDark ? '#f87171' : '#dc2626' }}>Réduite</p>
-                <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{lShort}</p>
+                <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{lStat.display}</p>
                 <p className="text-xs font-semibold mt-0.5" style={{ color: isDark ? '#f87171' : '#dc2626' }}>−10 %</p>
               </div>
             </div>
@@ -448,16 +440,14 @@ function AbilitySheet({ ability, abilityDesc, isDark, accentHex, onClose, pokeId
     <BaseSheet isDark={isDark} onClose={onClose}>
       <div className="px-6 pt-3 pb-10">
         <div className="flex items-center gap-4 mb-4">
-          {pokeId && (
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
-              <img
-                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`}
-                alt=""
-                className="w-12 h-12 object-contain"
-                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-              />
-            </div>
-          )}
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
+            <img
+              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`}
+              alt=""
+              className="w-12 h-12 object-contain"
+              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+            />
+          </div>
           <h2 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{ability}</h2>
         </div>
         <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
