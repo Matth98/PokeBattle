@@ -111,14 +111,17 @@ async function fetchItemFR(smogonItemName) {
     const sprite =
       data.sprites?.default ||
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug}.png`;
+    const descEntry = [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'fr')
+      || [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'en');
     const result = {
       name:   frEntry?.name || smogonItemName,
       sprite,
+      desc:   descEntry?.text?.replace(/\f|\n/g, ' ') || null,
     };
     itemCache.set(slug, result);
     return result;
   } catch {
-    const fallback = { name: smogonItemName, sprite: null };
+    const fallback = { name: smogonItemName, sprite: null, desc: null };
     itemCache.set(slug, fallback);
     return fallback;
   }
@@ -134,11 +137,15 @@ async function fetchAbilityFR(smogonAbilityName) {
     const data = await res.json();
     const frEntry = data.names?.find(n => n.language.name === 'fr');
     const name = frEntry?.name || smogonAbilityName;
-    abilityCache.set(slug, name);
-    return name;
+    const descEntry = [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'fr')
+      || [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'en');
+    const result = { name, desc: descEntry?.flavor_text?.replace(/\f|\n/g, ' ') || null };
+    abilityCache.set(slug, result);
+    return result;
   } catch {
-    abilityCache.set(slug, smogonAbilityName);
-    return smogonAbilityName;
+    const fallback = { name: smogonAbilityName, desc: null };
+    abilityCache.set(slug, fallback);
+    return fallback;
   }
 }
 
@@ -224,9 +231,11 @@ export function useSmogonSet(pokeId) {
           moves:       moveDetails,
           item:        itemFR?.name || null,
           itemSprite:  itemFR?.sprite || null,
+          itemDesc:    itemFR?.desc || null,
           itemPsSlug:  itemName ? itemName.toLowerCase().replace(/[^a-z0-9]/g, '') : null,
           itemSlug:    itemName ? toItemSlug(itemName) : null,
-          ability:     abilityFR,
+          ability:     abilityFR?.name || null,
+          abilityDesc: abilityFR?.desc || null,
           nature:      rawSet.nature ? first(rawSet.nature) : null,
           evs:         (Array.isArray(rawSet.evs) ? rawSet.evs[0] : rawSet.evs) || {},
           ivs:         (Array.isArray(rawSet.ivs) ? rawSet.ivs[0] : rawSet.ivs) || {},

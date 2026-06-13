@@ -90,7 +90,7 @@ function DamageClassIcon({ damageClass }) {
 
 // ─── Objet ────────────────────────────────────────────────────────────────────
 
-function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888' }) {
+function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888', onPress }) {
   const psFallback = itemPsSlug
     ? `https://play.pokemonshowdown.com/sprites/itemicons/${itemPsSlug}.png`
     : null;
@@ -104,7 +104,7 @@ function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888' }) {
   const handleError = () => setSrcIndex(i => i + 1);
 
   return (
-    <div className="flex items-center gap-3">
+    <button onClick={onPress} className="w-full text-left flex items-center gap-3">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
         {src && !failed
           ? <img src={src} alt={item} className="w-7 h-7 object-contain" style={{ imageRendering: 'pixelated' }} onError={handleError} />
@@ -115,15 +115,15 @@ function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888' }) {
         <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentHex }}>Objet</p>
         <p className={`text-base font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
       </div>
-    </div>
+    </button>
   );
 }
 
 // ─── Talent ───────────────────────────────────────────────────────────────────
 
-function AbilityRow({ ability, isDark, accentHex, pokeId }) {
+function AbilityRow({ ability, isDark, accentHex, pokeId, onPress }) {
   return (
-    <div className="flex items-center gap-3">
+    <button onClick={onPress} className="w-full text-left flex items-center gap-3">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
         <img
           src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`}
@@ -136,7 +136,7 @@ function AbilityRow({ ability, isDark, accentHex, pokeId }) {
         <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentHex }}>Talent</p>
         <p className={`text-base font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{ability}</p>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -188,7 +188,9 @@ function MoveRow({ move, isDark, isLast, onPress }) {
 const DAMAGE_CLASS_FR  = { physical: 'Physique', special: 'Spéciale', status: 'Statut' };
 const DAMAGE_CLASS_HEX = { physical: '#ff4400', special: '#2266cc', status: '#999999' };
 
-function MoveSheet({ move, isDark, onClose }) {
+// ─── BaseSheet (shared animation logic) ──────────────────────────────────────
+
+function BaseSheet({ isDark, onClose, children }) {
   useBodyScrollLock();
   const H  = typeof window !== 'undefined' ? window.innerHeight : 800;
   const y  = useMotionValue(H);
@@ -238,9 +240,6 @@ function MoveSheet({ move, isDark, onClose }) {
     };
   }, [y, dismiss, snapBack]);
 
-  const hex      = (isDark ? TYPE_HEX_DARK : TYPE_HEX)[move.type] || '#A8A77A';
-  const badgeHex = TYPE_HEX[move.type] || '#A8A77A';
-
   return (
     <motion.div
       className="fixed inset-0 z-[9999] flex flex-col justify-end"
@@ -260,90 +259,199 @@ function MoveSheet({ move, isDark, onClose }) {
         <div className="flex justify-center pt-3 pb-1">
           <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`} />
         </div>
-
-        <div className="px-6 pt-3 pb-10">
-          {/* Nom */}
-          <h2 className={`text-2xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {move.nameFr}
-          </h2>
-
-          {/* Type + Catégorie */}
-          <div className="flex gap-2 mb-5">
-            {/* Badge type */}
-            <span className="pl-1 inline-flex items-stretch rounded-full overflow-hidden" style={{ backgroundColor: badgeHex }}>
-              <img
-                src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${move.type}.svg`}
-                alt=""
-                className="w-6 h-6 object-contain flex-shrink-0"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-              />
-              <span className="self-center pr-3 text-xs font-bold text-white uppercase leading-none">
-                {TYPE_FR[move.type] || move.type}
-              </span>
-            </span>
-            {/* Badge catégorie */}
-            <span
-              className="pl-1 inline-flex items-center rounded-full overflow-hidden pr-3"
-              style={{ backgroundColor: DAMAGE_CLASS_HEX[move.damageClass] || '#A8A77A' }}
-            >
-              <img
-                src={DAMAGE_CLASS_ICONS[move.damageClass] || DAMAGE_CLASS_ICONS.status}
-                alt={move.damageClass}
-                className="w-5 h-5 object-contain flex-shrink-0"
-              />
-              <span className="text-xs font-bold text-white uppercase leading-none">
-                {DAMAGE_CLASS_FR[move.damageClass] || move.damageClass}
-              </span>
-            </span>
-          </div>
-
-          {/* Description */}
-          {move.desc && (
-            <p className={`text-base leading-relaxed mb-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-              {move.desc}
-            </p>
-          )}
-
-          {/* 4 cartes stats */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
-              <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Puissance</p>
-              <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {move.power ?? '—'}
-              </p>
-            </div>
-            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
-              <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Précision</p>
-              <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {move.accuracy != null ? `${move.accuracy}%` : '—'}
-              </p>
-            </div>
-            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
-              <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>PP</p>
-              <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {move.pp ?? '—'}
-              </p>
-            </div>
-            <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
-              <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Priorité</p>
-              <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {move.priority > 0 ? `+${move.priority}` : (move.priority ?? 0)}
-              </p>
-            </div>
-          </div>
-        </div>
+        {children}
       </motion.div>
     </motion.div>
   );
 }
 
+function MoveSheet({ move, isDark, onClose }) {
+  const hex      = (isDark ? TYPE_HEX_DARK : TYPE_HEX)[move.type] || '#A8A77A';
+  const badgeHex = TYPE_HEX[move.type] || '#A8A77A';
+
+  return (
+    <BaseSheet isDark={isDark} onClose={onClose}>
+      <div className="px-6 pt-3 pb-10">
+        {/* Nom */}
+        <h2 className={`text-2xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {move.nameFr}
+        </h2>
+
+        {/* Type + Catégorie */}
+        <div className="flex gap-2 mb-5">
+          {/* Badge type */}
+          <span className="pl-1 inline-flex items-stretch rounded-full overflow-hidden" style={{ backgroundColor: badgeHex }}>
+            <img
+              src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${move.type}.svg`}
+              alt=""
+              className="w-6 h-6 object-contain flex-shrink-0"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+            <span className="self-center pr-3 text-xs font-bold text-white uppercase leading-none">
+              {TYPE_FR[move.type] || move.type}
+            </span>
+          </span>
+          {/* Badge catégorie */}
+          <span
+            className="pl-1 inline-flex items-center rounded-full overflow-hidden pr-3"
+            style={{ backgroundColor: DAMAGE_CLASS_HEX[move.damageClass] || '#A8A77A' }}
+          >
+            <img
+              src={DAMAGE_CLASS_ICONS[move.damageClass] || DAMAGE_CLASS_ICONS.status}
+              alt={move.damageClass}
+              className="w-5 h-5 object-contain flex-shrink-0"
+            />
+            <span className="text-xs font-bold text-white uppercase leading-none">
+              {DAMAGE_CLASS_FR[move.damageClass] || move.damageClass}
+            </span>
+          </span>
+        </div>
+
+        {/* Description */}
+        {move.desc && (
+          <p className={`text-base leading-relaxed mb-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            {move.desc}
+          </p>
+        )}
+
+        {/* 4 cartes stats */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
+            <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Puissance</p>
+            <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {move.power ?? '—'}
+            </p>
+          </div>
+          <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
+            <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Précision</p>
+            <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {move.accuracy != null ? `${move.accuracy}%` : '—'}
+            </p>
+          </div>
+          <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
+            <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>PP</p>
+            <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {move.pp ?? '—'}
+            </p>
+          </div>
+          <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: `${hex}18` }}>
+            <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: hex }}>Priorité</p>
+            <p className={`text-xl font-black tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {move.priority > 0 ? `+${move.priority}` : (move.priority ?? 0)}
+            </p>
+          </div>
+        </div>
+      </div>
+    </BaseSheet>
+  );
+}
+
+// ─── Nature / Item / Ability sheets ──────────────────────────────────────────
+
+const STAT_FULL_FR = {
+  hp: 'Points de Vie', atk: 'Attaque', def: 'Défense',
+  spa: 'Att. Spé.', spd: 'Déf. Spé.', spe: 'Vitesse',
+};
+
+function NatureSheet({ nature, isDark, accentHex, onClose }) {
+  const effects = nature ? NATURE_EFFECTS[nature] : null;
+  const boosted = effects?.[0];
+  const lowered = effects?.[1];
+  const natureFR = NATURES_FR[nature] || nature;
+
+  return (
+    <BaseSheet isDark={isDark} onClose={onClose}>
+      <div className="px-6 pt-3 pb-10">
+        <h2 className={`text-2xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {natureFR}
+        </h2>
+        {effects ? (
+          <>
+            <p className={`text-base leading-relaxed mb-5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              La nature {natureFR} augmente l&apos;{STAT_FULL_FR[boosted]} et réduit la {STAT_FULL_FR[lowered]}.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: isDark ? '#16a34a22' : '#16a34a11' }}>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: isDark ? '#4ade80' : '#16a34a' }}>Augmentée</p>
+                <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {STAT_FULL_FR[boosted]}
+                </p>
+                <p className="text-xs font-semibold mt-0.5" style={{ color: isDark ? '#4ade80' : '#16a34a' }}>+10 %</p>
+              </div>
+              <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: isDark ? '#dc262622' : '#dc262611' }}>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: isDark ? '#f87171' : '#dc2626' }}>Réduite</p>
+                <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {STAT_FULL_FR[lowered]}
+                </p>
+                <p className="text-xs font-semibold mt-0.5" style={{ color: isDark ? '#f87171' : '#dc2626' }}>−10 %</p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: isDark ? '#ffffff11' : '#00000008' }}>
+            <p className={`text-base font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Nature neutre — aucune statistique n&apos;est modifiée.
+            </p>
+          </div>
+        )}
+      </div>
+    </BaseSheet>
+  );
+}
+
+function ItemSheet({ item, itemSprite, itemPsSlug, itemDesc, isDark, accentHex, onClose }) {
+  const psFallback = itemPsSlug
+    ? `https://play.pokemonshowdown.com/sprites/itemicons/${itemPsSlug}.png`
+    : null;
+  const sources = [...new Set([itemSprite, psFallback].filter(Boolean))];
+  const [srcIndex, setSrcIndex] = useState(0);
+  const src = sources[srcIndex] ?? null;
+  const failed = srcIndex >= sources.length;
+
+  return (
+    <BaseSheet isDark={isDark} onClose={onClose}>
+      <div className="px-6 pt-3 pb-10">
+        <div className="flex items-center gap-4 mb-4">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
+            {src && !failed
+              ? <img src={src} alt={item} className="w-10 h-10 object-contain" style={{ imageRendering: 'pixelated' }} onError={() => setSrcIndex(i => i + 1)} />
+              : <span className="text-2xl">🎒</span>
+            }
+          </div>
+          <h2 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</h2>
+        </div>
+        <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+          {itemDesc || 'Aucune description disponible.'}
+        </p>
+      </div>
+    </BaseSheet>
+  );
+}
+
+function AbilitySheet({ ability, abilityDesc, isDark, accentHex, onClose }) {
+  return (
+    <BaseSheet isDark={isDark} onClose={onClose}>
+      <div className="px-6 pt-3 pb-10">
+        <h2 className={`text-2xl font-black mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>{ability}</h2>
+        <p className={`text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+          {abilityDesc || 'Aucune description disponible.'}
+        </p>
+      </div>
+    </BaseSheet>
+  );
+}
+
 // ─── EVs / IVs / Nature ───────────────────────────────────────────────────────
 
-function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, isDark, accentHex, pokeId }) {
+function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, ability, abilityDesc, isDark, accentHex, pokeId }) {
   const effects   = nature ? NATURE_EFFECTS[nature] : null;
   const boosted   = effects?.[0];
   const lowered   = effects?.[1];
   const activeEVs = STATS.filter(s => (evs[s.key] ?? 0) > 0);
+
+  const [showNatureSheet,  setShowNatureSheet]  = useState(false);
+  const [showItemSheet,    setShowItemSheet]    = useState(false);
+  const [showAbilitySheet, setShowAbilitySheet] = useState(false);
 
   return (
     <div>
@@ -353,7 +461,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
           <SectionTitle title="Set complet" isDark={isDark} mb="mb-4" />
           <div className="space-y-4">
             {nature && (
-              <div className="flex items-center gap-3">
+              <button onClick={() => setShowNatureSheet(true)} className="w-full text-left flex items-center gap-3">
                 <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
                   🌿
                 </span>
@@ -375,16 +483,26 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, ability, i
                     </span>
                   )}
                 </div>
-              </div>
+              </button>
             )}
             {item && (
-              <ItemRow item={item} itemSprite={itemSprite} itemPsSlug={itemPsSlug} isDark={isDark} accentHex={accentHex} />
+              <ItemRow item={item} itemSprite={itemSprite} itemPsSlug={itemPsSlug} isDark={isDark} accentHex={accentHex} onPress={() => setShowItemSheet(true)} />
             )}
             {ability && (
-              <AbilityRow ability={ability} isDark={isDark} accentHex={accentHex} pokeId={pokeId} />
+              <AbilityRow ability={ability} isDark={isDark} accentHex={accentHex} pokeId={pokeId} onPress={() => setShowAbilitySheet(true)} />
             )}
           </div>
         </div>
+      )}
+
+      {showNatureSheet && (
+        <NatureSheet nature={nature} isDark={isDark} accentHex={accentHex} onClose={() => setShowNatureSheet(false)} />
+      )}
+      {showItemSheet && (
+        <ItemSheet item={item} itemSprite={itemSprite} itemPsSlug={itemPsSlug} itemDesc={itemDesc} isDark={isDark} accentHex={accentHex} onClose={() => setShowItemSheet(false)} />
+      )}
+      {showAbilitySheet && (
+        <AbilitySheet ability={ability} abilityDesc={abilityDesc} isDark={isDark} accentHex={accentHex} onClose={() => setShowAbilitySheet(false)} />
       )}
 
       {/* EVs */}
@@ -481,7 +599,9 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
           item={result.item}
           itemSprite={result.itemSprite}
           itemPsSlug={result.itemPsSlug}
+          itemDesc={result.itemDesc}
           ability={result.ability}
+          abilityDesc={result.abilityDesc}
           isDark={isDark}
           accentHex={accentHex}
           pokeId={pokeId}
