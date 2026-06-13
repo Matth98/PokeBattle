@@ -29,16 +29,27 @@ export const PlayerAvatar = ({ player, size = 44, textSize = 'text-base', classN
   const avatar = player?.avatar;
   const style = { width: size, height: size };
   const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   if (avatar && !imgError) {
     return (
-      <img
-        src={avatar}
-        alt={name}
-        style={style}
-        className={`rounded-full object-cover ${className}`}
-        onError={() => setImgError(true)}
-      />
+      <div style={{ ...style, position: 'relative', flexShrink: 0 }} className={`rounded-full ${className}`}>
+        {/* Placeholder initiales visible tant que la photo charge */}
+        <div
+          style={style}
+          className={`absolute inset-0 rounded-full flex items-center justify-center text-white font-black ${textSize} ${avatarColor(name)}`}
+        >
+          {initials(name)}
+        </div>
+        <img
+          src={avatar}
+          alt={name}
+          style={{ ...style, position: 'absolute', inset: 0, opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.2s ease' }}
+          className="rounded-full object-cover"
+          onLoad={() => setImgLoaded(true)}
+          onError={() => setImgError(true)}
+        />
+      </div>
     );
   }
 
