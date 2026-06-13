@@ -22,7 +22,7 @@ const FORMATS = [
 ];
 
 // Incrémenter à chaque modification de FORMATS pour invalider le resultCache
-const CACHE_VERSION = 10;
+const CACHE_VERSION = 11;
 
 const NATURE_FR_NAMES = {
   Hardy:'Hardi', Lonely:'Solo', Brave:'Brave', Adamant:'Rigide', Naughty:'Malin',
@@ -127,18 +127,20 @@ async function fetchPokepediaItem(frName) {
     const sprite = page.original?.source || null;
 
     const wikitext = page.revisions?.[0]?.slots?.main?.['*'] || '';
-    const sectionMatch = wikitext.match(
-      /==\s*(?:Utilisation(?: et effet)?|Effet|Description)\s*==\s*\n+([\s\S]*?)(?:\n==|$)/
-    );
-    let desc = null;
-    if (sectionMatch) {
-      const firstPara = sectionMatch[1].split('\n').find(l => l.trim().length > 20) || '';
-      desc = firstPara
-        .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1')
-        .replace(/'{2,3}/g, '')
-        .replace(/\{\{[^}]*\}\}/g, '')
-        .replace(/\s+/g, ' ').trim() || null;
-    }
+
+    // Section "Descriptions" ou "Description" — format: ;{{Jeu|XX}}\n:texte
+    // On prend le dernier bloc = jeu le plus récent
+    const descSection = (wikitext.match(/==\s*Descriptions?\s*==\s*\n([\s\S]*?)(?:\n==[^=]|\s*$)/) || [])[1] || '';
+    const blocks = descSection.split(/^;/m).filter(b => b.trim());
+    const lastBlock = blocks[blocks.length - 1] || '';
+    const rawLine = lastBlock.match(/^:(.*)/m)?.[1] || null;
+    const cleanWiki = (s) => s
+      ? s.replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1')
+          .replace(/'{2,3}/g, '')
+          .replace(/\{\{[^}]*\}\}/g, '')
+          .replace(/\s+/g, ' ').trim()
+      : null;
+    let desc = cleanWiki(rawLine);
     const result = { sprite, desc };
     pokepediaCache.set(title, result);
     return result;
@@ -282,11 +284,12 @@ async function fetchAbilityFR(smogonAbilityName) {
       || [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'en');
     const effectEntry = data.effect_entries?.find(e => e.language.name === 'fr')
       || data.effect_entries?.find(e => e.language.name === 'en');
+    const cleanText = (t) => t
+      ? t.replace(/[\n\f\r]/g, ' ').split('\\n').join(' ').split('\\f').join(' ').replace(/\s+/g, ' ').trim()
+      : null;
     const result = {
       name,
-      desc: flavourEntry?.flavor_text?.replace(/\f|\n/g, ' ')
-         || effectEntry?.short_effect?.replace(/\f|\n/g, ' ')
-         || null,
+      desc: cleanText(flavourEntry?.flavor_text) || cleanText(effectEntry?.short_effect) || null,
     };
     abilityCache.set(slug, result);
     return result;
