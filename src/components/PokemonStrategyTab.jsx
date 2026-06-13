@@ -353,7 +353,7 @@ const STAT_FULL_FR = {
   spa: 'Att. Spé.', spd: 'Déf. Spé.', spe: 'Vitesse',
 };
 
-function NatureSheet({ nature, isDark, accentHex, onClose }) {
+function NatureSheet({ nature, isDark, accentHex, onClose, natureDesc }) {
   const effects = nature ? NATURE_EFFECTS[nature] : null;
   const boosted = effects?.[0];
   const lowered = effects?.[1];
@@ -365,6 +365,11 @@ function NatureSheet({ nature, isDark, accentHex, onClose }) {
         <h2 className={`text-2xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
           {natureFR}
         </h2>
+        {natureDesc && (
+          <p className={`text-base leading-relaxed mb-5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            {natureDesc}
+          </p>
+        )}
         {effects ? (
           <>
             <p className={`text-base leading-relaxed mb-5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -443,7 +448,7 @@ function AbilitySheet({ ability, abilityDesc, isDark, accentHex, onClose }) {
 
 // ─── EVs / IVs / Nature ───────────────────────────────────────────────────────
 
-function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, ability, abilityDesc, isDark, accentHex, pokeId }) {
+function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, ability, abilityDesc, isDark, accentHex, pokeId, natureDesc }) {
   const effects   = nature ? NATURE_EFFECTS[nature] : null;
   const boosted   = effects?.[0];
   const lowered   = effects?.[1];
@@ -496,7 +501,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, 
       )}
 
       {showNatureSheet && (
-        <NatureSheet nature={nature} isDark={isDark} accentHex={accentHex} onClose={() => setShowNatureSheet(false)} />
+        <NatureSheet nature={nature} isDark={isDark} accentHex={accentHex} onClose={() => setShowNatureSheet(false)} natureDesc={natureDesc} />
       )}
       {showItemSheet && (
         <ItemSheet item={item} itemSprite={itemSprite} itemPsSlug={itemPsSlug} itemDesc={itemDesc} isDark={isDark} accentHex={accentHex} onClose={() => setShowItemSheet(false)} />
@@ -605,6 +610,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
           isDark={isDark}
           accentHex={accentHex}
           pokeId={pokeId}
+          natureDesc={result.natureDesc}
         />
       )}
 

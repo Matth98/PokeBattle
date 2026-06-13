@@ -22,7 +22,15 @@ const FORMATS = [
 ];
 
 // Incrémenter à chaque modification de FORMATS pour invalider le resultCache
-const CACHE_VERSION = 5;
+const CACHE_VERSION = 10;
+
+const NATURE_FR_NAMES = {
+  Hardy:'Hardi', Lonely:'Solo', Brave:'Brave', Adamant:'Rigide', Naughty:'Malin',
+  Bold:'Assuré', Docile:'Docile', Relaxed:'Relax', Impish:'Mauvais', Lax:'Lâche',
+  Timid:'Timide', Hasty:'Pressé', Serious:'Sérieux', Jolly:'Jovial', Naive:'Naïf',
+  Modest:'Modeste', Mild:'Doux', Quiet:'Calme', Bashful:'Pudique', Rash:'Foufou',
+  Calm:'Sage', Gentle:'Gentil', Sassy:'Malpoli', Careful:'Prudent', Quirky:'Bizarre',
+};
 
 const formatCache  = new Map();
 const moveCache    = new Map();
@@ -52,6 +60,114 @@ function toAbilitySlug(name) {
 function first(val) {
   if (!val) return null;
   return Array.isArray(val) ? val[0] : val;
+}
+
+// ── Pokepedia cache + fonctions ───────────────────────────────────────────────
+const pokepediaCache = new Map();
+
+async function fetchPokepediaNature(smogonNatureKey) {
+  if (!smogonNatureKey) return null;
+  const frName = NATURE_FR_NAMES[smogonNatureKey];
+  if (!frName) return null;
+  const cacheKey = `nature:${frName}`;
+  if (pokepediaCache.has(cacheKey)) return pokepediaCache.get(cacheKey);
+  try {
+    const url = 'https://www.pokepedia.fr/api.php?' + new URLSearchParams({
+      action: 'query', prop: 'revisions',
+      rvprop: 'content', rvslots: 'main',
+      format: 'json', origin: '*', redirects: '1', titles: frName,
+    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const page = Object.values(data.query?.pages || {})[0];
+    if (!page || 'missing' in page) { pokepediaCache.set(cacheKey, null); return null; }
+
+    const wikitext = page.revisions?.[0]?.slots?.main?.['*'] || '';
+    // Cherche le premier paragraphe de texte libre après les infoboxes
+    const lines = wikitext.split('\n');
+    let desc = null;
+    let pastInfobox = false;
+    for (const line of lines) {
+      if (line.startsWith('{{')) { pastInfobox = true; continue; }
+      if (!pastInfobox) continue;
+      const cleaned = line
+        .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1')
+        .replace(/'{2,3}/g, '')
+        .replace(/\{\{[^}]*\}\}/g, '')
+        .replace(/\s+/g, ' ').trim();
+      if (cleaned.length > 20) { desc = cleaned; break; }
+    }
+    pokepediaCache.set(cacheKey, desc);
+    return desc;
+  } catch {
+    pokepediaCache.set(cacheKey, null);
+    return null;
+  }
+}
+
+// ── Fallback Pokepedia (sprite + description FR pour les items absents de PokeAPI) ──
+
+async function fetchPokepediaItem(frName) {
+  if (!frName) return null;
+  const title = frName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  if (pokepediaCache.has(title)) return pokepediaCache.get(title);
+  try {
+    const url = 'https://www.pokepedia.fr/api.php?' + new URLSearchParams({
+      action: 'query', prop: 'revisions|pageimages',
+      rvprop: 'content', rvslots: 'main', piprop: 'original',
+      format: 'json', origin: '*', redirects: '1', titles: title,
+    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const page = Object.values(data.query?.pages || {})[0];
+    if (!page || 'missing' in page) { pokepediaCache.set(title, null); return null; }
+
+    const sprite = page.original?.source || null;
+
+    const wikitext = page.revisions?.[0]?.slots?.main?.['*'] || '';
+    const sectionMatch = wikitext.match(
+      /==\s*(?:Utilisation(?: et effet)?|Effet|Description)\s*==\s*\n+([\s\S]*?)(?:\n==|$)/
+    );
+    let desc = null;
+    if (sectionMatch) {
+      const firstPara = sectionMatch[1].split('\n').find(l => l.trim().length > 20) || '';
+      desc = firstPara
+        .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1')
+        .replace(/'{2,3}/g, '')
+        .replace(/\{\{[^}]*\}\}/g, '')
+        .replace(/\s+/g, ' ').trim() || null;
+    }
+    const result = { sprite, desc };
+    pokepediaCache.set(title, result);
+    return result;
+  } catch {
+    pokepediaCache.set(title, null);
+    return null;
+  }
+}
+
+// ── Fallback descriptions depuis Smogon PS (dernier recours) ──
+let psItemsText = null;
+let psItemsPromise = null;
+
+async function getPsItemsText() {
+  if (psItemsText) return psItemsText;
+  if (psItemsPromise) return psItemsPromise;
+  psItemsPromise = fetch(
+    'https://raw.githubusercontent.com/smogon/pokemon-showdown/master/data/items.ts'
+  ).then(r => r.ok ? r.text() : null)
+   .then(text => { psItemsText = text; psItemsPromise = null; return text; })
+   .catch(() => { psItemsPromise = null; return null; });
+  return psItemsPromise;
+}
+
+function extractPsShortDesc(text, psId) {
+  const re = new RegExp(`\\b${psId}:\\s*\\{([\\s\\S]*?)\\n\\t\\},`);
+  const block = text.match(re)?.[1];
+  if (!block) return null;
+  return block.match(/shortDesc:\s*"([^"]+)"/)?.[1] ?? null;
 }
 
 async function fetchFormat(formatKey) {
@@ -101,27 +217,52 @@ async function fetchMoveDetail(moveName) {
 async function fetchItemFR(smogonItemName) {
   if (!smogonItemName) return null;
   const slug = toItemSlug(smogonItemName);
+  const psSlug = smogonItemName.toLowerCase().replace(/[^a-z0-9]/g, '');
   if (itemCache.has(slug)) return itemCache.get(slug);
   try {
     const res = await fetch(`https://pokeapi.co/api/v2/item/${slug}`);
     if (!res.ok) throw new Error();
     const data = await res.json();
     const frEntry = data.names?.find(n => n.language.name === 'fr');
-    // PokéAPI sprite en priorité, puis fallback GitHub raw sprites
-    const sprite =
+    // Sprite : JSON PokeAPI → GitHub raw → Showdown (via itemPsSlug dans le composant)
+    let sprite =
       data.sprites?.default ||
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug}.png`;
-    const descEntry = [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'fr')
+    const flavourEntry = [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'fr')
       || [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'en');
-    const result = {
-      name:   frEntry?.name || smogonItemName,
-      sprite,
-      desc:   descEntry?.text?.replace(/\f|\n/g, ' ') || null,
-    };
+    const effectEntry = data.effect_entries?.find(e => e.language.name === 'fr')
+      || data.effect_entries?.find(e => e.language.name === 'en');
+    let desc = flavourEntry?.text?.replace(/\f|\n/g, ' ')
+            || effectEntry?.short_effect?.replace(/\f|\n/g, ' ')
+            || null;
+    const frName = frEntry?.name || smogonItemName;
+
+    // Pokepedia : toujours appelé si nom FR disponible, sprite en priorité
+    if (frEntry?.name) {
+      const ppData = await fetchPokepediaItem(frName);
+      sprite = ppData?.sprite || data.sprites?.default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug}.png`;
+      desc   = ppData?.desc || desc;
+    }
+
+    // Dernier recours pour la description : PS items.ts
+    if (!desc) {
+      const psText = await getPsItemsText();
+      if (psText) desc = extractPsShortDesc(psText, psSlug);
+    }
+
+    const result = { name: frName, sprite, desc };
     itemCache.set(slug, result);
     return result;
   } catch {
-    const fallback = { name: smogonItemName, sprite: null, desc: null };
+    // PokeAPI inaccessible : on tente Pokepedia puis PS
+    const frName = smogonItemName;
+    const ppData = await fetchPokepediaItem(frName).catch(() => null);
+    let desc = ppData?.desc || null;
+    if (!desc) {
+      const psText = await getPsItemsText().catch(() => null);
+      if (psText) desc = extractPsShortDesc(psText, psSlug);
+    }
+    const fallback = { name: frName, sprite: ppData?.sprite || null, desc };
     itemCache.set(slug, fallback);
     return fallback;
   }
@@ -137,9 +278,16 @@ async function fetchAbilityFR(smogonAbilityName) {
     const data = await res.json();
     const frEntry = data.names?.find(n => n.language.name === 'fr');
     const name = frEntry?.name || smogonAbilityName;
-    const descEntry = [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'fr')
+    const flavourEntry = [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'fr')
       || [...(data.flavor_text_entries || [])].reverse().find(e => e.language.name === 'en');
-    const result = { name, desc: descEntry?.flavor_text?.replace(/\f|\n/g, ' ') || null };
+    const effectEntry = data.effect_entries?.find(e => e.language.name === 'fr')
+      || data.effect_entries?.find(e => e.language.name === 'en');
+    const result = {
+      name,
+      desc: flavourEntry?.flavor_text?.replace(/\f|\n/g, ' ')
+         || effectEntry?.short_effect?.replace(/\f|\n/g, ' ')
+         || null,
+    };
     abilityCache.set(slug, result);
     return result;
   } catch {
@@ -217,10 +365,11 @@ export function useSmogonSet(pokeId) {
         // Talent : priorité au set Smogon, fallback sur le talent principal du Pokémon
         const abilityName = first(rawSet.ability) ?? defaultAbilitySlug;
 
-        const [moveDetails, itemFR, abilityFR] = await Promise.all([
+        const [moveDetails, itemFR, abilityFR, natureDesc] = await Promise.all([
           Promise.all(moveNames.map(fetchMoveDetail)),
           fetchItemFR(itemName),
           fetchAbilityFR(abilityName),
+          rawSet.nature ? fetchPokepediaNature(first(rawSet.nature)) : Promise.resolve(null),
         ]);
 
         if (cancelled) return;
@@ -239,6 +388,7 @@ export function useSmogonSet(pokeId) {
           nature:      rawSet.nature ? first(rawSet.nature) : null,
           evs:         (Array.isArray(rawSet.evs) ? rawSet.evs[0] : rawSet.evs) || {},
           ivs:         (Array.isArray(rawSet.ivs) ? rawSet.ivs[0] : rawSet.ivs) || {},
+          natureDesc:  natureDesc || null,
         };
 
         resultCache.set(cacheKey, data);
