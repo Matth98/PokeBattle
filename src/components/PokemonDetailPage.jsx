@@ -103,29 +103,53 @@ const HERO_SHAPES = {
   ],
 };
 
-/* ── Formes de transition bas du Hero par type ── */
+/* ── Formes de transition bas du Hero — 1 forme unique par type ── */
 const BOTTOM_SHAPE_PATH = {
-  wave:     'M0,80 L0,45 Q100,-5 200,45 Q300,95 400,45 L400,80 Z',
-  hex:      'M0,80 L0,58 L25,28 L50,58 L75,28 L100,58 L125,28 L150,58 L175,28 L200,58 L225,28 L250,58 L275,28 L300,58 L325,28 L350,58 L375,28 L400,58 L400,80 Z',
-  zigzag:   'M0,80 L0,55 L80,12 L160,55 L240,12 L320,55 L400,12 L400,80 Z',
-  diagonal: 'M0,80 L0,68 L400,22 L400,80 Z',
-};
-
-const TYPE_BOTTOM_VARIANT = {
-  fire:'zigzag',  water:'wave',     grass:'hex',      electric:'zigzag',
-  ice:'hex',      fighting:'diagonal', poison:'hex',  ground:'diagonal',
-  flying:'wave',  psychic:'wave',   bug:'hex',        rock:'zigzag',
-  ghost:'diagonal', dragon:'diagonal', dark:'diagonal', steel:'wave',
-  fairy:'wave',   normal:'wave',
+  // Vague douce — neutre
+  normal:   'M0,80 L0,52 Q200,38 400,52 L400,80 Z',
+  // 3 flammes triangulaires
+  fire:     'M0,80 L0,62 L60,18 L120,60 L200,8 L280,60 L340,18 L400,62 L400,80 Z',
+  // Vague S (deux arcs opposés)
+  water:    'M0,80 L0,48 Q100,5 200,48 Q300,90 400,48 L400,80 Z',
+  // Éclair irrégulier
+  electric: 'M0,80 L0,55 L80,22 L130,48 L220,6 L270,36 L400,20 L400,80 Z',
+  // Lames d'herbe (créneaux larges)
+  grass:    'M0,80 L0,58 L33,24 L67,58 L100,24 L133,58 L167,24 L200,58 L233,24 L267,58 L300,24 L333,58 L367,24 L400,58 L400,80 Z',
+  // Cristaux de glace (pics irréguliers)
+  ice:      'M0,80 L0,54 L55,16 L90,46 L160,4 L205,36 L295,10 L355,46 L400,26 L400,80 Z',
+  // Coupe diagonale franche
+  fighting: 'M0,80 L0,65 L400,18 L400,80 Z',
+  // Gouttes de venin (ondulations asymétriques)
+  poison:   'M0,80 L0,45 L30,70 L60,40 L90,75 L120,42 L150,72 L180,38 L210,68 L240,44 L270,72 L300,40 L330,70 L360,42 L390,68 L400,45 L400,80 Z',
+  // Terrain en paliers (mesas)
+  ground:   'M0,80 L0,55 L100,55 L100,38 L220,38 L220,55 L320,55 L320,42 L400,42 L400,80 Z',
+  // Deux ailes arrondies depuis le centre
+  flying:   'M0,80 L0,40 Q80,0 165,44 L200,50 L235,44 Q320,0 400,40 L400,80 Z',
+  // Arc profond (onde mentale)
+  psychic:  'M0,80 L0,38 Q200,-25 400,38 L400,80 Z',
+  // Alvéoles hexagonales (petites dents régulières)
+  bug:      'M0,80 L0,56 L17,30 L33,56 L50,30 L67,56 L83,30 L100,56 L117,30 L133,56 L150,30 L167,56 L183,30 L200,56 L217,30 L233,56 L250,30 L267,56 L283,30 L300,56 L317,30 L333,56 L350,30 L367,56 L383,30 L400,56 L400,80 Z',
+  // Rocs irréguliers
+  rock:     'M0,80 L0,58 L45,20 L88,52 L135,12 L188,54 L238,26 L295,58 L338,16 L388,50 L400,46 L400,80 Z',
+  // Ondulation organique fantomatique
+  ghost:    'M0,80 L0,52 Q50,18 100,48 Q150,76 200,36 Q250,4 300,42 Q350,74 400,48 L400,80 Z',
+  // Parallélogramme puissant (coin haut-droit)
+  dragon:   'M0,80 L0,72 L320,8 L400,8 L400,80 Z',
+  // Deux griffes depuis les bords (V inversé)
+  dark:     'M0,80 L0,32 L165,80 L235,80 L400,32 L400,80 Z',
+  // Arc lisse et régulier (mécanique)
+  steel:    'M0,80 L0,50 Q200,18 400,50 L400,80 Z',
+  // Feston de pétales (arcs alternés)
+  fairy:    'M0,80 L0,58 Q25,26 50,58 Q75,80 100,58 Q125,26 150,58 Q175,80 200,58 Q225,26 250,58 Q275,80 300,58 Q325,26 350,58 Q375,80 400,58 L400,80 Z',
 };
 
 function HeroBottomShape({ typeName, isDark }) {
-  const d = BOTTOM_SHAPE_PATH[TYPE_BOTTOM_VARIANT[typeName] || 'wave'];
+  const d = BOTTOM_SHAPE_PATH[typeName] || BOTTOM_SHAPE_PATH.normal;
   const fill = isDark ? '#18181b' : '#ffffff';
   return (
     <svg
       className="absolute left-0 right-0 w-full pointer-events-none"
-      style={{ bottom: '-3px', height: 'calc(5rem + 3px)', zIndex: 1 }}
+      style={{ bottom: '-6px', height: 'calc(5rem + 6px)', zIndex: 1 }}
       viewBox="0 0 400 80"
       preserveAspectRatio="none"
       aria-hidden="true"
@@ -351,7 +375,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             <img
               src={data.officialArtwork || data.sprite}
               alt={pokeName}
-              className="object-contain object-center drop-shadow-2xl"
+              className="object-contain object-center drop-shadow-xl"
               style={{
                 width: '22rem',
                 height: '22rem',
