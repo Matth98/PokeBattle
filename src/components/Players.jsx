@@ -39,6 +39,9 @@ export const Players = ({
   const fileInputRef = useRef(null);
 
   const inSelection = selectionMode === 'players';
+  const [ready, setReady] = useState(false);
+  useEffect(() => { const raf = requestAnimationFrame(() => setReady(true)); return () => cancelAnimationFrame(raf); }, []);
+  const selTr = ready ? 'transition-all duration-200' : '';
 
   // initialScrollY = position sauvée au départ vers le détail (App.jsx scrollMemoryRef),
   // ou 0 si arrivée par changement d'onglet (setCurrentTab efface la mémoire).
@@ -169,7 +172,7 @@ export const Players = ({
             {/* Bouton Check — quitter sélection */}
             <button
               onClick={() => { setSelectionMode(null); setSelectedItems([]); }}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${inSelection ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${selTr} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${inSelection ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
               style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Quitter la sélection"
             >
@@ -180,7 +183,7 @@ export const Players = ({
               <button
                 onClick={() => setSelectionMode('players')}
                 disabled={players.length === 0}
-                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${players.length === 0 ? 'opacity-40' : ''} ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${selTr} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${players.length === 0 ? 'opacity-40' : ''} ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
                 style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                 aria-label="Sélectionner"
               >
@@ -190,7 +193,7 @@ export const Players = ({
             {isSuperAdmin && (
               <button
                 onClick={() => setShowForm(true)}
-                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${t.accentBg} text-white transition-all duration-200 ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${t.accentBg} text-white ${selTr} ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
                 style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                 aria-label="Nouveau joueur"
               >
@@ -243,7 +246,7 @@ export const Players = ({
                     }
                     className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left touch-manipulation`}
                   >
-                    <span className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inSelection ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}>
+                    <span className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selTr} overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inSelection ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}>
                       {isSelected && <Check size={14} className="text-white" />}
                     </span>
 
@@ -256,7 +259,7 @@ export const Players = ({
                       </p>
                     </div>
 
-                    <span className={`transition-all duration-200 overflow-hidden flex items-center flex-shrink-0 ${inSelection ? 'w-0 opacity-0' : 'w-[18px] opacity-100'}`}>
+                    <span className={`${selTr} overflow-hidden flex items-center flex-shrink-0 ${inSelection ? 'w-0 opacity-0' : 'w-[18px] opacity-100'}`}>
                       <ChevronRight size={18} className={t.textTertiary} />
                     </span>
                   </button>

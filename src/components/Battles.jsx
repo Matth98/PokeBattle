@@ -442,6 +442,9 @@ export const Battles = ({
     });
   };
   const inSelection = selectionMode === 'battles';
+  const [ready, setReady] = useState(false);
+  useEffect(() => { const raf = requestAnimationFrame(() => setReady(true)); return () => cancelAnimationFrame(raf); }, []);
+  const selTr = ready ? 'transition-all duration-200' : '';
   const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   // isActiveRef mis à jour synchroniquement (useLayoutEffect) avant le paint,
   // pour que le listener window.scroll ne déclenche pas de mise à jour d'état
@@ -509,7 +512,7 @@ export const Battles = ({
           <div className="relative flex items-center gap-2">
             <button
               onClick={() => { setSelectionMode(null); setSelectedItems([]); }}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${inSelection ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${selTr} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${inSelection ? 'relative opacity-100 scale-100' : 'absolute opacity-0 scale-0 pointer-events-none'}`}
               style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
               aria-label="Quitter la sélection"
             >
@@ -518,7 +521,7 @@ export const Battles = ({
             {myBattles.length > 0 && (
               <button
                 onClick={() => setSelectionMode('battles')}
-                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} transition-all duration-200 ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${selTr} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'} ${inSelection ? 'absolute opacity-0 scale-0 pointer-events-none' : 'relative opacity-100 scale-100'}`}
                 style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                 aria-label="Sélectionner"
               >
@@ -676,7 +679,7 @@ export const Battles = ({
                           className={`w-full flex items-center gap-3 px-4 py-3 ${t.surface} text-left`}
                         >
                           <span
-                            className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inSelection && canSelectBattle(b) ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}
+                            className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selTr} overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inSelection && canSelectBattle(b) ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}
                           >
                             {isSelected && <Check size={14} className="text-white" />}
                           </span>
