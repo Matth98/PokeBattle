@@ -375,7 +375,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             <img
               src={data.officialArtwork || data.sprite}
               alt={pokeName}
-              className="object-contain object-center drop-shadow-xl"
+              className="object-contain object-center"
               style={{
                 width: '22rem',
                 height: '22rem',
@@ -389,7 +389,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
           </div>
 
           {/* Numéro + nom + types — toujours visibles */}
-          <div className="px-5 pb-0" style={{ paddingTop: '3.5rem' }}>
+          <div className="px-5 pb-0" style={{ paddingTop: '2.6rem' }}>
             <p className={`text-sm font-mono font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
               #{String(data.id).padStart(4, '0')}
             </p>
