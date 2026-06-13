@@ -125,7 +125,7 @@ function HeroBottomShape({ typeName, isDark }) {
   return (
     <svg
       className="absolute left-0 right-0 w-full pointer-events-none"
-      style={{ bottom: 0, height: '5rem', zIndex: 1 }}
+      style={{ bottom: '-3px', height: 'calc(5rem + 3px)', zIndex: 1 }}
       viewBox="0 0 400 80"
       preserveAspectRatio="none"
       aria-hidden="true"
@@ -353,9 +353,9 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               alt={pokeName}
               className="object-contain object-center drop-shadow-2xl"
               style={{
-                width: '28rem',
-                height: '28rem',
-                marginBottom: '-2.8rem',
+                width: '22rem',
+                height: '22rem',
+                marginBottom: '-2.2rem',
                 position: 'relative',
                 zIndex: 2,
                 flexShrink: 0,
@@ -365,7 +365,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
           </div>
 
           {/* Numéro + nom + types — toujours visibles */}
-          <div className="px-5 pb-0" style={{ paddingTop: '5rem' }}>
+          <div className="px-5 pb-0" style={{ paddingTop: '3.5rem' }}>
             <p className={`text-sm font-mono font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
               #{String(data.id).padStart(4, '0')}
             </p>
