@@ -22,6 +22,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
     focus: () => inputRef.current?.focus({ preventScroll: true }),
     getScrollTop: () => scrollRef.current?.scrollTop ?? 0,
     setScrollTop: (v) => { if (scrollRef.current) scrollRef.current.scrollTop = v; },
+    getSearchTerm: () => searchTerm,
   }));
 
   const handleChange = (e) => {

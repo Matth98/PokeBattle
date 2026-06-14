@@ -119,6 +119,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     setBackLabel('');
     scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
     scrollMemoryRef.current.set(newTab, 0); // reset : pas une navigation retour, l'onglet repart de 0
+    if (newTab === 'pokemonSearch') searchMemoryRef.current.set('pokemonSearch', '');
     window.scrollTo({ top: 0, behavior: 'auto' });
     shouldRestoreRef.current = false;
     setPrevTab(null);
@@ -135,6 +136,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     navStack.current.push({ tab: currentTab, extra, label });
     setBackLabel(label);
     scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
+    if (currentTab === 'pokemonSearch') searchMemoryRef.current.set('pokemonSearch', searchPageRef.current?.getSearchTerm() ?? searchMemoryRef.current.get('pokemonSearch') ?? '');
     shouldRestoreRef.current = false;
     setPrevTab(currentTab);
     _setCurrentTabState(newTab);
