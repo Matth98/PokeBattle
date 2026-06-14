@@ -406,7 +406,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             style={{
               paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)',
               minHeight: 'calc(env(safe-area-inset-top) + 200px)',
-              overflow: 'hidden',
+              overflowX: 'hidden',
               background: `linear-gradient(160deg, ${accentHex}ee 0%, ${accentHex}88 55%, ${isDark ? '#1c1c1e' : 'white'} 100%)`,
             }}
           >
