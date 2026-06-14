@@ -368,6 +368,8 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-zinc-900' : 'bg-white'}`}>
+      {/* Fond fixe anti-overscroll iOS — couvre le viewport même pendant le bounce */}
+      <div className={`fixed inset-0 -z-10 ${isDark ? 'bg-zinc-900' : 'bg-white'}`} />
       {/* ── Bouton retour — flotte par-dessus le hero ── */}
       <div className="sticky top-0 z-20" style={{ height: 0, overflow: 'visible' }}>
         <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
