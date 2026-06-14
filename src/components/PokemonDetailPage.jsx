@@ -154,11 +154,10 @@ const GRASS_BOTTOM_D2 = 'M1024,254.03l-.28-51.12c-2.75-.61-6.65-2.74-8.92-5.59,1
 function HeroBottomShape({ typeName, isDark }) {
   const fill = isDark ? '#18181b' : '#ffffff';
   if (typeName === 'fire') {
-    // Repère natif 1023.02×248.83 → retourné verticalement et mis à l'échelle du viewBox 400×80
     return (
       <svg
         className="absolute pointer-events-none"
-        style={{ bottom: '-6px', height: 'auto', width: '100%', left: '0', zIndex: 1 }}
+        style={{ bottom: '-6px', height: 'auto', width: '200%', left: '-50%', zIndex: 1 }}
         viewBox="0 0 400 80"
         preserveAspectRatio="none"
         aria-hidden="true"
