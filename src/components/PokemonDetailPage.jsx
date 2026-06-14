@@ -15,7 +15,7 @@ const HERO_SHAPES = {
     { el:'circle', cx:385, cy:250, r:55,  opacity:0.07 },
   ],
   fire: [
-    { el:'polygon', points:'200,-10 400,260 0,260',     opacity:0.16 },
+    { el:'polygon', points:'200,-10 400,280 0,280',     opacity:0.16 },
     { el:'polygon', points:'330,-30 430,120 230,120',   opacity:0.12 },
     { el:'polygon', points:'-30,70 80,280 -140,280',    opacity:0.09 },
   ],
