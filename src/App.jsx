@@ -117,7 +117,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     setNavDirection(null);
     navStack.current = [];
     setBackLabel('');
-    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
     scrollMemoryRef.current.set(newTab, 0); // reset : pas une navigation retour, l'onglet repart de 0
     window.scrollTo({ top: 0, behavior: 'auto' });
     shouldRestoreRef.current = false;
@@ -134,7 +134,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     const label = getTabLabel(currentTab);
     navStack.current.push({ tab: currentTab, extra, label });
     setBackLabel(label);
-    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
     shouldRestoreRef.current = false;
     setPrevTab(currentTab);
     _setCurrentTabState(newTab);
@@ -154,7 +154,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     // Le nouveau label "retour" est l'entrée en dessous dans le stack (si elle existe)
     const newTop = navStack.current[navStack.current.length - 1];
     setBackLabel(newTop?.label || '');
-    scrollMemoryRef.current.set(currentTab, window.scrollY);
+    scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
     shouldRestoreRef.current = !!prev;
     setPrevTab(navStack.current[navStack.current.length - 1]?.tab ?? null);
     _setCurrentTabState(target.tab);
@@ -180,10 +180,18 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     resetFg();
     if (shouldRestoreRef.current) {
       const saved = scrollMemoryRef.current.get(currentTab) || 0;
-      window.scrollTo({ top: saved, behavior: 'auto' });
+      if (currentTab === 'pokemonSearch') {
+        searchPageRef.current?.setScrollTop(saved);
+      } else {
+        window.scrollTo({ top: saved, behavior: 'auto' });
+      }
       shouldRestoreRef.current = false;
     } else {
-      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (currentTab === 'pokemonSearch') {
+        searchPageRef.current?.setScrollTop(0);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
     }
   }, [currentTab]); // eslint-disable-line react-hooks/exhaustive-deps -- resetFg est un useCallback(fn,[]) stable, ne peut pas figurer dans le tableau (TDZ : déclaré après ce useLayoutEffect)
 
@@ -684,7 +692,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={sortedTeams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('playerDetail') || 0} initialPokemonSearch={searchMemoryRef.current.get('playerDetail-pokemon') || ''} initialTeamsSearch={searchMemoryRef.current.get('playerDetail-teams') || ''} isBackground />}
             {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} initialScrollY={scrollMemoryRef.current.get('teamDetail') || 0} isBackground />}
             {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={sortedPlayers} teams={sortedTeams} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} onAddTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('battleDetail') || 0} isBackground />}
-            {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} isBackground initialSearchTerm={searchMemoryRef.current.get('pokemonSearch') || ''} />}
+            {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} isBackground initialSearchTerm={searchMemoryRef.current.get('pokemonSearch') || ''} initialScrollY={scrollMemoryRef.current.get('pokemonSearch') || 0} />}
           </div>
           {/* Overlay d'assombrissement — z-index élevé pour couvrir tout le contenu */}
           <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.18)', zIndex: 9999, pointerEvents: 'none' }} />

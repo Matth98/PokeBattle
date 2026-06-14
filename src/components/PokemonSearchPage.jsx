@@ -1,17 +1,27 @@
-import React, { useState, useRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useImperativeHandle, useLayoutEffect } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { ClearButton } from './ClearButton';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 import { useTranslation } from '../hooks/useTranslation';
 
-export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon, isBackground = false, initialSearchTerm = '', onSearchChange }, ref) => {
+export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon, isBackground = false, initialSearchTerm = '', onSearchChange, initialScrollY = 0 }, ref) => {
   const tr = useTranslation();
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const { searchResults, searchLoading, searchPokemon, getPokemonImageUrl } = usePokemon(initialSearchTerm);
   const inputRef = useRef(null);
+  const scrollRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (initialScrollY && scrollRef.current) {
+      scrollRef.current.scrollTop = initialScrollY;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useImperativeHandle(ref, () => ({
     focus: () => inputRef.current?.focus({ preventScroll: true }),
+    getScrollTop: () => scrollRef.current?.scrollTop ?? 0,
+    setScrollTop: (v) => { if (scrollRef.current) scrollRef.current.scrollTop = v; },
   }));
 
   const handleChange = (e) => {
@@ -64,6 +74,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
 
       {/* ── Résultats ── */}
       <div
+        ref={scrollRef}
         className="flex-1 overflow-y-auto px-5 pt-4"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
       >
