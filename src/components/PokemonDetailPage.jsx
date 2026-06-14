@@ -173,7 +173,7 @@ function HeroBottomShape({ typeName, isDark }) {
     return (
       <svg
         className="absolute pointer-events-none"
-        style={{ bottom: '-6px', height: 'auto', width: '100%', left: '0', zIndex: 1 }}
+        style={{ bottom: '-6px', height: 'auto', left: '-1px', right: '-1px', zIndex: 1 }}
         viewBox="0 0 400 80"
         preserveAspectRatio="none"
         aria-hidden="true"
