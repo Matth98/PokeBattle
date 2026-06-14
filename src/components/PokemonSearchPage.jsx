@@ -42,6 +42,8 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
 
   return (
     <div className={`flex flex-col ${t.pageBg}`} style={{ height: '100dvh' }}>
+      {/* Fond fixe anti-overscroll iOS */}
+      <div className={`fixed inset-0 -z-10 ${t.pageBg}`} />
       {/* ── Header ── */}
       <div
         className={`${t.surfaceBlur} flex-shrink-0 px-4 border-b ${t.divider} z-10`}
