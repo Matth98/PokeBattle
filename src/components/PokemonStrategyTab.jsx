@@ -383,12 +383,12 @@ function NatureSheet({ nature, isDark, accentHex, onClose, pokeId }) {
             </p>
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: isDark ? '#16a34a22' : '#16a34a11' }}>
-                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: isDark ? '#4ade80' : '#16a34a' }}>Augmentée</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: isDark ? '#4ade80' : '#16a34a' }}>BONUS</p>
                 <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{bStat.display}</p>
                 <p className="text-xs font-semibold mt-0.5" style={{ color: isDark ? '#4ade80' : '#16a34a' }}>+10 %</p>
               </div>
               <div className="rounded-2xl px-3 py-3" style={{ backgroundColor: isDark ? '#dc262622' : '#dc262611' }}>
-                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: isDark ? '#f87171' : '#dc2626' }}>Réduite</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: isDark ? '#f87171' : '#dc2626' }}>MALUS</p>
                 <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>{lStat.display}</p>
                 <p className="text-xs font-semibold mt-0.5" style={{ color: isDark ? '#f87171' : '#dc2626' }}>−10 %</p>
               </div>
