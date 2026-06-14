@@ -419,7 +419,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               style={{
                 width: '22rem',
                 height: '22rem',
-                marginBottom: '-2.2rem',
+                marginBottom: '-3.2rem',
                 position: 'relative',
                 zIndex: 2,
                 flexShrink: 0,
