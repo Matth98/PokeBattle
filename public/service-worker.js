@@ -1,5 +1,5 @@
 // public/service-worker.js
-const CACHE_NAME = 'pokescores-v3';
+const CACHE_NAME = 'pokescores-v4';
 
 // Cache séparé pour les ressources externes (APIs + images CDN).
 // Incrémenter EXT_CACHE_NAME invalide le cache externe sans toucher au cache app.
