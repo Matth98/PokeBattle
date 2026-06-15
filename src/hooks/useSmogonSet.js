@@ -333,11 +333,17 @@ export function useSmogonSet(pokeId) {
           ?? pokemonData.abilities?.[0]?.ability?.name
           ?? null;
 
-        // Trouver le premier format qui contient un set pour ce Pokémon
+        // Trouver le premier format (par priorité) qui contient un set pour ce Pokémon
+        // Tous les formats sont fetchés en parallèle, puis on choisit par ordre de priorité
+        const formatResults = await Promise.all(
+          FORMATS.map(({ key, label }) =>
+            fetchFormat(key).then(data => ({ label, data }))
+          )
+        );
+
         let rawSet = null;
         let formatLabel = '';
-        for (const { key, label } of FORMATS) {
-          const formatData = await fetchFormat(key);
+        for (const { label, data: formatData } of formatResults) {
           if (!formatData) continue;
           const speciesEntry = formatData[smogonName]
             ?? Object.entries(formatData).find(([k]) => k.toLowerCase() === smogonName.toLowerCase())?.[1];
