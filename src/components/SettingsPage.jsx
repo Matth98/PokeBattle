@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, ChevronRight, LogOut, Moon, Sun, Smartphone, Bell, BellOff, Send, ExternalLink, RotateCcw } from 'lucide-react';
+import { X, ChevronRight, LogOut, Moon, Sun, Smartphone, Bell, BellOff, Send, ExternalLink, RotateCcw, WifiOff } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useLanguage } from '../hooks/useLanguage';
 import { useTranslation } from '../hooks/useTranslation';
@@ -12,7 +12,7 @@ const THEME_OPTIONS = [
   { value: 'dark',   Icon: Moon,    labelKey: 'settings.darkMode'   },
 ];
 
-export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer, pushPermission, pushIsSubscribed, pushLoading, onPushSubscribe, onPushUnsubscribe, onRestartTour }) => {
+export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer, pushPermission, pushIsSubscribed, pushLoading, onPushSubscribe, onPushUnsubscribe, onRestartTour, offlineMode, onOfflineModeToggle, syncDone, syncTotal, syncFinished }) => {
   const tr = useTranslation();
   useBodyScrollLock();
   const displayName = linkedPlayer?.name || user?.displayName || user?.email || 'Utilisateur';
@@ -375,6 +375,59 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                 </div>
               </section>
             )}
+
+            {/* ── Mode hors ligne ── */}
+            <section>
+              <p className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 px-1`}>
+                Hors ligne
+              </p>
+              <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
+                <button
+                  onClick={() => onOfflineModeToggle?.(!offlineMode)}
+                  className="w-full flex items-center gap-3 px-4 py-4"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    offlineMode
+                      ? isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'
+                      : isDark ? 'bg-zinc-700 text-zinc-400'         : 'bg-gray-100 text-gray-400'
+                  }`}>
+                    <WifiOff size={18} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className={`font-medium ${t.text}`}>Mode hors ligne</p>
+                    <p className={`text-xs ${t.textSecondary} mt-0.5`}>
+                      {syncFinished
+                        ? 'Tous les Pokémon sont disponibles hors ligne'
+                        : offlineMode && syncDone > 0
+                          ? `Téléchargement… ${syncDone} / ${syncTotal}`
+                          : 'Télécharger tous les Pokémon (~230 Mo)'}
+                    </p>
+                  </div>
+                  <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
+                    offlineMode ? 'bg-indigo-500' : isDark ? 'bg-zinc-600' : 'bg-gray-200'
+                  }`}>
+                    <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                      offlineMode ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </div>
+                </button>
+
+                {/* Barre de progression — visible uniquement pendant le téléchargement */}
+                {offlineMode && !syncFinished && syncDone > 0 && (
+                  <div className={`px-4 pb-4`}>
+                    <div className={`w-full h-1.5 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'} overflow-hidden`}>
+                      <div
+                        className="h-full rounded-full bg-indigo-500 transition-all duration-500"
+                        style={{ width: `${Math.round((syncDone / syncTotal) * 100)}%` }}
+                      />
+                    </div>
+                    <p className={`text-xs ${t.textSecondary} mt-1 text-right`}>
+                      {Math.round((syncDone / syncTotal) * 100)} %
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
 
             {/* ── Compte ── */}
             <section>

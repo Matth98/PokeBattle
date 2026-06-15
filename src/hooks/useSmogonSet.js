@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { idbGet, idbSet } from '../utils/offlineDB';
 
 // Sets JSON hosted on pkmn/smogon GitHub repo (CORS-friendly raw.githubusercontent.com)
 const SETS_BASE = 'https://raw.githubusercontent.com/pkmn/smogon/main/data/sets';
@@ -36,7 +37,10 @@ const formatCache  = new Map();
 const moveCache    = new Map();
 const itemCache    = new Map();
 const abilityCache = new Map();
-const resultCache  = new Map();
+
+// resultCache persisté dans IndexedDB (store 'set') pour survivre aux rechargements.
+// Les clés incluent CACHE_VERSION → une incrémentation invalide automatiquement l'ancien cache.
+const resultCache = new Map();
 
 // "charizard-mega-x" → "Charizard-Mega-X"
 function toSmogonName(apiName) {
@@ -321,6 +325,14 @@ export function useSmogonSet(pokeId) {
     let cancelled = false;
 
     const load = async () => {
+      // IndexedDB — survit aux rechargements + pré-chargé offline
+      const persisted = await idbGet('set', cacheKey);
+      if (persisted !== undefined) {
+        resultCache.set(cacheKey, persisted);
+        if (!cancelled) { setResult(persisted); setLoading(false); }
+        return;
+      }
+
       try {
         const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokeId}`);
         if (!res.ok) throw new Error('Pokémon introuvable');
@@ -360,6 +372,7 @@ export function useSmogonSet(pokeId) {
 
         if (!rawSet) {
           resultCache.set(cacheKey, null);
+          await idbSet('set', cacheKey, null);
           if (!cancelled) { setResult(null); setLoading(false); }
           return;
         }
@@ -401,6 +414,7 @@ export function useSmogonSet(pokeId) {
         };
 
         resultCache.set(cacheKey, data);
+        await idbSet('set', cacheKey, data);
         setResult(data);
       } catch (err) {
         if (!cancelled) setError(err.message);

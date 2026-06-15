@@ -24,6 +24,7 @@ import { LanguageProvider } from './hooks/useLanguage';
 import { useThemeMode } from './hooks/useThemeMode';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useEdgeSwipeBack } from './hooks/useEdgeSwipeBack';
+import { useOfflineSync, OFFLINE_TOTAL } from './hooks/useOfflineSync';
 
 // Tailwind CDN
 if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
@@ -55,6 +56,16 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const toast = useToast();
   const t = isDark ? theme.dark : theme.light;
   const { permission, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+
+  // Mode hors ligne — persisté, déclenche le pré-téléchargement quand actif
+  const [offlineMode, setOfflineModeRaw] = useState(
+    () => localStorage.getItem('offline-mode') === 'true'
+  );
+  const setOfflineMode = (val) => {
+    localStorage.setItem('offline-mode', val ? 'true' : 'false');
+    setOfflineModeRaw(val);
+  };
+  const { done: syncDone, total: syncTotal, finished: syncFinished } = useOfflineSync(offlineMode);
 
 
   // ── Préchargement des avatars par défaut (après le premier paint) ──
@@ -730,6 +741,11 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           pushPermission={permission}
           pushIsSubscribed={isSubscribed}
           onPushSubscribe={subscribe}
+          offlineMode={offlineMode}
+          syncDone={syncDone}
+          syncTotal={syncTotal}
+          syncFinished={syncFinished}
+          onOpenOfflineSettings={() => setSettingsOpen(true)}
         />
       )}
 
@@ -986,6 +1002,11 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             onClose={() => setSettingsOpen(false)}
             onSignOut={() => { setSettingsOpen(false); signOut(); }}
             onRestartTour={() => { resetTour(); startTour(); }}
+            offlineMode={offlineMode}
+            onOfflineModeToggle={setOfflineMode}
+            syncDone={syncDone}
+            syncTotal={syncTotal}
+            syncFinished={syncFinished}
             onOpenPlayer={() => {
               setSettingsOpen(false);
               const p = players.find(pl => pl._id === dbUser?.playerId);

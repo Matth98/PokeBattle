@@ -21,7 +21,7 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, refreshEnabled = true, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, pushIsSubscribed, onPushSubscribe }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, refreshEnabled = true, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, pushIsSubscribed, onPushSubscribe, offlineMode, syncDone, syncTotal, syncFinished, onOpenOfflineSettings }) => {
   const tr = useTranslation();
   const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
 
@@ -402,6 +402,62 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
             </div>
 
             {/* Pokéball — absolute sur le bouton, centrée sur l'icône */}
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                width: '140px',
+                height: '140px',
+                right: '0',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                mixBlendMode: 'overlay',
+              }}
+            >
+              <img src="/banner/pokeball.svg" alt="" className="w-full h-full" />
+            </div>
+
+            {/* Icône PokeScores */}
+            <div className="relative flex-shrink-0 w-[51px] h-[39px]">
+              <img src="/banner/icon.svg" alt="" className="w-full h-full object-contain" />
+            </div>
+          </button>
+        )}
+
+        {/* ── Bannière mise à jour hors ligne ── */}
+        {offlineMode && !syncFinished && !isBackground && (
+          <button
+            onClick={onOpenOfflineSettings}
+            className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"
+            style={{ boxShadow: 'rgba(0, 100, 173, 0.45) 0px 18px 50px -26px' }}
+          >
+            {/* Image de fond temporaire — à remplacer */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: 'url(/banner/bg-glow.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'left center',
+                filter: 'hue-rotate(160deg)',
+              }}
+            />
+
+            {/* Texte + bouton */}
+            <div className="relative flex-1 min-w-0 flex flex-col gap-2.5">
+              <p className="font-bold text-white text-base leading-snug">
+                De nouvelles données sont disponibles !
+              </p>
+              <p className="text-white/70 text-xs leading-snug -mt-1">
+                {syncDone > 0
+                  ? `${syncTotal - syncDone} Pokémon restants à télécharger`
+                  : `${syncTotal} Pokémon à télécharger`}
+              </p>
+              <div className="inline-flex items-center gap-0.5 bg-white rounded-full pl-3 pr-2 py-1.5 self-start">
+                <span className="text-[#111827] text-sm font-semibold tracking-tight">Voir</span>
+                <ChevronRight size={14} className="text-[#111827]" />
+              </div>
+            </div>
+
+            {/* Pokéball décorative */}
             <div
               className="absolute pointer-events-none"
               style={{
