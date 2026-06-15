@@ -29,16 +29,12 @@ if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register(`${process.env.PUBLIC_URL}/service-worker.js`, { updateViaCache: 'none' })
-      // Pas de reg.update() ici : le browser vérifie les MAJ SW naturellement à chaque
-      // navigation. Forcer update() à chaque lancement déclenchait skipWaiting →
-      // controllerchange → reload en cascade → écran blanc.
+      // Pas de reg.update() : le browser vérifie les MAJ SW naturellement.
+      // Pas de controllerchange → reload : inutile car skipWaiting() dans le SW
+      // garantit que le nouvel SW prend le contrôle au prochain kill+relaunch.
+      // Le reload forcé provoquait un écran blanc si l'utilisateur killait l'app
+      // pendant la transition (état intermédiaire : ancien cache supprimé, nouveau
+      // pas encore entièrement servi).
       .catch((err) => console.warn('SW registration failed:', err));
-
-    // Recharger uniquement quand un SW EXISTANT est remplacé par une mise à jour.
-    // hadController = false au premier install → pas de reload inutile.
-    const hadController = !!navigator.serviceWorker.controller;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (hadController) window.location.reload();
-    });
   });
 }
