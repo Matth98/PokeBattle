@@ -181,11 +181,11 @@ function HeroBottomShape({ typeName, isDark }) {
         aria-hidden="true"
       >
         <defs>
-          <mask id="dark-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="121">
-            <rect width="390" height="121" fill="white" />
-          </mask>
+          <clipPath id="dark-clip">
+            <rect width="390" height="121" />
+          </clipPath>
         </defs>
-        <path d={DARK_BOTTOM_D} fill={fill} mask="url(#dark-mask)" />
+        <path d={DARK_BOTTOM_D} fill={fill} clipPath="url(#dark-clip)" />
       </svg>
     );
   }
