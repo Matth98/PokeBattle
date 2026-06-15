@@ -175,12 +175,17 @@ function HeroBottomShape({ typeName, isDark }) {
     return (
       <svg
         className="absolute pointer-events-none"
-        style={{ bottom: '-6px', height: 'auto', left: '-1px', right: '-3px', zIndex: 1 }}
+        style={{ bottom: '-6px', height: 'auto', left: '-1px', right: '-10px', zIndex: 1 }}
         viewBox="0 0 390 121"
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <path d={DARK_BOTTOM_D} fill={fill} />
+        <defs>
+          <mask id="dark-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="121">
+            <rect width="390" height="121" fill="white" />
+          </mask>
+        </defs>
+        <path d={DARK_BOTTOM_D} fill={fill} mask="url(#dark-mask)" />
       </svg>
     );
   }
