@@ -154,27 +154,6 @@ async function fetchPokepediaItem(frName) {
   }
 }
 
-// ── Fallback descriptions depuis Smogon PS (dernier recours) ──
-let psItemsText = null;
-let psItemsPromise = null;
-
-async function getPsItemsText() {
-  if (psItemsText) return psItemsText;
-  if (psItemsPromise) return psItemsPromise;
-  psItemsPromise = fetch(
-    'https://raw.githubusercontent.com/smogon/pokemon-showdown/master/data/items.ts'
-  ).then(r => r.ok ? r.text() : null)
-   .then(text => { psItemsText = text; psItemsPromise = null; return text; })
-   .catch(() => { psItemsPromise = null; return null; });
-  return psItemsPromise;
-}
-
-function extractPsShortDesc(text, psId) {
-  const re = new RegExp(`\\b${psId}:\\s*\\{([\\s\\S]*?)\\n\\t\\},`);
-  const block = text.match(re)?.[1];
-  if (!block) return null;
-  return block.match(/shortDesc:\s*"([^"]+)"/)?.[1] ?? null;
-}
 
 async function fetchFormat(formatKey) {
   if (formatCache.has(formatKey)) return formatCache.get(formatKey);
@@ -243,32 +222,26 @@ async function fetchItemFR(smogonItemName) {
             || null;
     const frName = frEntry?.name || smogonItemName;
 
-    // Pokepedia : toujours appelé si nom FR disponible, sprite en priorité
-    if (frEntry?.name) {
-      const ppData = await fetchPokepediaItem(frName);
-      sprite = ppData?.sprite || data.sprites?.default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug}.png`;
-      desc   = ppData?.desc || desc;
-    }
-
-    // Dernier recours pour la description : PS items.ts
-    if (!desc) {
-      const psText = await getPsItemsText();
-      if (psText) desc = extractPsShortDesc(psText, psSlug);
-    }
-
     const result = { name: frName, sprite, desc };
     itemCache.set(slug, result);
+
+    // Enrichissement Pokepedia non-bloquant : meilleur sprite + description FR en arrière-plan
+    if (frEntry?.name) {
+      fetchPokepediaItem(frName).then(ppData => {
+        if (!ppData) return;
+        const enriched = {
+          name: frName,
+          sprite: ppData.sprite || sprite,
+          desc:   ppData.desc   || desc,
+        };
+        itemCache.set(slug, enriched);
+      }).catch(() => {});
+    }
+
     return result;
   } catch {
-    // PokeAPI inaccessible : on tente Pokepedia puis PS
-    const frName = smogonItemName;
-    const ppData = await fetchPokepediaItem(frName).catch(() => null);
-    let desc = ppData?.desc || null;
-    if (!desc) {
-      const psText = await getPsItemsText().catch(() => null);
-      if (psText) desc = extractPsShortDesc(psText, psSlug);
-    }
-    const fallback = { name: frName, sprite: ppData?.sprite || null, desc };
+    // PokeAPI inaccessible : fallback minimal sans bloquer
+    const fallback = { name: smogonItemName, sprite: null, desc: null };
     itemCache.set(slug, fallback);
     return fallback;
   }
@@ -357,16 +330,13 @@ export function useSmogonSet(pokeId) {
           ?? null;
 
         // Trouver le premier format (par priorité) qui contient un set pour ce Pokémon
-        // Tous les formats sont fetchés en parallèle, puis on choisit par ordre de priorité
-        const formatResults = await Promise.all(
-          FORMATS.map(({ key, label }) =>
-            fetchFormat(key).then(data => ({ label, data }))
-          )
-        );
-
+        // On fetche séquentiellement et on s'arrête dès qu'on trouve — évite de télécharger
+        // tous les JSONs Smogon (potentiellement 1-2 MB) quand le premier format suffit.
+        // Les formats déjà en cache (formatCache) sont retournés instantanément.
         let rawSet = null;
         let formatLabel = '';
-        for (const { label, data: formatData } of formatResults) {
+        for (const { key, label } of FORMATS) {
+          const formatData = await fetchFormat(key);
           if (!formatData) continue;
           const speciesEntry = formatData[smogonName]
             ?? Object.entries(formatData).find(([k]) => k.toLowerCase() === smogonName.toLowerCase())?.[1];
@@ -399,11 +369,10 @@ export function useSmogonSet(pokeId) {
         // Talent : priorité au set Smogon, fallback sur le talent principal du Pokémon
         const abilityName = first(rawSet.ability) ?? defaultAbilitySlug;
 
-        const [moveDetails, itemFR, abilityFR, natureDesc] = await Promise.all([
+        const [moveDetails, itemFR, abilityFR] = await Promise.all([
           Promise.all(moveNames.map(fetchMoveDetail)),
           fetchItemFR(itemName),
           fetchAbilityFR(abilityName),
-          rawSet.nature ? fetchPokepediaNature(first(rawSet.nature)) : Promise.resolve(null),
         ]);
 
         if (cancelled) return;
@@ -422,12 +391,23 @@ export function useSmogonSet(pokeId) {
           nature:      rawSet.nature ? first(rawSet.nature) : null,
           evs:         (Array.isArray(rawSet.evs) ? rawSet.evs[0] : rawSet.evs) || {},
           ivs:         (Array.isArray(rawSet.ivs) ? rawSet.ivs[0] : rawSet.ivs) || {},
-          natureDesc:  natureDesc || null,
+          natureDesc:  null,
         };
 
         resultCache.set(cacheKey, data);
         await idbSet('set', cacheKey, data);
         setResult(data);
+
+        // Enrichissement Pokepedia non-bloquant : nature description chargée en arrière-plan
+        if (!cancelled && rawSet.nature) {
+          fetchPokepediaNature(first(rawSet.nature)).then(natureDesc => {
+            if (cancelled || !natureDesc) return;
+            const enriched = { ...data, natureDesc };
+            resultCache.set(cacheKey, enriched);
+            idbSet('set', cacheKey, enriched).catch(() => {});
+            setResult(enriched);
+          }).catch(() => {});
+        }
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
