@@ -579,7 +579,7 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
     return (
       <div className="py-16 px-8 text-center">
         <p className={`text-base font-semibold mb-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-          Aucun set Smogon disponible
+          Aucun set PokéScores disponible
         </p>
         <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
           Ce Pokémon n'a pas encore de set référencé.

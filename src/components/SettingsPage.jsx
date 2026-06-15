@@ -400,7 +400,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                         ? 'Tous les Pokémon sont disponibles hors ligne'
                         : offlineMode && syncDone > 0
                           ? `Téléchargement… ${syncDone} / ${syncTotal}`
-                          : 'Télécharger tous les Pokémon (~230 Mo)'}
+                          : 'Télécharger les données (~230 Mo)'}
                     </p>
                   </div>
                   <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
