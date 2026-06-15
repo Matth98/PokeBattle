@@ -135,9 +135,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML / navigation : Stale-while-revalidate.
-  // Sert le cache immédiatement (lancement instantané), met à jour en arrière-plan.
-  // Au prochain lancement, la version fraîche sera déjà en cache.
+  // HTML / navigation : Stale-while-revalidate + fallback SPA garanti.
+  // 1. Si en cache → sert immédiatement (lancement instantané)
+  // 2. Met à jour en arrière-plan pour le prochain lancement
+  // 3. Triple fallback : cache de la requête → cache de '/' → réponse vide 200
+  //    (évite l'écran blanc si le cache n'est pas encore peuplé lors du premier lancement)
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request)
@@ -148,8 +150,13 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => null);
-      // Retourne le cache immédiatement si disponible, sinon attend le réseau
-      return cached || fetchPromise;
+
+      if (cached) return cached;
+
+      // Pas encore en cache : attendre le réseau, avec fallback sur '/' (SPA shell)
+      return fetchPromise.then(
+        (response) => response || caches.match('/').then(r => r || new Response('', { status: 200, headers: { 'Content-Type': 'text/html' } }))
+      );
     })
   );
 });

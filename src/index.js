@@ -27,9 +27,13 @@ if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       })
       .catch((err) => console.warn('SW registration failed:', err));
 
-    // Recharger automatiquement quand un nouveau SW prend le contrôle
+    // Recharger uniquement quand un SW EXISTANT est remplacé par une mise à jour.
+    // Sans cette garde, controllerchange se déclenche aussi lors de la première activation
+    // (quand il n'y avait pas encore de SW), ce qui provoque un reload inutile au lancement
+    // alors que le cache n'est pas encore peuplé → écran blanc.
+    const hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
+      if (hadController) window.location.reload();
     });
   });
 }
