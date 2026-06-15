@@ -180,7 +180,9 @@ function HeroBottomShape({ typeName, isDark }) {
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <path d={DARK_BOTTOM_D} fill={fill} />
+        <g transform="scale(1,-1) translate(0,-121)">
+          <path d={DARK_BOTTOM_D} fill={fill} />
+        </g>
       </svg>
     );
   }
