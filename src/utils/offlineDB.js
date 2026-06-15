@@ -61,3 +61,18 @@ export async function idbHas(store, key) {
   const val = await idbGet(store, key);
   return val !== undefined;
 }
+
+// Vide tous les stores offline (utilisé pour réinitialiser le cache)
+export async function idbClearAll() {
+  try {
+    const db = await openDB();
+    await Promise.all(
+      STORES.map(store => new Promise((resolve) => {
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).clear();
+        tx.oncomplete = resolve;
+        tx.onerror    = resolve; // silencieux
+      }))
+    );
+  } catch { /* silencieux */ }
+}

@@ -21,7 +21,7 @@ const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   </button>
 );
 
-export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, refreshEnabled = true, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, pushIsSubscribed, onPushSubscribe, offlineMode, syncDone, syncTotal, syncFinished, onOpenOfflineSettings }) => {
+export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrentTab, setSelectedBattle, onSelectPlayer, onSearchPokemon, onViewPokemon, linkedPlayer, onOpenSettings, onRefresh, refreshEnabled = true, deleteAnimSnapshot = null, onDeleteAnimConsumed, isBackground = false, initialScrollY = 0, pushPermission, pushIsSubscribed, onPushSubscribe, offlineMode, syncDone, syncTotal, syncFinished, syncHasNewData, onOpenOfflineSettings }) => {
   const tr = useTranslation();
   const recentBattles = useMemo(() => sortBattlesDesc(battles).slice(0, 3), [battles]);
 
@@ -424,7 +424,8 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
         )}
 
         {/* ── Bannière mise à jour hors ligne ── */}
-        {offlineMode && !syncFinished && !isBackground && (
+        {/* N'apparaît que si tout était téléchargé ET de nouvelles données sont disponibles */}
+        {offlineMode && syncHasNewData && !isBackground && (
           <button
             onClick={onOpenOfflineSettings}
             className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"

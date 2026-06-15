@@ -12,7 +12,7 @@ const THEME_OPTIONS = [
   { value: 'dark',   Icon: Moon,    labelKey: 'settings.darkMode'   },
 ];
 
-export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer, pushPermission, pushIsSubscribed, pushLoading, onPushSubscribe, onPushUnsubscribe, onRestartTour, offlineMode, onOfflineModeToggle, syncDone, syncTotal, syncFinished }) => {
+export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, setThemeMode, t, onClose, onSignOut, onOpenPlayer, pushPermission, pushIsSubscribed, pushLoading, onPushSubscribe, onPushUnsubscribe, onRestartTour, offlineMode, onOfflineModeToggle, syncDone, syncTotal, syncFinished, onSyncReset }) => {
   const tr = useTranslation();
   useBodyScrollLock();
   const displayName = linkedPlayer?.name || user?.displayName || user?.email || 'Utilisateur';
@@ -414,7 +414,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
 
                 {/* Barre de progression — visible uniquement pendant le téléchargement */}
                 {offlineMode && !syncFinished && syncDone > 0 && (
-                  <div className={`px-4 pb-4`}>
+                  <div className="px-4 pb-4">
                     <div className={`w-full h-1.5 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'} overflow-hidden`}>
                       <div
                         className="h-full rounded-full bg-indigo-500 transition-all duration-500"
@@ -425,6 +425,21 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                       {Math.round((syncDone / syncTotal) * 100)} %
                     </p>
                   </div>
+                )}
+
+                {/* Supprimer les données — visible uniquement si quelque chose a été téléchargé */}
+                {syncDone > 0 && (
+                  <button
+                    onClick={onSyncReset}
+                    className={`w-full flex items-center gap-3 px-4 py-3 border-t ${isDark ? 'border-zinc-700' : 'border-gray-100'}`}
+                  >
+                    <span className={`flex-1 text-left text-sm ${isDark ? 'text-red-400' : 'text-red-500'}`}>
+                      Supprimer les données hors ligne
+                    </span>
+                    <span className={`text-xs ${t.textSecondary}`}>
+                      {syncDone} / {syncTotal}
+                    </span>
+                  </button>
                 )}
               </div>
             </section>

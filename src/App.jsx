@@ -65,7 +65,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     localStorage.setItem('offline-mode', val ? 'true' : 'false');
     setOfflineModeRaw(val);
   };
-  const { done: syncDone, total: syncTotal, finished: syncFinished } = useOfflineSync(offlineMode);
+  const { done: syncDone, total: syncTotal, finished: syncFinished, syncing: syncSyncing, hasNewData: syncHasNewData, reset: syncReset } = useOfflineSync(offlineMode);
 
 
   // ── Préchargement des avatars par défaut (après le premier paint) ──
@@ -745,6 +745,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           syncDone={syncDone}
           syncTotal={syncTotal}
           syncFinished={syncFinished}
+          syncHasNewData={syncHasNewData}
           onOpenOfflineSettings={() => setSettingsOpen(true)}
         />
       )}
@@ -1007,6 +1008,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             syncDone={syncDone}
             syncTotal={syncTotal}
             syncFinished={syncFinished}
+            onSyncReset={syncReset}
             onOpenPlayer={() => {
               setSettingsOpen(false);
               const p = players.find(pl => pl._id === dbUser?.playerId);
