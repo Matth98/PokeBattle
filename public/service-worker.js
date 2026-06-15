@@ -117,17 +117,39 @@ self.addEventListener('fetch', (event) => {
   if (!url.startsWith(self.location.origin)) return;
   if (url.includes('/api/')) return;
 
-  // Network-first : toujours récupérer la version la plus récente,
-  // cache uniquement en fallback offline.
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
+  // Bundles JS/CSS générés par CRA : noms hashés → immutables → Cache-first.
+  // Le hash change à chaque build → pas de risque de servir du code obsolète.
+  // Avantage : lancement PWA instantané, aucune attente réseau.
+  if (url.includes('/static/')) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response && response.status === 200) {
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+          }
+          return response;
+        }).catch(() => caches.match(event.request));
       })
-      .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // HTML / navigation : Stale-while-revalidate.
+  // Sert le cache immédiatement (lancement instantané), met à jour en arrière-plan.
+  // Au prochain lancement, la version fraîche sera déjà en cache.
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      const fetchPromise = fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+          }
+          return response;
+        })
+        .catch(() => null);
+      // Retourne le cache immédiatement si disponible, sinon attend le réseau
+      return cached || fetchPromise;
+    })
   );
 });

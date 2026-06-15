@@ -10,6 +10,10 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Fix iOS PWA : WebKit diffère le paint initial si le body n'a pas de contexte de scroll.
+     overflow-y: scroll force un layer de composition et déclenche le premier paint immédiatement,
+     éliminant l'écran blanc jusqu'au premier scroll. */
+  overflow-y: scroll;
 }
 
 /* ── Safe area iOS (PWA installée, home bar) ── */
