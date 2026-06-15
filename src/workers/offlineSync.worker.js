@@ -1,5 +1,7 @@
+/* eslint-disable no-restricted-globals */
 // Web Worker — tourne dans un thread séparé, jamais sur le thread UI.
 // Gère le pré-téléchargement de tous les Pokémon sans jamais bloquer l'interface.
+// `self` est le global standard dans un Web Worker (équivalent de `window` en main thread).
 
 import { processPokemonDetail } from '../utils/fetchPokemonDetail';
 import { processPokemonMoves }  from '../utils/fetchPokemonMoves';
