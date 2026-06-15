@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { idbGet, idbSet } from '../utils/offlineDB';
 
 // Sets JSON hosted on pkmn/smogon GitHub repo (CORS-friendly raw.githubusercontent.com)
@@ -305,9 +305,20 @@ async function fetchAbilityFR(smogonAbilityName) {
 }
 
 export function useSmogonSet(pokeId) {
-  const [result,  setResult]  = useState(undefined);
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState(null);
+  const [result,    setResult]    = useState(undefined);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState(null);
+  const [retryKey,  setRetryKey]  = useState(0);
+
+  // Vide le cache en mémoire + IndexedDB pour ce Pokémon et force un nouveau fetch
+  const retry = useCallback(() => {
+    const cacheKey = `v${CACHE_VERSION}:${pokeId}`;
+    resultCache.delete(cacheKey);
+    idbSet('set', cacheKey, undefined).catch(() => {});
+    setError(null);
+    setResult(undefined);
+    setRetryKey(k => k + 1);
+  }, [pokeId]);
 
   useEffect(() => {
     if (!pokeId) return;
@@ -371,8 +382,9 @@ export function useSmogonSet(pokeId) {
         }
 
         if (!rawSet) {
+          // Ne pas mettre null en cache : un échec réseau ou un set manquant temporairement
+          // ne doit pas bloquer définitivement. On retente à la prochaine visite.
           resultCache.set(cacheKey, null);
-          await idbSet('set', cacheKey, null);
           if (!cancelled) { setResult(null); setLoading(false); }
           return;
         }
@@ -425,7 +437,7 @@ export function useSmogonSet(pokeId) {
 
     load();
     return () => { cancelled = true; };
-  }, [pokeId]);
+  }, [pokeId, retryKey]); // retryKey force un nouveau fetch quand l'utilisateur clique "Réessayer"
 
-  return { result, loading, error };
+  return { result, loading, error, retry };
 }

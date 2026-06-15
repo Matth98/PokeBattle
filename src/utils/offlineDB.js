@@ -8,8 +8,8 @@
 //   'sync'     — progression du pré-chargement (clé: "{pokeId}" → true/false)
 
 const DB_NAME    = 'pokescores-offline';
-const DB_VERSION = 1;
-const STORES     = ['detail', 'moves', 'set', 'sync'];
+const DB_VERSION = 2;                                        // +1 pour le nouveau store 'machine'
+const STORES     = ['detail', 'moves', 'set', 'sync', 'machine'];
 
 let _dbPromise = null;
 

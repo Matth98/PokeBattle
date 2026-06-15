@@ -1,6 +1,8 @@
 // Logique de fetch et traitement des données pour l'onglet Attaques.
 // Extrait de usePokemonMoves pour être réutilisé par le pre-fetcher offline.
 
+import { idbGet, idbSet } from './offlineDB';
+
 const VG_PRIORITY = [
   'scarlet-violet', 'the-teal-mask', 'the-indigo-disk',
   'sword-shield', 'the-isle-of-armor', 'the-crown-tundra',
@@ -54,7 +56,17 @@ async function fetchMoveDetail(moveName, lang) {
 }
 
 async function fetchMachineNumber(machineUrl) {
+  // 1. Cache mémoire (même session)
   if (machineCache.has(machineUrl)) return machineCache.get(machineUrl);
+
+  // 2. IndexedDB (cross-session — les URLs machine sont partagées entre tous les Pokémon)
+  const persisted = await idbGet('machine', machineUrl);
+  if (persisted !== undefined) {
+    machineCache.set(machineUrl, persisted);
+    return persisted;
+  }
+
+  // 3. Réseau
   const res = await fetch(machineUrl);
   if (!res.ok) { machineCache.set(machineUrl, null); return null; }
   const data     = await res.json();
@@ -64,6 +76,7 @@ async function fetchMachineNumber(machineUrl) {
   else if (itemName.startsWith('hm')) result = { prefix: 'CS', number: parseInt(itemName.slice(2), 10) };
   else if (itemName.startsWith('tr')) result = { prefix: 'TR', number: parseInt(itemName.slice(2), 10) };
   machineCache.set(machineUrl, result);
+  await idbSet('machine', machineUrl, result);   // persisté pour les prochains Pokémon et sessions
   return result;
 }
 

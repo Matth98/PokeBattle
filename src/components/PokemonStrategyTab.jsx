@@ -556,7 +556,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, 
 // ─── StrategyTab ──────────────────────────────────────────────────────────────
 
 export function StrategyTab({ pokeId, isDark, accentHex }) {
-  const { result, loading, error } = useSmogonSet(pokeId);
+  const { result, loading, error, retry } = useSmogonSet(pokeId);
   const [selectedMove, setSelectedMove] = useState(null);
 
   if (loading) {
@@ -568,10 +568,20 @@ export function StrategyTab({ pokeId, isDark, accentHex }) {
   }
   if (error) {
     return (
-      <div className="py-16 px-8 text-center">
-        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          Impossible de charger les données stratégiques : {error}
+      <div className="py-16 px-8 text-center flex flex-col items-center gap-3">
+        <p className={`text-base font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+          Impossible de charger le set
         </p>
+        <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+          Une erreur est survenue. Vérifie ta connexion et réessaie.
+        </p>
+        <button
+          onClick={retry}
+          className="mt-1 px-4 py-2 rounded-full text-sm font-semibold text-white"
+          style={{ background: accentHex }}
+        >
+          Réessayer
+        </button>
       </div>
     );
   }
