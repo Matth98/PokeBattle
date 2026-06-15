@@ -175,17 +175,12 @@ function HeroBottomShape({ typeName, isDark }) {
     return (
       <svg
         className="absolute pointer-events-none"
-        style={{ bottom: '-6px', height: 'auto', left: '-1px', right: '-10px', zIndex: 1 }}
+        style={{ bottom: '-6px', height: 'auto', left: '-1px', right: '-10px', zIndex: 1, overflow: 'visible' }}
         viewBox="0 0 390 121"
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <defs>
-          <clipPath id="dark-clip">
-            <rect width="390" height="121" />
-          </clipPath>
-        </defs>
-        <path d={DARK_BOTTOM_D} fill={fill} clipPath="url(#dark-clip)" />
+        <path d={DARK_BOTTOM_D} fill={fill} />
       </svg>
     );
   }
