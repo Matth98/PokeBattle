@@ -3,7 +3,7 @@ const CACHE_NAME = 'pokescores-v3';
 
 // Cache séparé pour les ressources externes (APIs + images CDN).
 // Incrémenter EXT_CACHE_NAME invalide le cache externe sans toucher au cache app.
-const EXT_CACHE_NAME = 'pokescores-ext-v1';
+const EXT_CACHE_NAME = 'pokescores-ext-v2';
 
 // Domaines avec données changeantes → Network-first (fallback cache si offline)
 const EXT_NETWORK_FIRST = [
@@ -11,24 +11,48 @@ const EXT_NETWORK_FIRST = [
   'www.pokepedia.fr',
 ];
 
-// Domaines stables (sprites, icônes, JSON de formats) → Cache-first (réseau si absent du cache)
+// Domaines stables → Cache-first (réseau uniquement si absent du cache)
 const EXT_CACHE_FIRST = [
   'raw.githubusercontent.com',
   'cdn.jsdelivr.net',
   'play.pokemonshowdown.com',
+  // CSS / JS critiques pour le rendu offline
+  'cdn.tailwindcss.com',   // Tailwind Play CDN (génère tout le CSS à l'exécution)
+  'cdnjs.cloudflare.com',  // Font Awesome CSS + webfonts (woff2, woff)
 ];
 
-// Assets critiques pré-cachés dès l'installation du SW
-const PRECACHE_ASSETS = [
+// Assets statiques pré-cachés (noms fixes)
+const PRECACHE_STATIC = [
+  '/',
   '/pokeball-button.png',
   '/logo192.png',
+  '/manifest.json',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+
+      // 1. Pré-cacher les assets statiques connus
+      await cache.addAll(PRECACHE_STATIC).catch(() => {});
+
+      // 2. Découvrir et pré-cacher les bundles JS/CSS générés par CRA (noms hashés)
+      //    On fetche index.html et on extrait les URLs des <script> et <link rel="stylesheet">
+      try {
+        const html     = await fetch('/').then(r => r.text());
+        const srcRe    = /src="(\/static\/[^"]+\.js)"/g;
+        const hrefRe   = /href="(\/static\/[^"]+\.css)"/g;
+        const bundleUrls = [];
+        let m;
+        while ((m = srcRe.exec(html))  !== null) bundleUrls.push(m[1]);
+        while ((m = hrefRe.exec(html)) !== null) bundleUrls.push(m[1]);
+        if (bundleUrls.length) await cache.addAll(bundleUrls).catch(() => {});
+      } catch { /* silencieux si offline lors de l'install */ }
+
+      self.skipWaiting();
+    })()
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
