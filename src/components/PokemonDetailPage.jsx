@@ -461,7 +461,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             </div>
           </div>
 
-          <div className="px-5 pt-2 pb-2" style={{ display: activeTab === 'presentation' ? 'block' : 'none' }}>
+          <div className="px-5 pb-2" style={{ paddingTop: '11px', display: activeTab === 'presentation' ? 'block' : 'none' }}>
               {data.flavorText && (
                 <p className={`text-[18px] leading-relaxed mb-10 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   {data.flavorText}
