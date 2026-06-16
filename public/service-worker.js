@@ -50,14 +50,10 @@ self.addEventListener('install', (event) => {
         if (bundleUrls.length) await cache.addAll(bundleUrls).catch(() => {});
       } catch { /* silencieux si offline lors de l'install */ }
 
-      // Pas de skipWaiting() ici : on laisse le cycle de vie SW standard s'appliquer.
-      // skipWaiting() provoquerait une prise de contrôle en plein milieu du chargement
-      // de la page → état incohérent (certaines ressources via l'ancien SW, d'autres
-      // via le nouveau) → écran blanc.
-      //
-      // Sans skipWaiting() : le nouveau SW reste en état WAITING tant que des pages
-      // sont ouvertes. Sur iOS, tuer la PWA ferme toutes les pages → le nouveau SW
-      // s'active. Au prochain lancement, il sert le nouveau contenu proprement.
+      // skipWaiting() après que TOUS les nouveaux assets sont en cache.
+      // Garantit que quand controllerchange fire dans index.js → reload(),
+      // le nouveau SW peut servir le contenu complet depuis son cache.
+      self.skipWaiting();
     })()
   );
 });

@@ -30,5 +30,17 @@ if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
     navigator.serviceWorker
       .register(`${process.env.PUBLIC_URL}/service-worker.js`, { updateViaCache: 'none' })
       .catch((err) => console.warn('SW registration failed:', err));
+
+    // Quand le nouveau SW prend le contrôle (après skipWaiting()), on recharge
+    // la page pour éviter un état incohérent mi-chargement.
+    // Timing : l'install du SW inclut un fetch réseau des bundles (plusieurs
+    // secondes), donc React est déjà monté et ce listener est enregistré bien
+    // avant que controllerchange ne fire.
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      window.location.reload();
+    });
   });
 }
