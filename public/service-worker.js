@@ -120,8 +120,8 @@ self.addEventListener('fetch', (event) => {
   if (url.includes('/api/')) return;
 
   // Bundles JS/CSS générés par CRA : noms hashés → immutables → Cache-first.
-  // Le hash change à chaque build → pas de risque de servir du code obsolète.
-  // Avantage : lancement PWA instantané, aucune attente réseau.
+  // Pas de .catch() qui retournerait undefined : si réseau indispo et cache miss,
+  // on laisse la Promise rejeter → le browser gère l'erreur réseau normalement.
   if (url.includes('/static/')) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
@@ -131,34 +131,34 @@ self.addEventListener('fetch', (event) => {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
           }
           return response;
-        }).catch(() => caches.match(event.request));
+        });
       })
     );
     return;
   }
 
-  // HTML / navigation : Stale-while-revalidate + fallback SPA garanti.
-  // 1. Si en cache → sert immédiatement (lancement instantané)
-  // 2. Met à jour en arrière-plan pour le prochain lancement
-  // 3. Triple fallback : cache de la requête → cache de '/' → réponse vide 200
-  //    (évite l'écran blanc si le cache n'est pas encore peuplé lors du premier lancement)
+  // HTML / navigation : Network-first → cache fallback (offline uniquement).
+  //
+  // Pourquoi pas stale-while-revalidate :
+  //   Servir un index.html périmé depuis le cache après un déploiement signifie
+  //   que la page référence d'anciens hashes de bundles. Si ces bundles ne sont
+  //   plus en cache (nouveau CACHE_NAME), les fetches échouent → écran blanc.
+  //
+  // Avec network-first, index.html est toujours frais → pointe vers les bons
+  // hashes → les bundles sont soit en cache soit fetchés depuis le réseau → pas
+  // d'incohérence possible.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetchPromise = fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200 && response.type === 'basic') {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-          }
-          return response;
-        })
-        .catch(() => null);
-
-      if (cached) return cached;
-
-      // Pas encore en cache : attendre le réseau, avec fallback sur '/' (SPA shell)
-      return fetchPromise.then(
-        (response) => response || caches.match('/').then(r => r || new Response('', { status: 200, headers: { 'Content-Type': 'text/html' } }))
-      );
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+        }
+        return response;
+      })
+      .catch(() =>
+        // Offline : fallback sur le cache (index.html potentiellement périmé,
+        // mais ça vaut mieux que rien — les bundles hashés restent valides)
+        caches.match(event.request).then((r) => r || caches.match('/'))
+      )
   );
 });
