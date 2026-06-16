@@ -30,18 +30,5 @@ if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
     navigator.serviceWorker
       .register(`${process.env.PUBLIC_URL}/service-worker.js`, { updateViaCache: 'none' })
       .catch((err) => console.warn('SW registration failed:', err));
-
-    // Quand le nouvel SW prend le contrôle (skipWaiting() déclenché après que
-    // tous les nouveaux bundles sont mis en cache), on recharge la page pour
-    // éviter l'état incohérent : certains assets servis par l'ancien SW,
-    // d'autres par le nouveau → page blanche.
-    // Le rechargement est safe car les nouveaux bundles sont garantis en cache
-    // avant que skipWaiting() soit appelé dans le service worker.
-    let reloading = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloading) return;
-      reloading = true;
-      window.location.reload();
-    });
   });
 }

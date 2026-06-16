@@ -1,5 +1,5 @@
 // public/service-worker.js
-const CACHE_NAME = 'pokescores-v4';
+const CACHE_NAME = 'pokescores-__BUILD_ID__';
 
 // Cache séparé pour les ressources externes (APIs + images CDN).
 // Incrémenter EXT_CACHE_NAME invalide le cache externe sans toucher au cache app.
@@ -50,7 +50,14 @@ self.addEventListener('install', (event) => {
         if (bundleUrls.length) await cache.addAll(bundleUrls).catch(() => {});
       } catch { /* silencieux si offline lors de l'install */ }
 
-      self.skipWaiting();
+      // Pas de skipWaiting() ici : on laisse le cycle de vie SW standard s'appliquer.
+      // skipWaiting() provoquerait une prise de contrôle en plein milieu du chargement
+      // de la page → état incohérent (certaines ressources via l'ancien SW, d'autres
+      // via le nouveau) → écran blanc.
+      //
+      // Sans skipWaiting() : le nouveau SW reste en état WAITING tant que des pages
+      // sont ouvertes. Sur iOS, tuer la PWA ferme toutes les pages → le nouveau SW
+      // s'active. Au prochain lancement, il sert le nouveau contenu proprement.
     })()
   );
 });
@@ -67,9 +74,8 @@ self.addEventListener('activate', (event) => {
         )
       ),
     ])
-    // Supprimé : clients.navigate() forçait un rechargement de tous les onglets
-    // à chaque activation du SW, ce qui interférait avec le premier lancement de la PWA.
-    // Le rechargement est déjà géré par l'event 'controllerchange' dans index.js.
+    // Pas de clients.navigate() : forcerait un rechargement de tous les onglets
+    // à chaque activation, ce qui interférerait avec le premier lancement de la PWA.
   );
 });
 
