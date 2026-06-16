@@ -537,23 +537,18 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   <div className="flex-1 min-w-0 flex flex-col items-center gap-1">
                     <div className="relative flex-shrink-0">
                       <PlayerAvatar player={p1} size={40} textSize="text-sm" />
-                      {b.winner === 'player1' && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
-                          <Trophy size={8} strokeWidth={2.5} className="text-white" />
-                        </span>
-                      )}
                     </div>
                     {b.winner === 'player1' ? (
-                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white truncate max-w-full">
+                      <span className="inline-flex px-2 py-0.5 rounded-full font-semibold bg-emerald-500 text-white truncate max-w-full" style={{fontSize: '13px'}}>
                         {p1?.name || '—'}
                       </span>
                     ) : (
-                      <p className={`truncate text-center font-semibold text-sm ${t.text}`}>
+                      <p className={`truncate text-center font-semibold ${t.text}`} style={{fontSize: '13px'}}>
                         {p1?.name || '—'}
                       </p>
                     )}
                     {(b.team1 || []).length > 0 && (
-                      <div className="flex gap-0.5 justify-center flex-wrap">
+                      <div className="flex gap-0.5 justify-center flex-wrap mt-1">
                         {b.team1.map((pk, i) => (
                           <img key={pk.id || i} src={getPokemonImageUrl(pk.pokeId)} alt={pk.name}
                             className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
@@ -574,23 +569,18 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   <div className="flex-1 min-w-0 flex flex-col items-center gap-1">
                     <div className="relative flex-shrink-0">
                       <PlayerAvatar player={p2} size={40} textSize="text-sm" />
-                      {b.winner === 'player2' && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
-                          <Trophy size={8} strokeWidth={2.5} className="text-white" />
-                        </span>
-                      )}
                     </div>
                     {b.winner === 'player2' ? (
-                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white truncate max-w-full">
+                      <span className="inline-flex px-2 py-0.5 rounded-full font-semibold bg-emerald-500 text-white truncate max-w-full" style={{fontSize: '13px'}}>
                         {p2?.name || '—'}
                       </span>
                     ) : (
-                      <p className={`truncate text-center font-semibold text-sm ${t.text}`}>
+                      <p className={`truncate text-center font-semibold ${t.text}`} style={{fontSize: '13px'}}>
                         {p2?.name || '—'}
                       </p>
                     )}
                     {(b.team2 || []).length > 0 && (
-                      <div className="flex gap-0.5 justify-center flex-wrap">
+                      <div className="flex gap-0.5 justify-center flex-wrap mt-1">
                         {b.team2.map((pk, i) => (
                           <img key={pk.id || i} src={getPokemonImageUrl(pk.pokeId)} alt={pk.name}
                             className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
