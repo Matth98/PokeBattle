@@ -29,12 +29,19 @@ if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register(`${process.env.PUBLIC_URL}/service-worker.js`, { updateViaCache: 'none' })
-      // Pas de reg.update() : le browser vérifie les MAJ SW naturellement.
-      // Pas de controllerchange → reload : inutile car skipWaiting() dans le SW
-      // garantit que le nouvel SW prend le contrôle au prochain kill+relaunch.
-      // Le reload forcé provoquait un écran blanc si l'utilisateur killait l'app
-      // pendant la transition (état intermédiaire : ancien cache supprimé, nouveau
-      // pas encore entièrement servi).
       .catch((err) => console.warn('SW registration failed:', err));
+
+    // Quand le nouvel SW prend le contrôle (skipWaiting() déclenché après que
+    // tous les nouveaux bundles sont mis en cache), on recharge la page pour
+    // éviter l'état incohérent : certains assets servis par l'ancien SW,
+    // d'autres par le nouveau → page blanche.
+    // Le rechargement est safe car les nouveaux bundles sont garantis en cache
+    // avant que skipWaiting() soit appelé dans le service worker.
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      window.location.reload();
+    });
   });
 }
