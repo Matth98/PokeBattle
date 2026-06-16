@@ -534,22 +534,26 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   className={`w-full ${t.surface} rounded-2xl px-4 py-3 flex items-center gap-3 text-left shadow-sm${extraClass ? ` ${extraClass}` : ''}`}
                 >
                   {/* Joueur 1 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className="relative flex-shrink-0">
-                        <PlayerAvatar player={p1} size={40} textSize="text-sm" />
-                        {b.winner === 'player1' && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
-                            <Trophy size={8} strokeWidth={2.5} className="text-white" />
-                          </span>
-                        )}
-                      </div>
-                      <p className={`truncate font-semibold text-sm ${b.winner === 'player1' ? t.success : t.text}`}>
+                  <div className="flex-1 min-w-0 flex flex-col items-center gap-1">
+                    <div className="relative flex-shrink-0">
+                      <PlayerAvatar player={p1} size={40} textSize="text-sm" />
+                      {b.winner === 'player1' && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                          <Trophy size={8} strokeWidth={2.5} className="text-white" />
+                        </span>
+                      )}
+                    </div>
+                    {b.winner === 'player1' ? (
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white truncate max-w-full">
+                        {p1?.name || '—'}
+                      </span>
+                    ) : (
+                      <p className={`truncate text-center font-semibold text-sm ${t.text}`}>
                         {p1?.name || '—'}
                       </p>
-                    </div>
+                    )}
                     {(b.team1 || []).length > 0 && (
-                      <div className="flex gap-0.5">
+                      <div className="flex gap-0.5 justify-center flex-wrap">
                         {b.team1.map((pk, i) => (
                           <img key={pk.id || i} src={getPokemonImageUrl(pk.pokeId)} alt={pk.name}
                             className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
@@ -563,26 +567,30 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
                       {b.format}
                     </span>
-                    <p className={`font-black text-2xl ${t.text} whitespace-nowrap leading-none`}>{p2Elim}–{p1Elim}</p>
+                    <p className={`font-black text-[32px] ${t.text} whitespace-nowrap leading-none`}>{p2Elim}–{p1Elim}</p>
                     {b.date && <p className={`text-[10px] ${t.textTertiary}`}>{formatDate(b.date)}</p>}
                   </div>
                   {/* Joueur 2 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-end gap-2 mb-1.5">
-                      <p className={`truncate text-right font-semibold text-sm ${b.winner === 'player2' ? t.success : t.text}`}>
+                  <div className="flex-1 min-w-0 flex flex-col items-center gap-1">
+                    <div className="relative flex-shrink-0">
+                      <PlayerAvatar player={p2} size={40} textSize="text-sm" />
+                      {b.winner === 'player2' && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                          <Trophy size={8} strokeWidth={2.5} className="text-white" />
+                        </span>
+                      )}
+                    </div>
+                    {b.winner === 'player2' ? (
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white truncate max-w-full">
+                        {p2?.name || '—'}
+                      </span>
+                    ) : (
+                      <p className={`truncate text-center font-semibold text-sm ${t.text}`}>
                         {p2?.name || '—'}
                       </p>
-                      <div className="relative flex-shrink-0">
-                        <PlayerAvatar player={p2} size={40} textSize="text-sm" />
-                        {b.winner === 'player2' && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
-                            <Trophy size={8} strokeWidth={2.5} className="text-white" />
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                    )}
                     {(b.team2 || []).length > 0 && (
-                      <div className="flex gap-0.5 justify-end">
+                      <div className="flex gap-0.5 justify-center flex-wrap">
                         {b.team2.map((pk, i) => (
                           <img key={pk.id || i} src={getPokemonImageUrl(pk.pokeId)} alt={pk.name}
                             className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
