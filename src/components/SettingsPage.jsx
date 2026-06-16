@@ -414,7 +414,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                 {syncDone > 0 && (
                   <button
                     onClick={onSyncReset}
-                    className={`w-full flex items-center gap-3 px-4 py-3 border-t ${isDark ? 'border-zinc-700' : 'border-gray-100'}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 border-t ${t.divider}`}
                   >
                     <span className={`flex-1 text-left text-sm ${isDark ? 'text-red-400' : 'text-red-500'}`}>
                       Supprimer les données hors ligne
