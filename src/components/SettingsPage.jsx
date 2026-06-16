@@ -397,7 +397,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                     <p className={`font-medium ${t.text}`}>Mode hors ligne</p>
                     <p className={`text-xs ${t.textSecondary} mt-0.5`}>
                       {syncFinished
-                        ? 'Tous les Pokémon sont disponibles hors ligne'
+                        ? 'Données à jour'
                         : offlineMode && syncDone > 0
                           ? `Téléchargement… ${syncDone} / ${syncTotal}`
                           : 'Télécharger les données (~230 Mo)'}
