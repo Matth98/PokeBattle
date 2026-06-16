@@ -87,7 +87,7 @@ export const Teams = ({
   // Prevent background scroll on iOS when the form is open
   useBodyScrollLock(showForm);
 
-  // Pré-remplit le formulaire en mode édition
+  // Pré-remplit le formulaire en mode édition ou pré-sélectionne le joueur courant en création
   useEffect(() => {
     if (isEditing) {
       setNewTeamData({
@@ -99,8 +99,10 @@ export const Teams = ({
           id: p.id || `${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
         })),
       });
+    } else if (!isSuperAdmin && dbUser?._id) {
+      setNewTeamData((prev) => ({ ...prev, owner: dbUser._id }));
     }
-  }, [isEditing, editingTeam]);
+  }, [isEditing, editingTeam, isSuperAdmin, dbUser?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetForm = () => {
     setNewTeamData(emptyTeamData());
@@ -592,34 +594,47 @@ export const Teams = ({
                   {tr('teams.owner')}
                 </label>
                 <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setOpenPlayerDropdown(!openPlayerDropdown)}
-                    className={`w-full ${t.inputSoft} ${teamFormErrors.owner ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 flex items-center gap-3 text-left`}
-                  >
-                    {newTeamData.owner ? (
-                      <>
-                        <PlayerAvatar player={players.find((p) => p._id === newTeamData.owner)} size={32} textSize="text-xs" className="flex-shrink-0" />
-                        <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === newTeamData.owner)?.name}</span>
-                      </>
-                    ) : (
-                      <span className={`flex-1 ${t.textSecondary}`}>{tr('teams.selectPlayer')}</span>
-                    )}
-                    <ChevronDown size={16} className={t.textSecondary} />
-                  </button>
-                  {openPlayerDropdown && (
-                    <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
-                      {players.map((p) => (
-                        <button
-                          key={p._id}
-                          type="button"
-                          onClick={() => { setNewTeamData({ ...newTeamData, owner: p._id }); setOpenPlayerDropdown(false); }}
-                          className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
-                        >
-                          <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
-                          <span className={`font-medium ${t.text}`}>{p.name}</span>
-                        </button>
-                      ))}
+                  {isSuperAdmin ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setOpenPlayerDropdown(!openPlayerDropdown)}
+                        className={`w-full ${t.inputSoft} ${teamFormErrors.owner ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 flex items-center gap-3 text-left`}
+                      >
+                        {newTeamData.owner ? (
+                          <>
+                            <PlayerAvatar player={players.find((p) => p._id === newTeamData.owner)} size={32} textSize="text-xs" className="flex-shrink-0" />
+                            <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === newTeamData.owner)?.name}</span>
+                          </>
+                        ) : (
+                          <span className={`flex-1 ${t.textSecondary}`}>{tr('teams.selectPlayer')}</span>
+                        )}
+                        <ChevronDown size={16} className={t.textSecondary} />
+                      </button>
+                      {openPlayerDropdown && (
+                        <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
+                          {players.map((p) => (
+                            <button
+                              key={p._id}
+                              type="button"
+                              onClick={() => { setNewTeamData({ ...newTeamData, owner: p._id }); setOpenPlayerDropdown(false); }}
+                              className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
+                            >
+                              <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
+                              <span className={`font-medium ${t.text}`}>{p.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3`}>
+                      {newTeamData.owner && (
+                        <>
+                          <PlayerAvatar player={players.find((p) => p._id === newTeamData.owner)} size={32} textSize="text-xs" className="flex-shrink-0" />
+                          <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === newTeamData.owner)?.name}</span>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
