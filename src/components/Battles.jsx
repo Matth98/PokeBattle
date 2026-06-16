@@ -690,7 +690,7 @@ export const Battles = ({
                               <PlayerAvatar player={p1} size={40} textSize="text-sm" />
                             </div>
                             {b.winner === 'player1' ? (
-                              <span className="inline-flex px-2 py-0.5 rounded-full font-semibold bg-emerald-500 text-white truncate max-w-full" style={{fontSize: '13px'}}>
+                              <span className="inline-flex px-2 rounded-full font-semibold bg-emerald-500 text-white truncate max-w-full" style={{fontSize: '13px', paddingTop: '1px', paddingBottom: '1px'}}>
                                 {p1?.name || '—'}
                               </span>
                             ) : (
@@ -730,7 +730,7 @@ export const Battles = ({
                               <PlayerAvatar player={p2} size={40} textSize="text-sm" />
                             </div>
                             {b.winner === 'player2' ? (
-                              <span className="inline-flex px-2 py-0.5 rounded-full font-semibold bg-emerald-500 text-white truncate max-w-full" style={{fontSize: '13px'}}>
+                              <span className="inline-flex px-2 rounded-full font-semibold bg-emerald-500 text-white truncate max-w-full" style={{fontSize: '13px', paddingTop: '1px', paddingBottom: '1px'}}>
                                 {p2?.name || '—'}
                               </span>
                             ) : (
