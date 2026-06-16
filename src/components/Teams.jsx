@@ -99,10 +99,10 @@ export const Teams = ({
           id: p.id || `${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
         })),
       });
-    } else if (showForm && !isSuperAdmin && dbUser?._id) {
-      setNewTeamData((prev) => ({ ...prev, owner: dbUser._id }));
+    } else if (showForm && !isSuperAdmin && dbUser?.playerId) {
+      setNewTeamData((prev) => ({ ...prev, owner: dbUser.playerId }));
     }
-  }, [showForm, isEditing, editingTeam, isSuperAdmin, dbUser?._id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showForm, isEditing, editingTeam, isSuperAdmin, dbUser?.playerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetForm = () => {
     setNewTeamData(emptyTeamData());
