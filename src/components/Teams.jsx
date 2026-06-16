@@ -594,49 +594,44 @@ export const Teams = ({
                   {tr('teams.owner')}
                 </label>
                 <div className="relative">
-                  {isSuperAdmin ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setOpenPlayerDropdown(!openPlayerDropdown)}
-                        className={`w-full ${t.inputSoft} ${teamFormErrors.owner ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 flex items-center gap-3 text-left`}
-                      >
-                        {newTeamData.owner ? (
-                          <>
-                            <PlayerAvatar player={players.find((p) => p._id === newTeamData.owner)} size={32} textSize="text-xs" className="flex-shrink-0" />
-                            <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === newTeamData.owner)?.name}</span>
-                          </>
-                        ) : (
-                          <span className={`flex-1 ${t.textSecondary}`}>{tr('teams.selectPlayer')}</span>
+                  {(() => {
+                    const isLocked = !isSuperAdmin && !isEditing;
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          disabled={isLocked}
+                          onClick={() => !isLocked && setOpenPlayerDropdown(!openPlayerDropdown)}
+                          className={`w-full ${t.inputSoft} ${teamFormErrors.owner ? 'ring-2 ring-red-500/50' : ''} rounded-xl px-4 py-3 flex items-center gap-3 text-left${isLocked ? ' opacity-70 cursor-default' : ''}`}
+                        >
+                          {newTeamData.owner ? (
+                            <>
+                              <PlayerAvatar player={players.find((p) => p._id === newTeamData.owner)} size={32} textSize="text-xs" className="flex-shrink-0" />
+                              <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === newTeamData.owner)?.name}</span>
+                            </>
+                          ) : (
+                            <span className={`flex-1 ${t.textSecondary}`}>{tr('teams.selectPlayer')}</span>
+                          )}
+                          {!isLocked && <ChevronDown size={16} className={t.textSecondary} />}
+                        </button>
+                        {!isLocked && openPlayerDropdown && (
+                          <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
+                            {players.map((p) => (
+                              <button
+                                key={p._id}
+                                type="button"
+                                onClick={() => { setNewTeamData({ ...newTeamData, owner: p._id }); setOpenPlayerDropdown(false); }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
+                              >
+                                <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
+                                <span className={`font-medium ${t.text}`}>{p.name}</span>
+                              </button>
+                            ))}
+                          </div>
                         )}
-                        <ChevronDown size={16} className={t.textSecondary} />
-                      </button>
-                      {openPlayerDropdown && (
-                        <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
-                          {players.map((p) => (
-                            <button
-                              key={p._id}
-                              type="button"
-                              onClick={() => { setNewTeamData({ ...newTeamData, owner: p._id }); setOpenPlayerDropdown(false); }}
-                              className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
-                            >
-                              <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
-                              <span className={`font-medium ${t.text}`}>{p.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3`}>
-                      {newTeamData.owner && (
-                        <>
-                          <PlayerAvatar player={players.find((p) => p._id === newTeamData.owner)} size={32} textSize="text-xs" className="flex-shrink-0" />
-                          <span className={`flex-1 font-medium ${t.text}`}>{players.find((p) => p._id === newTeamData.owner)?.name}</span>
-                        </>
-                      )}
-                    </div>
-                  )}
+                      </>
+                    );
+                  })()}
                 </div>
                 {teamFormErrors.owner && <p className={`${t.danger} text-xs mt-1.5 ml-1`}>Ce champ est requis</p>}
               </div>
