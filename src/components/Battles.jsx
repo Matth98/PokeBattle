@@ -718,7 +718,7 @@ export const Battles = ({
                             <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${b.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
                               {b.format}
                             </span>
-                            <p className={`font-black text-[32px] ${t.text} whitespace-nowrap leading-none`}>
+                            <p className={`font-black text-[30px] ${t.text} whitespace-nowrap leading-none`}>
                               {p2Elim}–{p1Elim}
                             </p>
                             {b.date && <p className={`text-[10px] ${t.textTertiary}`}>{formatDate(b.date)}</p>}
