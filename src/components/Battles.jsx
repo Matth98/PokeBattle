@@ -699,7 +699,7 @@ export const Battles = ({
                               </p>
                             )}
                             {(b.team1 || []).length > 0 && (
-                              <div className="flex gap-0.5 justify-center flex-wrap mt-1">
+                              <div className="flex gap-0.5 justify-center flex-nowrap overflow-hidden mt-1">
                                 {b.team1.map((pk, i) => (
                                   <img
                                     key={pk.id || i}
@@ -739,7 +739,7 @@ export const Battles = ({
                               </p>
                             )}
                             {(b.team2 || []).length > 0 && (
-                              <div className="flex gap-0.5 justify-center flex-wrap mt-1">
+                              <div className="flex gap-0.5 justify-center flex-nowrap overflow-hidden mt-1">
                                 {b.team2.map((pk, i) => (
                                   <img
                                     key={pk.id || i}
