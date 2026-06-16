@@ -226,7 +226,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
               <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
                 <div className="w-full flex items-center gap-3 px-4 py-4">
                   {/* Icône + label du mode actif */}
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-violet-500/15 text-violet-500">
                     {(() => { const { Icon } = THEME_OPTIONS.find(o => o.value === themeMode); return <Icon size={18} />; })()}
                   </div>
                   <span className={`flex-1 text-left font-medium ${t.text}`}>
@@ -275,7 +275,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                   >
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       isSubscribed
-                        ? isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'
+                        ? 'bg-amber-500/15 text-amber-500'
                         : isDark ? 'bg-zinc-700 text-zinc-400' : 'bg-gray-100 text-gray-400'
                     }`}>
                       {isSubscribed ? <Bell size={18} /> : <BellOff size={18} />}
@@ -311,7 +311,7 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                         onClick={() => setSendOpen(o => !o)}
                         className="w-full flex items-center gap-3 px-4 py-4"
                       >
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-700 text-zinc-300' : 'bg-gray-100 text-gray-500'}`}>
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-sky-500/15 text-sky-500">
                           <Send size={18} />
                         </div>
                         <span className={`flex-1 text-left font-medium ${t.text}`}>Envoyer une notification</span>
@@ -359,27 +359,10 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
               </section>
             )}
 
-            {/* ── Tour ── */}
-            {onRestartTour && (
-              <section>
-                <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
-                  <button
-                    onClick={() => { handleClose(); setTimeout(() => onRestartTour(), 350); }}
-                    className="w-full flex items-center gap-3 px-4 py-4"
-                  >
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-500/15 text-indigo-500'}`}>
-                      <RotateCcw size={18} />
-                    </div>
-                    <span className={`flex-1 text-left font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Relancer le tour</span>
-                  </button>
-                </div>
-              </section>
-            )}
-
-            {/* ── Mode hors ligne ── */}
+            {/* ── Application ── */}
             <section>
               <p className={`text-xs font-bold uppercase tracking-wide ${t.textSecondary} mb-2 px-1`}>
-                Hors ligne
+                Application
               </p>
               <div className={`${isDark ? 'bg-zinc-850' : t.surface} rounded-2xl overflow-hidden`}>
                 <button
@@ -388,8 +371,8 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                 >
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
                     offlineMode
-                      ? isDark ? 'bg-indigo-400/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'
-                      : isDark ? 'bg-zinc-700 text-zinc-400'         : 'bg-gray-100 text-gray-400'
+                      ? 'bg-teal-500/15 text-teal-500'
+                      : isDark ? 'bg-zinc-700 text-zinc-400' : 'bg-gray-100 text-gray-400'
                   }`}>
                     <WifiOff size={18} />
                   </div>
@@ -439,6 +422,19 @@ export const SettingsPage = ({ user, dbUser, linkedPlayer, isDark, themeMode, se
                     <span className={`text-xs ${t.textSecondary}`}>
                       {syncDone} / {syncTotal}
                     </span>
+                  </button>
+                )}
+
+                {/* Relancer le tour */}
+                {onRestartTour && (
+                  <button
+                    onClick={() => { handleClose(); setTimeout(() => onRestartTour(), 350); }}
+                    className={`w-full flex items-center gap-3 px-4 py-4 border-t ${t.divider}`}
+                  >
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-500/15 text-emerald-500">
+                      <RotateCcw size={18} />
+                    </div>
+                    <span className={`flex-1 text-left font-medium ${t.text}`}>Relancer le tour</span>
                   </button>
                 )}
               </div>

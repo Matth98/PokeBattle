@@ -8,6 +8,48 @@ import { calcTypeAdv } from '../utils/mvp';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useTranslation } from '../hooks/useTranslation';
 
+const BannerSlider = ({ banners, isDark }) => {
+  const trackRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleScroll = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const index = Math.round(el.scrollLeft / el.offsetWidth);
+    setActiveIndex(index);
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div
+        ref={trackRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto"
+        style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', gap: '12px' }}
+      >
+        {banners.map((banner, i) => (
+          <div key={i} style={{ scrollSnapAlign: 'start', minWidth: '100%' }}>
+            {banner}
+          </div>
+        ))}
+      </div>
+      {/* Dots */}
+      <div className="flex justify-center gap-1.5">
+        {banners.map((_, i) => (
+          <div
+            key={i}
+            className={`rounded-full transition-all duration-300 ${
+              i === activeIndex
+                ? `w-4 h-1.5 ${isDark ? 'bg-white/70' : 'bg-zinc-700'}`
+                : `w-1.5 h-1.5 ${isDark ? 'bg-white/25' : 'bg-zinc-700/30'}`
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const StatTile = ({ Icon, value, label, tile, t, onClick }) => (
   <button
     onClick={onClick}
@@ -373,112 +415,79 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
 
       <div className="relative z-[1] px-5 mt-4 pb-40 space-y-7">
 
-        {/* ── Bannière notifications ── */}
-        {pushPermission !== 'denied' && pushPermission !== 'unsupported' && !pushIsSubscribed && onPushSubscribe && !isBackground && (
-          <button
-            onClick={onPushSubscribe}
-            className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"
-            style={{ boxShadow: 'rgba(100, 0, 173, 0.45) 0px 18px 50px -26px' }}
-          >
-            {/* Fond via background-image CSS */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                backgroundImage: 'url(/banner/bg-glow.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'right center',
-              }}
-            />
+        {/* ── Bannières (slider si plusieurs actives) ── */}
+        {!isBackground && (() => {
+          const bannerNotif = pushPermission !== 'denied' && pushPermission !== 'unsupported' && !pushIsSubscribed && onPushSubscribe
+            ? (
+              <button
+                key="notif"
+                onClick={onPushSubscribe}
+                className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"
+                style={{ boxShadow: 'rgba(100, 0, 173, 0.45) 0px 18px 50px -26px' }}
+              >
+                <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'url(/banner/bg-glow.png)', backgroundSize: 'cover', backgroundPosition: 'right center' }} />
+                <div className="relative flex-1 min-w-0 flex flex-col gap-2.5">
+                  <p className="font-bold text-white text-base leading-snug">Reçois toutes les nouveautés directement dans ta poche !</p>
+                  <div className="inline-flex items-center gap-0.5 bg-white rounded-full pl-3 pr-2 py-1.5 self-start">
+                    <span className="text-[#111827] text-sm font-semibold tracking-tight">Activer</span>
+                    <ChevronRight size={14} className="text-[#111827]" />
+                  </div>
+                </div>
+                <div className="absolute pointer-events-none" style={{ width: '140px', height: '140px', right: '0', top: '50%', transform: 'translateY(-50%)', mixBlendMode: 'overlay' }}>
+                  <img src="/banner/pokeball.svg" alt="" className="w-full h-full" />
+                </div>
+                <div className="relative flex-shrink-0 w-[51px] h-[39px]">
+                  <img src="/banner/icon.svg" alt="" className="w-full h-full object-contain" />
+                </div>
+              </button>
+            ) : null;
 
-            {/* Texte + bouton */}
-            <div className="relative flex-1 min-w-0 flex flex-col gap-2.5">
-              <p className="font-bold text-white text-base leading-snug">
-                Reçois toutes les nouveautés directement dans ta poche !
-              </p>
-              <div className="inline-flex items-center gap-0.5 bg-white rounded-full pl-3 pr-2 py-1.5 self-start">
-                <span className="text-[#111827] text-sm font-semibold tracking-tight">Activer</span>
-                <ChevronRight size={14} className="text-[#111827]" />
-              </div>
-            </div>
+          const bannerOfflineUpdate = offlineMode && syncHasNewData
+            ? (
+              <button
+                key="offline-update"
+                onClick={onOpenOfflineSettings}
+                className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"
+                style={{ boxShadow: 'rgba(0, 100, 173, 0.45) 0px 18px 50px -26px' }}
+              >
+                <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'url(/banner/header-xxl.jpg)', backgroundSize: 'cover', backgroundPosition: 'center center' }} />
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 100%)' }} />
+                <div className="relative flex-1 min-w-0 flex flex-col gap-2.5">
+                  <p className="font-bold text-white text-base leading-snug" style={{ width: '90%' }}>De nouvelles données sont disponibles. Télécharge-les dès maintenant !</p>
+                  <div className="inline-flex items-center gap-0.5 bg-white rounded-full pl-3 pr-2 py-1.5 self-start">
+                    <span className="text-[#111827] text-sm font-semibold tracking-tight">Voir</span>
+                    <ChevronRight size={14} className="text-[#111827]" />
+                  </div>
+                </div>
+              </button>
+            ) : null;
 
-            {/* Pokéball — absolute sur le bouton, centrée sur l'icône */}
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                width: '140px',
-                height: '140px',
-                right: '0',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                mixBlendMode: 'overlay',
-              }}
-            >
-              <img src="/banner/pokeball.svg" alt="" className="w-full h-full" />
-            </div>
+          const bannerOfflineIncomplete = !offlineMode && syncDone > 0 && !syncFinished
+            ? (
+              <button
+                key="offline-incomplete"
+                onClick={onOpenOfflineSettings}
+                className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"
+                style={{ boxShadow: 'rgba(180, 90, 0, 0.35) 0px 18px 50px -26px' }}
+              >
+                <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'url(/banner/header-xxl.jpg)', backgroundSize: 'cover', backgroundPosition: 'center center' }} />
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 100%)' }} />
+                <div className="relative flex-1 min-w-0 flex flex-col gap-2.5">
+                  <p className="font-bold text-white text-base leading-snug" style={{ width: '90%' }}>Téléchargement incomplet : réactive le mode hors ligne pour continuer !</p>
+                  <div className="inline-flex items-center gap-0.5 bg-white rounded-full pl-3 pr-2 py-1.5 self-start">
+                    <span className="text-[#111827] text-sm font-semibold tracking-tight">Continuer</span>
+                    <ChevronRight size={14} className="text-[#111827]" />
+                  </div>
+                </div>
+              </button>
+            ) : null;
 
-            {/* Icône PokeScores */}
-            <div className="relative flex-shrink-0 w-[51px] h-[39px]">
-              <img src="/banner/icon.svg" alt="" className="w-full h-full object-contain" />
-            </div>
-          </button>
-        )}
+          const activeBanners = [bannerNotif, bannerOfflineUpdate, bannerOfflineIncomplete].filter(Boolean);
+          if (activeBanners.length === 0) return null;
+          if (activeBanners.length === 1) return activeBanners[0];
 
-        {/* ── Bannière mise à jour hors ligne ── */}
-        {/* N'apparaît que si tout était téléchargé ET de nouvelles données sont disponibles */}
-        {offlineMode && syncHasNewData && !isBackground && (
-          <button
-            onClick={onOpenOfflineSettings}
-            className="w-full relative flex items-center gap-4 p-4 rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-transform duration-100"
-            style={{ boxShadow: 'rgba(0, 100, 173, 0.45) 0px 18px 50px -26px' }}
-          >
-            {/* Image de fond temporaire — à remplacer */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                backgroundImage: 'url(/banner/bg-glow.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'left center',
-                filter: 'hue-rotate(160deg)',
-              }}
-            />
-
-            {/* Texte + bouton */}
-            <div className="relative flex-1 min-w-0 flex flex-col gap-2.5">
-              <p className="font-bold text-white text-base leading-snug">
-                De nouvelles données sont disponibles !
-              </p>
-              <p className="text-white/70 text-xs leading-snug -mt-1">
-                {syncDone > 0
-                  ? `${syncTotal - syncDone} Pokémon restants à télécharger`
-                  : `${syncTotal} Pokémon à télécharger`}
-              </p>
-              <div className="inline-flex items-center gap-0.5 bg-white rounded-full pl-3 pr-2 py-1.5 self-start">
-                <span className="text-[#111827] text-sm font-semibold tracking-tight">Voir</span>
-                <ChevronRight size={14} className="text-[#111827]" />
-              </div>
-            </div>
-
-            {/* Pokéball décorative */}
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                width: '140px',
-                height: '140px',
-                right: '0',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                mixBlendMode: 'overlay',
-              }}
-            >
-              <img src="/banner/pokeball.svg" alt="" className="w-full h-full" />
-            </div>
-
-            {/* Icône PokeScores */}
-            <div className="relative flex-shrink-0 w-[51px] h-[39px]">
-              <img src="/banner/icon.svg" alt="" className="w-full h-full object-contain" />
-            </div>
-          </button>
-        )}
+          return <BannerSlider banners={activeBanners} isDark={isDark} />;
+        })()}
 
         {/* ── Statistiques ── */}
         <section className="relative z-10">
