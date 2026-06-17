@@ -853,16 +853,11 @@ export const PlayerDetail = ({
         {/* ── À capturer ── */}
         {conceptPokemon.length > 0 && (
           <div className={`rounded-2xl overflow-hidden ${isDark ? 'bg-white/[0.04] border border-white/[0.06]' : 'bg-white/60 border border-black/[0.06]'}`}>
-            <div className="px-4 pt-3.5 pb-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <PokeBallIcon id="capture" size={14} className={isDark ? 'text-white' : 'text-black'} />
-                <p className={`text-xs font-semibold tracking-wide uppercase ${isDark ? 'text-white/50' : 'text-black/40'}`}>
-                  À capturer
-                </p>
-              </div>
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-white/60' : 'bg-black/[0.06] text-black/40'}`}>
-                {conceptPokemon.length}
-              </span>
+            <div className="px-4 pt-3.5 pb-2.5 flex items-center gap-2">
+              <PokeBallIcon id="capture" size={14} className={isDark ? 'text-white' : 'text-black'} />
+              <p className={`text-xs font-semibold tracking-wide uppercase ${isDark ? 'text-white/50' : 'text-black/40'}`}>
+                À capturer ({conceptPokemon.length})
+              </p>
             </div>
             <div className="px-3 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
               {conceptPokemon.map((p) => (
