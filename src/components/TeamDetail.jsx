@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, Pencil, Shield, BookmarkPlus, Target, Search, Plus } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
+import { ClearButton } from './ClearButton';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { useAuth } from '../hooks/useAuth';
@@ -286,7 +287,13 @@ export const TeamDetail = ({
                       )}
                     </div>
                     {p.isConcept ? (
-                      <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${isDark ? 'bg-yellow-400/20 text-yellow-300' : 'bg-yellow-400/20 text-yellow-700'}`}>
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${isDark ? 'bg-yellow-400/20 text-yellow-300' : 'bg-yellow-400/20 text-yellow-700'}`}>
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="flex-shrink-0">
+                          <circle cx="6" cy="6" r="5.4" stroke="currentColor" strokeWidth="1.2"/>
+                          <line x1="0.6" y1="6" x2="4.5" y2="6" stroke="currentColor" strokeWidth="1.2"/>
+                          <line x1="7.5" y1="6" x2="11.4" y2="6" stroke="currentColor" strokeWidth="1.2"/>
+                          <circle cx="6" cy="6" r="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                        </svg>
                         À capturer
                       </span>
                     ) : (
@@ -310,16 +317,24 @@ export const TeamDetail = ({
             <p className={`font-black text-lg ${t.text}`}>Copier l'équipe pour…</p>
           </div>
           <p className={`${t.textSecondary} text-base mb-3`}>Choisis le joueur qui recevra cette équipe.</p>
-          <div className={`flex items-center gap-2 ${t.surfaceMuted} rounded-xl px-3 py-2 mb-3`}>
-            <Search size={15} className={t.textTertiary} />
+          <div className={`flex items-center gap-2 ${t.surface} rounded-xl px-3 py-2 mb-3`}>
+            <Search size={15} className={t.textTertiary} aria-hidden="true" />
             <input
               type="text"
               value={playerSearch}
               onChange={(e) => setPlayerSearch(e.target.value)}
               placeholder="Rechercher…"
-              className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
+              className={`flex-1 bg-transparent outline-none ${t.text} text-base`}
               autoFocus
             />
+            {playerSearch && (
+              <ClearButton
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setPlayerSearch('')}
+                color={t.clearIconOnWhite}
+                strokeColor={t.clearStrokeOnWhite}
+              />
+            )}
           </div>
           <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
             {players

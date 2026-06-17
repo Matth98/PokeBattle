@@ -852,7 +852,7 @@ export const PlayerDetail = ({
 
         {/* ── À capturer ── */}
         {conceptPokemon.length > 0 && (
-          <div className={`rounded-2xl overflow-hidden ${isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/60 border border-black/[0.06]'}`}>
+          <div className={`rounded-2xl overflow-hidden ${isDark ? 'bg-white/[0.04] border border-white/[0.06]' : 'bg-white/60 border border-black/[0.06]'}`}>
             <div className="px-4 pt-3.5 pb-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <PokeBallIcon id="capture" size={14} className={isDark ? 'text-white' : 'text-black'} />
