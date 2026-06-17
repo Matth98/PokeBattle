@@ -1002,7 +1002,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
       {/* Navigation hors du transform — position: fixed z-20 non affecté */}
         <Navigation
-          hidden={hideNav || currentTab === 'pokemonDetail' || currentTab === 'pokemonSearch'}
+          hidden={hideNav || currentTab === 'pokemonDetail' || currentTab === 'pokemonSearch' || currentTab === 'teamDetail' || currentTab === 'battleDetail'}
           animated={hideNav}
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
