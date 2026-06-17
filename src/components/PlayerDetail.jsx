@@ -1702,7 +1702,7 @@ export const PlayerDetail = ({
                     (player.pokemon || []).filter((p) => selectedItems.includes(p.id)).map((p) => p.pokeId)
                   );
                   return playerTeams
-                    .filter((team) => (team.pokemon || []).some((p) => selectedPokeIds.has(p.pokeId)))
+                    .filter((team) => !team.isConcept && (team.pokemon || []).some((p) => selectedPokeIds.has(p.pokeId)))
                     .map((team) => (
                       <li key={team._id} className="flex items-center gap-1.5">
                         <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>

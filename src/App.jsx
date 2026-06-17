@@ -561,7 +561,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       // Merge sent data with API response: fields the backend may strip (isConcept, pokemon[].isConcept)
       // are preserved from data; backend-authoritative fields (timestamps, _id) come from updated.
       const merged = { ...data, ...updated };
-      setTeams(teams.map(t => t._id === id ? merged : t));
+      setTeams((prev) => prev.map(t => t._id === id ? merged : t));
       setSelectedTeam(merged);
       toast.success(`Équipe « ${updated.name} » mise à jour`);
     } else {
@@ -573,7 +573,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     const updated = await updateTeam(id, data);
     if (updated) {
       const merged = { ...data, ...updated };
-      setTeams(teams.map(t => t._id === id ? merged : t));
+      setTeams((prev) => prev.map(t => t._id === id ? merged : t));
       setSelectedTeam(merged);
       if (toastMsg) toast.success(toastMsg);
     }
@@ -583,7 +583,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     const target = teams.find((tt) => tt._id === id);
     const success = await deleteTeam(id);
     if (success) {
-      setTeams(teams.filter(t => t._id !== id));
+      setTeams((prev) => prev.filter(t => t._id !== id));
       toast.success(`Équipe « ${target?.name || ''} » supprimée`);
     } else {
       toast.error('Erreur lors de la suppression');
