@@ -7,6 +7,7 @@ import { getRandomDefaultAvatar } from '../utils/defaultAvatars';
 import { AlertModal } from './AlertModal';
 import { resizeImageToDataUrl } from '../utils/imageResize';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -46,6 +47,7 @@ export const Players = ({
   // initialScrollY = position sauvée au départ vers le détail (App.jsx scrollMemoryRef),
   // ou 0 si arrivée par changement d'onglet (setCurrentTab efface la mémoire).
   // Évite le flash topbar : window.scrollY au montage reflète encore la page détail.
+  useBodyScrollLock(showForm || deletingSelected || !!confirmingDeleteId);
   const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
     if (isBackground) return;

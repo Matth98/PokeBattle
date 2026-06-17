@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileTex
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -143,6 +144,9 @@ export const BattleDetail = ({
   const [mvpStats, setMvpStats] = useState(null);
   const [mvpArtwork, setMvpArtwork] = useState(null);
   const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
+
+  useBodyScrollLock(playerPickerSlot || !!pendingCopy || !!namingTeamSlot || confirmingDelete);
+
   useEffect(() => {
     if (isBackground) return;
     const onScroll = () => {

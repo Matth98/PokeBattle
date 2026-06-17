@@ -86,7 +86,7 @@ export const Teams = ({
 
   const isEditing = Boolean(editingTeam && showForm);
   // Prevent background scroll on iOS when the form is open
-  useBodyScrollLock(showForm);
+  useBodyScrollLock(showForm || deletingSelected || !!pendingConceptTeam);
 
   // Pré-remplit le formulaire en mode édition ou pré-sélectionne le joueur courant en création
   useEffect(() => {

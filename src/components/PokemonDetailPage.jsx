@@ -4,6 +4,7 @@ import { AlertTriangle, ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { TabBar, StrategyTab, MovesTab } from './PokemonStrategyTab';
 import { useToast } from './Toast';
 
@@ -371,6 +372,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
   const [confirmRemove, setConfirmRemove] = useState(false);
+  useBodyScrollLock(confirmRemove);
   const [isRemoving, setIsRemoving] = useState(false);
   // Snapshot des équipes au moment de l'ouverture de la modale — évite que le contenu
   // change pendant l'exécution async (teamsContaining se vide quand les équipes passent Concept)

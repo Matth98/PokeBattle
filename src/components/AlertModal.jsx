@@ -1,7 +1,9 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 export const AlertModal = ({ title, message, onClose, t }) => {
+  useBodyScrollLock(!!(title || message));
   if (!title && !message) return null;
   return createPortal(
     <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>

@@ -122,7 +122,7 @@ export const Battles = ({
 
   const isEditing = Boolean(editingBattle && showForm);
   // Prevent background scroll on iOS when the form is open
-  useBodyScrollLock(showForm);
+  useBodyScrollLock(showForm || deletingSelected || !!pickerState.slot || !!randomizePickerSlot);
 
   // Pré-remplit le formulaire quand on ouvre en mode édition
   useEffect(() => {
