@@ -55,7 +55,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
       {/* ── Header ── */}
       <div
         className={`${t.surfaceBlur} flex-shrink-0 px-4 border-b ${t.divider} z-10`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.75rem' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)', paddingBottom: '0.5rem' }}
       >
         <div className="flex items-center gap-3">
           <button
@@ -82,6 +82,26 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
           </div>
         </div>
 
+        <div className={`grid grid-cols-2 gap-1 p-1 rounded-2xl mt-3 ${t.surfaceMuted}`}>
+            {[
+              { id: 'pokemon', label: 'Pokémon' },
+              { id: 'teams', label: 'Équipes' },
+            ].map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`py-2.5 rounded-xl text-sm font-bold transition ${
+                  activeTab === id
+                    ? isDark
+                      ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                      : `${t.surface} ${t.text} shadow-sm`
+                    : t.textSecondary
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+        </div>
       </div>
 
       {/* ── Résultats ── */}
@@ -89,8 +109,9 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-5 pt-4"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
+        onScroll={() => inputRef.current?.blur()}
       >
-        {!hasQuery && (
+        {!hasQuery && activeTab === 'pokemon' && (
           <div className="space-y-6">
             {POKEMON_BY_GENERATION.map((gen) => (
               <div key={gen.label}>
@@ -126,27 +147,43 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
           </div>
         )}
 
-        {hasQuery && (
-          <div className={`grid grid-cols-2 gap-1 p-1 rounded-2xl mb-4 ${t.surfaceMuted}`}>
-            {[
-              { id: 'pokemon', label: 'Pokémon' },
-              { id: 'teams', label: 'Équipes' },
-            ].map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`py-2.5 rounded-xl text-sm font-bold transition ${
-                  activeTab === id
-                    ? isDark
-                      ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                      : `${t.surface} ${t.text} shadow-sm`
-                    : t.textSecondary
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        {!hasQuery && activeTab === 'teams' && (
+          teams.length === 0
+            ? <p className={`${t.textSecondary} text-sm text-center mt-8`}>{tr('common.noResults')}</p>
+            : <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
+                {teams.map((team, idx) => {
+                  const isLast = idx === teams.length - 1;
+                  return (
+                    <button
+                      key={team._id}
+                      onClick={() => onSelectTeam?.(team)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left active:bg-black/5 dark:active:bg-white/5 ${!isLast ? `border-b ${t.divider}` : ''}`}
+                    >
+                      <div className={`flex-shrink-0 w-14 h-14 rounded-xl ${isDark ? t.surfaceMuted : 'bg-black/[0.06]'} p-1 grid grid-cols-2 grid-rows-2 gap-0.5`}>
+                        {[0, 1, 2, 3].map((i) => {
+                          const p = (team.pokemon || [])[i];
+                          return (
+                            <div key={i} className="flex items-center justify-center overflow-hidden">
+                              {p ? <img src={getPokemonImageUrl(p.pokeId)} alt={p.name} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} /> : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
+                        <div className={`${t.textSecondary} text-xs mt-0.5 flex items-center gap-1.5`}>
+                          {(() => { const op = players.find(p => p._id === team.ownerId); return op ? <PlayerAvatar player={op} size={16} textSize="text-[8px]" className="flex-shrink-0" /> : null; })()}
+                          <span className="truncate">{team.owner} · {(team.pokemon || []).length} Pokémon</span>
+                        </div>
+                      </div>
+                      <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
+                        {team.format || '1v1'}
+                      </span>
+                      <ChevronRight size={16} className={t.textTertiary} />
+                    </button>
+                  );
+                })}
+              </div>
         )}
 
         {hasQuery && searchLoading && activeTab === 'pokemon' && (
