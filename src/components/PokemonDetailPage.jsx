@@ -658,7 +658,18 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       {confirmRemove && createPortal(
         <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
-            <p className={`font-black text-lg ${t.text} mb-1`}>Retirer {pokeName} ?</p>
+            <p className={`font-black text-lg ${t.text} mb-3`}>Supprimer {pokeName} ?</p>
+            {data && (
+              <div className="mb-4">
+                <div className="grid grid-cols-6 gap-1">
+                  <img
+                    src={data.officialArtwork || data.sprite}
+                    alt={pokeName}
+                    className="w-full aspect-square object-contain"
+                  />
+                </div>
+              </div>
+            )}
             {snapshotTeams.length > 0 && (
               <div className={`mt-3 mb-4 p-3 rounded-xl ${isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}`}>
                 <div className="flex items-start gap-2">
@@ -682,7 +693,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               </div>
             )}
             <p className={`${t.textSecondary} text-sm mb-5`}>
-              {snapshotTeams.length > 0 && `${pokeName} restera dans ${snapshotTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}Cette action est irréversible.
+              {snapshotTeams.length > 0 && `${pokeName} restera dans ${snapshotTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}Le pokémon sera retiré de ta collection.
             </p>
             <div className="flex gap-2">
               <button onClick={() => setConfirmRemove(false)} className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}>
@@ -690,7 +701,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               </button>
               <button onClick={handleConfirmRemove} disabled={isRemoving} className={`flex-1 py-3 rounded-xl font-bold bg-red-500 text-white transition-opacity flex items-center justify-center gap-2 ${isRemoving ? 'opacity-60' : ''}`}>
                 {isRemoving && <Loader2 size={16} className="animate-spin" />}
-                Retirer
+                Supprimer
               </button>
             </div>
           </div>
