@@ -809,6 +809,7 @@ export const BattleDetail = ({
                 onChange={(e) => setPlayerSearch(e.target.value)}
                 placeholder="Rechercher…"
                 className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
+                style={{ fontSize: '16px' }}
               />
             </div>
             <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
