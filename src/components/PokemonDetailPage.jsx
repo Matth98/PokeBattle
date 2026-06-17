@@ -414,7 +414,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
           }
         }
       }
-      toast.success(`${pokeName} ajouté à ta collection`);
+      toast.success(`${pokeName} ajouté`);
     }
   };
 
@@ -440,7 +440,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       ...myPlayer,
       pokemon: (myPlayer.pokemon || []).filter(p => p.pokeId !== pokeId),
     });
-    toast.success(`${pokeName} retiré de ta collection`);
+    toast.success(`${pokeName} supprimé`);
     setConfirmRemove(false);
     setIsRemoving(false);
   };
@@ -693,7 +693,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               </div>
             )}
             <p className={`${t.textSecondary} text-sm mb-5`}>
-              {snapshotTeams.length > 0 && `${pokeName} restera dans ${snapshotTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}Le pokémon sera retiré de ta collection.
+              {snapshotTeams.length > 0 && `${pokeName} restera dans ${snapshotTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}Le Pokémon sera retiré de ta collection.
             </p>
             <div className="flex gap-2">
               <button onClick={() => setConfirmRemove(false)} className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}>

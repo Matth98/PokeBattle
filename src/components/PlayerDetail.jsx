@@ -379,7 +379,10 @@ export const PlayerDetail = ({
       }
     }
 
-    toast.success(`${newEntries.length} pokémon ajouté${newEntries.length > 1 ? 's' : ''}`);
+    toast.success(newEntries.length === 1
+      ? `${newEntries[0].name} ajouté`
+      : `${newEntries.length} Pokémon ajoutés`
+    );
     setAddingPokemon(false);
   };
 
@@ -417,7 +420,7 @@ export const PlayerDetail = ({
       ...player,
       pokemon: player.pokemon.filter((p) => p.id !== deletingPokemon),
     });
-    toast.success('Pokémon supprimé');
+    toast.success(`${deletingPokemonObj.name} supprimé`);
     setIsDeletingPokemon(false);
     setDeletingPokemon(null);
   };
@@ -437,6 +440,7 @@ export const PlayerDetail = ({
     );
     if (onUpdateTeam) {
       const affectedTeams = playerTeams.filter((team) =>
+        !team.isConcept &&
         (team.pokemon || []).some((p) => removedPokeIds.has(p.pokeId))
       );
       for (const team of affectedTeams) {
@@ -449,12 +453,16 @@ export const PlayerDetail = ({
         });
       }
     }
-    const deletedCount = selectedItems.length;
+    const deletedPokemon = (player.pokemon || []).filter((p) => selectedItems.includes(p.id));
+    const deletedCount = deletedPokemon.length;
     await onUpdate(player._id, {
       ...player,
       pokemon: player.pokemon.filter((p) => !selectedItems.includes(p.id)),
     });
-    toast.success(`${deletedCount} pokémon supprimé${deletedCount > 1 ? 's' : ''}`);
+    toast.success(deletedCount === 1
+      ? `${deletedPokemon[0].name} supprimé`
+      : `${deletedCount} Pokémon supprimés`
+    );
     setIsDeletingSelectedPokemon(false);
     setDeletingSelectedPokemon(false);
     exitSelection();
@@ -1662,8 +1670,14 @@ export const PlayerDetail = ({
               </div>
             )}
             <p className={`${t.textSecondary} text-sm mb-5`}>
-              {affectedTeams.length > 0 && `Les Pokémon supprimés resteront dans ${affectedTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais seront marqués "À capturer". `}
-              {isOwner ? 'Les pokémon seront retirés de ta collection.' : 'Les pokémon seront retirés de sa collection.'}
+              {affectedTeams.length > 0 && (selectedItems.length === 1
+                ? `${(player.pokemon || []).find((p) => selectedItems.includes(p.id))?.name} restera dans ${affectedTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `
+                : `Les Pokémon supprimés resteront dans ${affectedTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais seront marqués "À capturer". `
+              )}
+              {selectedItems.length === 1
+                ? (isOwner ? 'Le Pokémon sera retiré de ta collection.' : 'Le Pokémon sera retiré de sa collection.')
+                : (isOwner ? 'Les Pokémon seront retirés de ta collection.' : 'Les Pokémon seront retirés de sa collection.')
+              }
             </p>
             <div className="flex gap-2">
               <button
@@ -1842,7 +1856,7 @@ export const PlayerDetail = ({
 
             <p className={`${t.textSecondary} text-sm mb-5`}>
               {teamsContainingDeleted.length > 0 && `${deletingPokemonObj?.name} restera dans ${teamsContainingDeleted.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}
-              {isOwner ? 'Le pokémon sera retiré de ta collection.' : 'Le pokémon sera retiré de sa collection.'}
+              {isOwner ? 'Le Pokémon sera retiré de ta collection.' : 'Le Pokémon sera retiré de sa collection.'}
             </p>
 
             <div className="flex gap-2">
