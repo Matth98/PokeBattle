@@ -9,7 +9,7 @@ const TABS = [
   { id: 'pokedex', Icon: Search, key: 'nav.pokedex' },
 ];
 
-export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle, onOpenPokedex, hidden = false, animated = true, badgeCounts = {} }) => {
+export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle, onOpenPokedex, hidden = false, animated = true, badgeCounts = {}, teamDetailOrigin = 'teams' }) => {
   const tr = useTranslation();
   // On considère qu'on est dans une "section" même quand on est dans la fiche détail
   const activeFor = (tab) => {
@@ -17,6 +17,8 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
     if (tab === 'players' && currentTab === 'playerDetail') return true;
     if (tab === 'battles' && currentTab === 'battleDetail') return true;
     if (tab === 'pokedex' && (currentTab === 'pokemonSearch' || currentTab === 'pokemonDetail')) return true;
+    if (tab === 'pokedex' && currentTab === 'teamDetail' && teamDetailOrigin === 'pokemonSearch') return true;
+    if (tab === 'players' && currentTab === 'teamDetail' && teamDetailOrigin === 'players') return true;
     return false;
   };
 

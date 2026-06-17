@@ -95,6 +95,12 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedPokemon, setSelectedPokemon] = useState(null); // { pokeId, name }
+  const selectedTeamRef = useRef(selectedTeam);
+  const selectedPlayerRef = useRef(selectedPlayer);
+  const selectedBattleRef = useRef(selectedBattle);
+  selectedTeamRef.current = selectedTeam;
+  selectedPlayerRef.current = selectedPlayer;
+  selectedBattleRef.current = selectedBattle;
   const [playerDetailTab, setPlayerDetailTab] = useState('pokemon');
   const [backLabel, setBackLabel] = useState('');
   const [navDirection, setNavDirection] = useState(null); // 'push' | 'pop' | null
@@ -147,7 +153,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     navStack.current.push({ tab: currentTab, extra, label });
     setBackLabel(label);
     scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
-    if (currentTab === 'pokemonSearch') searchMemoryRef.current.set('pokemonSearch', searchPageRef.current?.getSearchTerm() ?? searchMemoryRef.current.get('pokemonSearch') ?? '');
+    if (currentTab === 'pokemonSearch') {
+      searchMemoryRef.current.set('pokemonSearch', searchPageRef.current?.getSearchTerm() ?? searchMemoryRef.current.get('pokemonSearch') ?? '');
+      searchMemoryRef.current.set('pokemonSearch-activeTab', searchPageRef.current?.getActiveTab() ?? searchMemoryRef.current.get('pokemonSearch-activeTab') ?? 'pokemon');
+    }
     shouldRestoreRef.current = false;
     setPrevTab(currentTab);
     _setCurrentTabState(newTab);
@@ -159,7 +168,16 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const navigateBack = useCallback(() => {
     setNavDirection('pop');
-    const prev = navStack.current.pop();
+    let prev = navStack.current.pop();
+    // Skip stale detail entries (their selected item was cleared by a prior back action)
+    while (prev) {
+      const stale =
+        (prev.tab === 'teamDetail' && !selectedTeamRef.current) ||
+        (prev.tab === 'playerDetail' && !selectedPlayerRef.current) ||
+        (prev.tab === 'battleDetail' && !selectedBattleRef.current);
+      if (stale) { prev = navStack.current.pop(); }
+      else { break; }
+    }
     const target = prev ?? { tab: DETAIL_FALLBACKS[currentTab] ?? 'home', extra: {}, label: '' };
     if (target.extra?.playerDetailTab !== undefined) {
       setPlayerDetailTab(target.extra.playerDetailTab);
@@ -232,6 +250,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   // null = depuis la liste). Permet de revenir à la fiche détail à la fermeture.
   const [battleEditOrigin, setBattleEditOrigin] = useState(null);
   const [teamEditOrigin, setTeamEditOrigin] = useState(null);
+  const [teamDetailOrigin, setTeamDetailOrigin] = useState('teams');
 
   const [selectionMode, setSelectionMode] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -705,7 +724,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={sortedTeams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('playerDetail') || 0} initialPokemonSearch={searchMemoryRef.current.get('playerDetail-pokemon') || ''} initialTeamsSearch={searchMemoryRef.current.get('playerDetail-teams') || ''} isBackground />}
             {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} initialScrollY={scrollMemoryRef.current.get('teamDetail') || 0} isBackground />}
             {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={sortedPlayers} teams={sortedTeams} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} onAddTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('battleDetail') || 0} isBackground />}
-            {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} isBackground initialSearchTerm={searchMemoryRef.current.get('pokemonSearch') || ''} initialScrollY={scrollMemoryRef.current.get('pokemonSearch') || 0} />}
+            {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} isBackground initialSearchTerm={searchMemoryRef.current.get('pokemonSearch') || ''} initialActiveTab={searchMemoryRef.current.get('pokemonSearch-activeTab') || 'pokemon'} initialScrollY={scrollMemoryRef.current.get('pokemonSearch') || 0} />}
           </div>
           {/* Overlay d'assombrissement — z-index élevé pour couvrir tout le contenu */}
           <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.18)', zIndex: 9999, pointerEvents: 'none' }} />
@@ -798,6 +817,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           onDeleteTeam={handleDeleteTeam}
           onSelectTeam={(team, activeTab) => {
             setSelectedTeam(team);
+            setTeamDetailOrigin('players');
             navigateTo('teamDetail', { playerDetailTab: activeTab });
           }}
           onActiveTabChange={(tab) => setPlayerDetailTab(tab)}
@@ -819,6 +839,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           setFormatFilter={setTeamsFormatFilter}
           onSelectTeam={(team) => {
             setSelectedTeam(team);
+            setTeamDetailOrigin('teams');
             navigateTo('teamDetail');
           }}
           onAddTeam={handleAddTeam}
@@ -942,7 +963,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             isDark={isDark}
             backLabel={backLabel}
             onBack={navigateBack}
+            initialSearchTerm={navDirection === 'pop' ? searchMemoryRef.current.get('pokemonSearch') || '' : ''}
+            initialActiveTab={navDirection === 'pop' ? searchMemoryRef.current.get('pokemonSearch-activeTab') || 'pokemon' : 'pokemon'}
             onSearchChange={(v) => searchMemoryRef.current.set('pokemonSearch', v)}
+            onActiveTabChange={(tab) => searchMemoryRef.current.set('pokemonSearch-activeTab', tab)}
             onSelectPokemon={(pokemon) => {
               setSelectedPokemon(pokemon);
               navigateTo('pokemonDetail');
@@ -951,6 +975,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             players={sortedPlayers}
             onSelectTeam={(team) => {
               setSelectedTeam(team);
+              setTeamDetailOrigin('pokemonSearch');
               navigateTo('teamDetail');
             }}
           />
@@ -988,7 +1013,16 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setBattleEditOrigin(null);
             setShowNewBattleForm(true);
           }}
-          onOpenPokedex={() => navigateTo('pokemonSearch')}
+          onOpenPokedex={() => {
+            // Depuis une équipe ouverte via la recherche → retour arrière = retrouver saisie + onglet
+            if (currentTab === 'teamDetail' && teamDetailOrigin === 'pokemonSearch') {
+              setSelectedTeam(null);
+              navigateBack();
+            } else {
+              navigateTo('pokemonSearch');
+            }
+          }}
+          teamDetailOrigin={teamDetailOrigin}
         />
 
       {/* Couche modale — z-30 > Navigation z-20, hors du stacking context de pageRef (z-10) */}
@@ -1036,6 +1070,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             isDark={isDark}
             onSelectTeam={(team) => {
               setSelectedTeam(team);
+              setTeamDetailOrigin('teams');
               navigateTo('teamDetail');
             }}
             onAddTeam={handleAddTeam}

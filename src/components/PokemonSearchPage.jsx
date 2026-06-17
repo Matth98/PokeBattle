@@ -5,12 +5,18 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
 import { useTranslation } from '../hooks/useTranslation';
 
-export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon, onSelectTeam, teams = [], players = [], isBackground = false, initialSearchTerm = '', onSearchChange, initialScrollY = 0 }, ref) => {
+export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabel = 'Accueil', onSelectPokemon, onSelectTeam, teams = [], players = [], isBackground = false, initialSearchTerm = '', onSearchChange, initialScrollY = 0, initialActiveTab = 'pokemon', onActiveTabChange }, ref) => {
   const tr = useTranslation();
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const { searchResults, searchLoading, searchPokemon, getPokemonImageUrl } = usePokemon(initialSearchTerm);
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
+  // Mémorisation du scroll par onglet pour les rendre indépendants
+  const scrollPositions = useRef({ pokemon: 0, teams: 0 });
+  // Empêche le blur sur les scrolls programmatiques (restauration de position)
+  const isProgrammaticScroll = useRef(false);
+  // Détecte le scroll initié par l'utilisateur (touch)
+  const isTouchScrolling = useRef(false);
 
   useLayoutEffect(() => {
     if (initialScrollY && scrollRef.current) {
@@ -24,6 +30,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
     getScrollTop: () => scrollRef.current?.scrollTop ?? 0,
     setScrollTop: (v) => { if (scrollRef.current) scrollRef.current.scrollTop = v; },
     getSearchTerm: () => searchTerm,
+    getActiveTab: () => activeTab,
   }));
 
   const handleChange = (e) => {
@@ -40,7 +47,34 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
   };
 
   const hasQuery = searchTerm.trim().length > 0;
-  const [activeTab, setActiveTab] = useState('pokemon');
+  const [activeTab, setActiveTab] = useState(initialActiveTab);
+
+  const programmaticScroll = (fn) => {
+    isProgrammaticScroll.current = true;
+    fn();
+    requestAnimationFrame(() => { isProgrammaticScroll.current = false; });
+  };
+
+  const handleTabChange = (id) => {
+    if (id === activeTab) {
+      // Clic sur l'onglet déjà actif → scroll animé vers le haut
+      programmaticScroll(() => {
+        if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollPositions.current[id] = 0;
+      });
+      return;
+    }
+    // Sauvegarder le scroll de l'onglet courant, restaurer celui du nouvel onglet
+    if (scrollRef.current) scrollPositions.current[activeTab] = scrollRef.current.scrollTop;
+    setActiveTab(id);
+    onActiveTabChange?.(id);
+    // Restauration après le paint (programmatique → pas de blur)
+    requestAnimationFrame(() => {
+      programmaticScroll(() => {
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollPositions.current[id] ?? 0;
+      });
+    });
+  };
 
   const teamResults = useMemo(() => {
     if (!hasQuery) return [];
@@ -89,7 +123,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
             ].map(({ id, label }) => (
               <button
                 key={id}
-                onClick={() => setActiveTab(id)}
+                onClick={() => handleTabChange(id)}
                 className={`py-2.5 rounded-xl text-sm font-bold transition ${
                   activeTab === id
                     ? isDark
@@ -109,7 +143,17 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-5 pt-4"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
-        onScroll={() => inputRef.current?.blur()}
+        onTouchStart={() => { isTouchScrolling.current = true; }}
+        onTouchEnd={() => {
+          // Délai pour couvrir les derniers scroll events de l'inertie iOS
+          setTimeout(() => { isTouchScrolling.current = false; }, 300);
+        }}
+        onScroll={() => {
+          // Blur uniquement sur scroll tactile (mobile) et non programmatique
+          if (!isProgrammaticScroll.current && isTouchScrolling.current) {
+            inputRef.current?.blur();
+          }
+        }}
       >
         {!hasQuery && activeTab === 'pokemon' && (
           <div className="space-y-6">
