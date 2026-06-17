@@ -270,16 +270,16 @@ const statColor = (v) =>
 function TypeBadge({ typeName }) {
   return (
     <span
-      className="pl-1 inline-flex items-stretch rounded-full overflow-hidden"
+      className="pl-1 pr-4 inline-flex items-center rounded-full overflow-hidden h-8"
       style={{ backgroundColor: TYPE_HEX[typeName] || '#828282' }}
     >
       <img
         src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${typeName}.svg`}
         alt=""
-        className="w-6 h-6 object-contain flex-shrink-0"
+        className="w-7 h-7 object-contain flex-shrink-0"
         onError={(e) => { e.currentTarget.style.display = 'none'; }}
       />
-      <span className="self-center pr-3 text-xs font-bold text-white uppercase leading-none">
+      <span className="text-xs font-bold text-white uppercase leading-none pl-1">
         {TYPE_FR[typeName] || typeName}
       </span>
     </span>
@@ -566,7 +566,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                   }`}
                   aria-label={owned ? 'Retirer de ma collection' : 'Ajouter à ma collection'}
                 >
-                  <PokeBallIcon id={`${pokeId}-toggle`} size={16} owned={owned} />
+                  <PokeBallIcon id={`${pokeId}-toggle`} size={20} owned={owned} />
                 </button>
               )}
             </div>
