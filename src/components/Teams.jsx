@@ -311,11 +311,15 @@ export const Teams = ({
     if (isBackground) return;
     const onScroll = () => {
       if (!isActiveRef.current) return;
+      if (document.documentElement.style.overflow === 'hidden') return;
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isBackground]);
+  useEffect(() => {
+    if (!showForm) setScrolled(window.scrollY > 20);
+  }, [showForm]);
 
   return (
     <>

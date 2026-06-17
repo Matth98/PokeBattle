@@ -13,7 +13,7 @@ function PokeBallIcon({ id, size = 20, owned = false }) {
   const clipId = `pb-pdp-${id}`;
   if (owned) {
     return (
-      <svg width={size} height={size} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <svg width={size} height={size} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ display: 'block' }}>
         <g clipPath={`url(#${clipId})`}>
           <path d="M5.99994 1.19995C3.55794 1.19995 1.54194 3.03595 1.24194 5.39995H3.68994C3.95394 4.36795 4.88994 3.59995 5.99994 3.59995C7.10994 3.59995 8.04594 4.36795 8.31594 5.39995H10.7579C10.4639 3.03595 8.44794 1.19995 5.99994 1.19995Z" fill="#1a1a1a"/>
           <path d="M6 0C2.694 0 0 2.694 0 6C0 9.306 2.694 12 6 12C9.306 12 12 9.306 12 6C12 2.694 9.312 0 6 0ZM6 1.2C8.448 1.2 10.464 3.036 10.758 5.4H8.316C8.046 4.368 7.116 3.6 6 3.6C4.884 3.6 3.954 4.368 3.69 5.4H1.242C1.542 3.036 3.558 1.2 6 1.2Z" fill="#1a1a1a"/>
@@ -26,7 +26,7 @@ function PokeBallIcon({ id, size = 20, owned = false }) {
     );
   }
   return (
-    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ display: 'block' }}>
       <circle cx="6" cy="6" r="5.4" stroke="currentColor" strokeWidth="1.2"/>
       <line x1="0.6" y1="6" x2="4.5" y2="6" stroke="currentColor" strokeWidth="1.2"/>
       <line x1="7.5" y1="6" x2="11.4" y2="6" stroke="currentColor" strokeWidth="1.2"/>
@@ -566,7 +566,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                   }`}
                   aria-label={owned ? 'Retirer de ma collection' : 'Ajouter à ma collection'}
                 >
-                  <PokeBallIcon id={`${pokeId}-toggle`} size={20} owned={owned} />
+                  <PokeBallIcon id={`${pokeId}-toggle`} size={22} owned={owned} />
                 </button>
               )}
             </div>

@@ -3,10 +3,11 @@ import { useEffect } from 'react';
 /**
  * Locks body scroll when a modal is open — works on iOS Safari / PWA.
  *
- * Two layers of protection:
- * 1. `overflow: hidden` on <html> — prevents programmatic scroll.
- * 2. Non-passive `touchmove` listener on `document` — stops iOS momentum /
- *    elastic-bounce scroll from bleeding through the modal overlay.
+ * Uses a non-passive `touchmove` listener to stop iOS momentum / elastic-bounce
+ * scroll from bleeding through the modal overlay. We intentionally do NOT set
+ * `overflow: hidden` on <html> because that breaks `position: sticky` on iOS
+ * (the scroll container is removed, causing sticky headers to fall out of the
+ * viewport) and can reset `window.scrollY` on some iOS versions.
  *
  * Scroll is allowed when the touch target (or any of its ancestors up to
  * <html>) is an element that:
@@ -22,8 +23,6 @@ export const useBodyScrollLock = (isActive = true) => {
     if (!isActive) return;
 
     const html = document.documentElement;
-    const prev = html.style.overflow;
-    html.style.overflow = 'hidden';
 
     const preventTouchMove = (e) => {
       let node = e.target;
@@ -52,7 +51,6 @@ export const useBodyScrollLock = (isActive = true) => {
     document.addEventListener('touchmove', preventTouchMove, { passive: false });
 
     return () => {
-      html.style.overflow = prev;
       document.removeEventListener('touchmove', preventTouchMove);
     };
   }, [isActive]);

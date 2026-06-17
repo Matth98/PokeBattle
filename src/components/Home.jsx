@@ -255,7 +255,10 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
 
   useEffect(() => {
     if (isBackground) return;
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      if (document.documentElement.style.overflow === 'hidden') return;
+      setScrolled(window.scrollY > 20);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isBackground]);
