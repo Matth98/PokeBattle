@@ -414,7 +414,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
           }
         }
       }
-      toast.success(`${pokeName} ajouté`);
+      toast.success(`${pokeName} ajouté à ta collection`);
     }
   };
 
@@ -440,7 +440,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       ...myPlayer,
       pokemon: (myPlayer.pokemon || []).filter(p => p.pokeId !== pokeId),
     });
-    toast.success(`${pokeName} supprimé`);
+    toast.success(`${pokeName} supprimé de ta collection`);
     setConfirmRemove(false);
     setIsRemoving(false);
   };
