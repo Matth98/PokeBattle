@@ -35,10 +35,10 @@ export const TeamDetail = ({
   );
 
   const [playerPickerOpen, setPlayerPickerOpen] = useState(false);
-  useBodyScrollLock(playerPickerOpen || !!pendingCopy);
   const [playerSearch, setPlayerSearch] = useState('');
   const [pendingCopy, setPendingCopy] = useState(null); // { targetPlayer, missingPokemon, payload }
   const [isSavingCopy, setIsSavingCopy] = useState(false);
+  useBodyScrollLock(playerPickerOpen || !!pendingCopy);
 
   const startSave = () => {
     if (isSuperAdmin) {

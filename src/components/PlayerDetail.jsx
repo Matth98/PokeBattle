@@ -177,7 +177,7 @@ export const PlayerDetail = ({
   const { isClosing: isAllPokemonSheetClosing, handleClose: closeAllPokemonSheet } = useAnimatedClose(() => setShowAllPokemonSheet(false), 280);
   const [showAllTeamsSheet, setShowAllTeamsSheet] = useState(false);
   const { isClosing: isAllTeamsSheetClosing, handleClose: closeAllTeamsSheet } = useAnimatedClose(() => setShowAllTeamsSheet(false), 280);
-  useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet || addingPokemon || pickingTeamPokemon || deletingSelectedTeams || !!deletingTeam || !!deletingPokemon || !!pendingConceptTeam);
+  useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet || addingPokemon || pickingTeamPokemon || deletingSelectedTeams || !!deletingTeam || !!deletingPokemon);
 
   const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
@@ -280,6 +280,7 @@ export const PlayerDetail = ({
   };
 
   const [pendingConceptTeam, setPendingConceptTeam] = useState(null);
+  useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet || addingPokemon || pickingTeamPokemon || deletingSelectedTeams || !!deletingTeam || !!deletingPokemon || !!pendingConceptTeam);
 
   const handleSaveTeam = async () => {
     const required = requiredPokemonForFormat(newTeamData.format);
