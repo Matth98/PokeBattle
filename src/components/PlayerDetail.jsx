@@ -895,31 +895,37 @@ export const PlayerDetail = ({
 
         {/* ── À capturer ── */}
         {conceptPokemon.length > 0 && (
-          <div className={`rounded-2xl overflow-hidden ${isDark ? 'bg-white/[0.04] border border-white/[0.06]' : 'bg-white/60 border border-black/[0.06]'}`}>
-            <div className="px-4 pt-3.5 pb-2.5 flex items-center gap-2">
-              <PokeBallIcon id="capture" size={14} className={isDark ? 'text-white' : 'text-black'} />
-              <p className={`text-xs font-semibold tracking-wide uppercase ${isDark ? 'text-white/50' : 'text-black/40'}`}>
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <PokeBallIcon id="capture" size={14} className={isDark ? 'text-white/50' : 'text-black/40'} />
+              <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 À capturer ({conceptPokemon.length})
-              </p>
+              </h2>
             </div>
-            <div className="px-3 pb-3 flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              {conceptPokemon.map((p) => (
-                <button
-                  key={p.pokeId}
-                  onClick={() => onViewPokemon?.({ pokeId: p.pokeId, name: p.name })}
-                  className="flex flex-col items-center gap-1.5 flex-shrink-0"
-                >
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]'}`}>
-                    <img
-                      src={getPokemonImageUrl(p.pokeId)}
-                      alt={p.name}
-                      className="w-12 h-12 object-contain"
-                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                    />
-                  </div>
-                  <p className={`text-[10px] font-medium truncate max-w-[56px] text-center ${isDark ? 'text-white/50' : 'text-black/40'}`}>{p.name}</p>
-                </button>
-              ))}
+            <div
+              className="overflow-x-auto -mx-5 pb-1"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <div className="flex gap-2 pl-5">
+                {conceptPokemon.map((p) => (
+                  <button
+                    key={p.pokeId}
+                    onClick={() => onViewPokemon?.({ pokeId: p.pokeId, name: p.name })}
+                    className="flex flex-col items-center gap-1.5 flex-shrink-0"
+                  >
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]'}`}>
+                      <img
+                        src={getPokemonImageUrl(p.pokeId)}
+                        alt={p.name}
+                        className="w-12 h-12 object-contain"
+                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                      />
+                    </div>
+                    <p className={`text-[10px] font-medium truncate max-w-[56px] text-center ${isDark ? 'text-white/50' : 'text-black/40'}`}>{p.name}</p>
+                  </button>
+                ))}
+                <div className="w-3 flex-shrink-0" />
+              </div>
             </div>
           </div>
         )}
