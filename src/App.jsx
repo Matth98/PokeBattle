@@ -26,20 +26,6 @@ import { usePushNotifications } from './hooks/usePushNotifications';
 import { useEdgeSwipeBack } from './hooks/useEdgeSwipeBack';
 import { useOfflineSync, OFFLINE_TOTAL } from './hooks/useOfflineSync';
 
-// Tailwind CDN
-if (typeof document !== 'undefined' && !document.querySelector('script[src*="tailwindcss"]')) {
-  const script = document.createElement('script');
-  script.src = 'https://cdn.tailwindcss.com';
-  document.head.appendChild(script);
-}
-
-// Font Awesome
-if (typeof document !== 'undefined' && !document.querySelector('link[href*="font-awesome"]')) {
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-  document.head.appendChild(link);
-}
 
 const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
 
@@ -1170,6 +1156,15 @@ const DEFAULT_AVATAR_URLS = [
 
 function App() {
   const { isDark, themeMode, setThemeMode } = useThemeMode();
+
+  useLayoutEffect(() => {
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.style.opacity = '0';
+      splash.style.pointerEvents = 'none';
+      setTimeout(() => splash.remove(), 200);
+    }
+  }, []);
 
   useEffect(() => {
     DEFAULT_AVATAR_URLS.forEach((src) => {
