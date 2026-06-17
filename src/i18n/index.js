@@ -4,7 +4,7 @@
 
 const fr = {
   nav: {
-    home: 'Accueil', players: 'Joueurs', battles: 'Combats', teams: 'Équipes',
+    home: 'Accueil', players: 'Joueurs', battles: 'Combats', teams: 'Équipes', pokedex: 'Pokédex',
     newBattle: 'Créer un combat',
   },
   common: {
@@ -74,7 +74,7 @@ const fr = {
     format: 'Format',
   },
   pokemon: {
-    searchPlaceholder: 'Nom du Pokémon…',
+    searchPlaceholder: 'Rechercher un Pokémon ou une équipe…',
     defaultTab: 'Pokémon de {name}',
     stats: 'Stats', abilities: 'Talents', characteristics: 'Caractéristiques',
     resistances: 'Résistances', weaknesses: 'Faiblesses',
@@ -142,7 +142,7 @@ const fr = {
 
 const en = {
   nav: {
-    home: 'Home', players: 'Players', battles: 'Battles', teams: 'Teams',
+    home: 'Home', players: 'Players', battles: 'Battles', teams: 'Teams', pokedex: 'Pokédex',
     newBattle: 'New battle',
   },
   common: {
@@ -278,7 +278,7 @@ const en = {
 
 const es = {
   nav: {
-    home: 'Inicio', players: 'Jugadores', battles: 'Combates', teams: 'Equipos',
+    home: 'Inicio', players: 'Jugadores', battles: 'Combates', teams: 'Equipos', pokedex: 'Pokédex',
     newBattle: 'Nuevo combate',
   },
   common: {
@@ -407,7 +407,7 @@ const es = {
 
 const de = {
   nav: {
-    home: 'Start', players: 'Spieler', battles: 'Kämpfe', teams: 'Teams',
+    home: 'Start', players: 'Spieler', battles: 'Kämpfe', teams: 'Teams', pokedex: 'Pokédex',
     newBattle: 'Neuer Kampf',
   },
   common: {
@@ -536,7 +536,7 @@ const de = {
 
 const ja = {
   nav: {
-    home: 'ホーム', players: 'プレイヤー', battles: 'バトル', teams: 'チーム',
+    home: 'ホーム', players: 'プレイヤー', battles: 'バトル', teams: 'チーム', pokedex: 'Pokédex',
     newBattle: 'バトル作成',
   },
   common: {

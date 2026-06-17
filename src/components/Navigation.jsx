@@ -1,28 +1,28 @@
 import React from 'react';
-import { Home, Shield, Swords, Users } from 'lucide-react';
+import { Home, Search, Swords, Users } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 
 const TABS = [
   { id: 'home', Icon: Home, key: 'nav.home' },
   { id: 'players', Icon: Users, key: 'nav.players' },
   { id: 'battles', Icon: Swords, key: 'nav.battles' },
-  { id: 'teams', Icon: Shield, key: 'nav.teams' },
+  { id: 'pokedex', Icon: Search, key: 'nav.pokedex' },
 ];
 
-export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle, hidden = false, badgeCounts = {} }) => {
+export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattle, onOpenPokedex, hidden = false, animated = true, badgeCounts = {} }) => {
   const tr = useTranslation();
   // On considère qu'on est dans une "section" même quand on est dans la fiche détail
   const activeFor = (tab) => {
     if (currentTab === tab) return true;
     if (tab === 'players' && currentTab === 'playerDetail') return true;
-    if (tab === 'teams' && currentTab === 'teamDetail') return true;
     if (tab === 'battles' && currentTab === 'battleDetail') return true;
+    if (tab === 'pokedex' && (currentTab === 'pokemonSearch' || currentTab === 'pokemonDetail')) return true;
     return false;
   };
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-20 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] transition-[transform,opacity] duration-[280ms] ease-in-out ${hidden ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}
+      className={`fixed bottom-0 left-0 right-0 z-20 ${t.surfaceBlur} border-t ${t.divider} shadow-[0_-8px_28px_rgba(15,23,42,0.08)] ${animated ? 'transition-[transform,opacity] duration-[280ms] ease-in-out' : ''} ${hidden ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="grid grid-cols-5 items-end px-3 pt-2 pb-2">
@@ -82,7 +82,7 @@ export const Navigation = ({ currentTab, setCurrentTab, isDark, t, onCreateBattl
             <button
               key={id}
               data-tour={`nav-${id}`}
-              onClick={() => setCurrentTab(id)}
+              onClick={() => id === 'pokedex' ? onOpenPokedex?.() : setCurrentTab(id)}
               className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
                 isActive ? t.accent : t.textTertiary
               }`}

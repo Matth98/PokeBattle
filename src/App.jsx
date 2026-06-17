@@ -946,6 +946,12 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
               setSelectedPokemon(pokemon);
               navigateTo('pokemonDetail');
             }}
+            teams={sortedTeams}
+            players={sortedPlayers}
+            onSelectTeam={(team) => {
+              setSelectedTeam(team);
+              navigateTo('teamDetail');
+            }}
           />
         </div>
       )}
@@ -969,9 +975,9 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       </div>{/* fin couche avant */}
 
       {/* Navigation hors du transform — position: fixed z-20 non affecté */}
-      {!['pokemonSearch', 'pokemonDetail'].includes(currentTab) && (
         <Navigation
-          hidden={hideNav}
+          hidden={hideNav || currentTab === 'pokemonDetail'}
+          animated={hideNav}
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
           isDark={isDark}
@@ -981,8 +987,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setBattleEditOrigin(null);
             setShowNewBattleForm(true);
           }}
+          onOpenPokedex={() => navigateTo('pokemonSearch')}
         />
-      )}
 
       {/* Couche modale — z-30 > Navigation z-20, hors du stacking context de pageRef (z-10) */}
       <div style={{ position: 'relative', zIndex: 30 }}>
