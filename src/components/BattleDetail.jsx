@@ -116,6 +116,7 @@ export const BattleDetail = ({
   onDelete,
   onAddTeam,
   onViewPokemon,
+  onPlayerClick,
   backLabel = 'Combats',
   initialScrollY = 0,
   isBackground = false,
@@ -346,7 +347,10 @@ export const BattleDetail = ({
         {/* ── Hero score ── */}
         <div className="flex items-center gap-3 w-full max-w-md mx-auto pb-4">
           {/* Joueur 1 */}
-          <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
+          <div
+            className={`flex-1 min-w-0 flex flex-col items-center gap-1.5 ${onPlayerClick && p1 ? 'cursor-pointer active:scale-95 transition-transform duration-100' : ''}`}
+            onClick={() => onPlayerClick && p1 && onPlayerClick(p1)}
+          >
             <div className="relative flex-shrink-0">
               <PlayerAvatar player={p1} size={60} textSize="text-xl" />
               {battle.winner === 'player1' && (
@@ -373,7 +377,10 @@ export const BattleDetail = ({
             </div>
           </div>
           {/* Joueur 2 */}
-          <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
+          <div
+            className={`flex-1 min-w-0 flex flex-col items-center gap-1.5 ${onPlayerClick && p2 ? 'cursor-pointer active:scale-95 transition-transform duration-100' : ''}`}
+            onClick={() => onPlayerClick && p2 && onPlayerClick(p2)}
+          >
             <div className="relative flex-shrink-0">
               <PlayerAvatar player={p2} size={60} textSize="text-xl" />
               {battle.winner === 'player2' && (

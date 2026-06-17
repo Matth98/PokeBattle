@@ -929,6 +929,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           onDelete={handleDeleteBattle}
           onAddTeam={handleAddTeam}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
+          onPlayerClick={(p) => { setSelectedPlayer(p); navigateTo('playerDetail'); }}
         />
       )}
 
