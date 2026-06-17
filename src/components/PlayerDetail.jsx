@@ -396,8 +396,11 @@ export const PlayerDetail = ({
       )
     : [];
 
+  const [isDeletingPokemon, setIsDeletingPokemon] = useState(false);
+
   const handleDeletePokemon = async () => {
     if (!deletingPokemonObj) return;
+    setIsDeletingPokemon(true);
     const pokeIdToRemove = deletingPokemonObj.pokeId;
     if (onUpdateTeam) {
       for (const team of teamsContainingDeleted) {
@@ -415,6 +418,7 @@ export const PlayerDetail = ({
       pokemon: player.pokemon.filter((p) => p.id !== deletingPokemon),
     });
     toast.success('Pokémon supprimé');
+    setIsDeletingPokemon(false);
     setDeletingPokemon(null);
   };
 
@@ -1590,7 +1594,13 @@ export const PlayerDetail = ({
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedPokemonClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingSelectedPokemonClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
             <p className={`font-black text-lg ${t.text} mb-3`}>
-              Supprimer {selectedItems.length} Pokémon ?
+              {(() => {
+                if (selectedItems.length === 1) {
+                  const p = (player.pokemon || []).find((p) => selectedItems.includes(p.id));
+                  return `${tr('common.delete')} ${p?.name} ?`;
+                }
+                return `${tr('common.delete')} ${selectedItems.length} Pokémon ?`;
+              })()}
             </p>
             {(() => {
               const selectedPokemon = (player.pokemon || []).filter((p) => selectedItems.includes(p.id));
@@ -1653,7 +1663,7 @@ export const PlayerDetail = ({
             )}
             <p className={`${t.textSecondary} text-sm mb-5`}>
               {affectedTeams.length > 0 && `Les Pokémon supprimés resteront dans ${affectedTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais seront marqués "À capturer". `}
-              {tr('common.irreversible')}
+              {isOwner ? 'Les pokémon seront retirés de ta collection.' : 'Les pokémon seront retirés de sa collection.'}
             </p>
             <div className="flex gap-2">
               <button
@@ -1789,9 +1799,21 @@ export const PlayerDetail = ({
       {deletingPokemon && createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingPokemonClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isDeletingPokemonClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
-            <p className={`font-black text-lg ${t.text} mb-1`}>
+            <p className={`font-black text-lg ${t.text} mb-3`}>
               {tr('common.delete')} {deletingPokemonObj?.name} ?
             </p>
+
+            {deletingPokemonObj && (
+              <div className="mb-4">
+                <div className="grid grid-cols-6 gap-1">
+                  <img
+                    src={getPokemonImageUrl(deletingPokemonObj.pokeId)}
+                    alt={deletingPokemonObj.name}
+                    className="w-full aspect-square object-contain"
+                  />
+                </div>
+              </div>
+            )}
 
             {teamsContainingDeleted.length > 0 && (
               <div className={`mt-3 mb-4 p-3 rounded-xl ${isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}`}>
@@ -1813,28 +1835,30 @@ export const PlayerDetail = ({
                         </li>
                       ))}
                     </ul>
-                    <p className={`text-xs ${t.textSecondary} mt-2`}>
-                      {deletingPokemonObj?.name} restera dans {teamsContainingDeleted.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer".
-                    </p>
                   </div>
                 </div>
               </div>
             )}
 
-            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>
+              {teamsContainingDeleted.length > 0 && `${deletingPokemonObj?.name} restera dans ${teamsContainingDeleted.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}
+              {isOwner ? 'Le pokémon sera retiré de ta collection.' : 'Le pokémon sera retiré de sa collection.'}
+            </p>
 
             <div className="flex gap-2">
               <button
                 onClick={cancelDeletingPokemon}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+                disabled={isDeletingPokemon}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text} disabled:opacity-50`}
               >
                 {tr('common.cancel')}
               </button>
               <button
                 onClick={handleDeletePokemon}
-                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+                disabled={isDeletingPokemon}
+                className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white disabled:opacity-50 flex items-center justify-center gap-2`}
               >
-                {tr('common.delete')}
+                {isDeletingPokemon ? <Loader2 size={16} className="animate-spin" /> : tr('common.delete')}
               </button>
             </div>
           </div>
