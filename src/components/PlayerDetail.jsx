@@ -859,7 +859,7 @@ export const PlayerDetail = ({
                 À capturer ({conceptPokemon.length})
               </p>
             </div>
-            <div className="px-3 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
+            <div className="px-3 pb-3 flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {conceptPokemon.map((p) => (
                 <button
                   key={p.pokeId}
