@@ -416,6 +416,22 @@ export const PlayerDetail = ({
         });
       }
     }
+    if (onUpdateTeamSilent) {
+      const conceptTeamsContaining = teams.filter(
+        (team) =>
+          team.ownerId === player._id &&
+          team.isConcept &&
+          (team.pokemon || []).some((p) => p.pokeId === pokeIdToRemove && !p.isConcept)
+      );
+      for (const team of conceptTeamsContaining) {
+        await onUpdateTeamSilent(team._id, {
+          ...team,
+          pokemon: (team.pokemon || []).map((p) =>
+            p.pokeId === pokeIdToRemove ? { ...p, isConcept: true } : p
+          ),
+        });
+      }
+    }
     await onUpdate(player._id, {
       ...player,
       pokemon: player.pokemon.filter((p) => p.id !== deletingPokemon),
@@ -451,6 +467,20 @@ export const PlayerDetail = ({
             removedPokeIds.has(p.pokeId) ? { ...p, isConcept: true } : p
           ),
         });
+      }
+      if (onUpdateTeamSilent) {
+        const conceptTeamsAffected = playerTeams.filter((team) =>
+          team.isConcept &&
+          (team.pokemon || []).some((p) => removedPokeIds.has(p.pokeId) && !p.isConcept)
+        );
+        for (const team of conceptTeamsAffected) {
+          await onUpdateTeamSilent(team._id, {
+            ...team,
+            pokemon: (team.pokemon || []).map((p) =>
+              removedPokeIds.has(p.pokeId) ? { ...p, isConcept: true } : p
+            ),
+          });
+        }
       }
     }
     const deletedPokemon = (player.pokemon || []).filter((p) => selectedItems.includes(p.id));
