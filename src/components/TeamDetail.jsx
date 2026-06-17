@@ -326,7 +326,6 @@ export const TeamDetail = ({
               placeholder="Rechercher…"
               className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
               style={{ fontSize: '16px' }}
-              autoFocus
             />
             {playerSearch && (
               <ClearButton
@@ -338,22 +337,25 @@ export const TeamDetail = ({
             )}
           </div>
           <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
-            {players
-              .filter((p) => p.name.toLowerCase().includes(playerSearch.toLowerCase()))
-              .map((p) => (
-                <button
-                  key={p._id}
-                  onClick={() => prepareOrSaveCopy(p)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl font-semibold ${t.text} flex items-center gap-3 transition-colors`}
-                >
-                  <PlayerAvatar player={p} size={32} textSize="text-[11px]" className="flex-shrink-0" />
-                  {p.name}
-                </button>
-              ))}
+            {(() => {
+              const filtered = players.filter((p) => p.name.toLowerCase().includes(playerSearch.toLowerCase()));
+              return filtered.length === 0
+                ? <p className={`${t.textSecondary} text-sm text-center py-4`}>Aucun résultat</p>
+                : filtered.map((p) => (
+                  <button
+                    key={p._id}
+                    onClick={() => prepareOrSaveCopy(p)}
+                    className={`w-full text-left py-2.5 rounded-xl font-semibold ${t.text} flex items-center gap-3 transition-colors`}
+                  >
+                    <PlayerAvatar player={p} size={32} textSize="text-[11px]" className="flex-shrink-0" />
+                    {p.name}
+                  </button>
+                ));
+            })()}
           </div>
           <button
             onClick={() => { setPlayerPickerOpen(false); setPlayerSearch(''); }}
-            className={`w-full py-3 rounded-xl font-semibold ${t.textSecondary}`}
+            className={`w-full mt-3 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
           >
             Annuler
           </button>
