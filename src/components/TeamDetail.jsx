@@ -317,22 +317,23 @@ export const TeamDetail = ({
             <p className={`font-black text-lg ${t.text}`}>Copier l'équipe pour…</p>
           </div>
           <p className={`${t.textSecondary} text-base mb-3`}>Choisis le joueur qui recevra cette équipe.</p>
-          <div className={`flex items-center gap-2 ${t.surface} rounded-xl px-3 py-2 mb-3`}>
+          <div className={`flex items-center gap-2 ${t.surfaceMuted} rounded-xl px-3 py-2 mb-3`}>
             <Search size={15} className={t.textTertiary} aria-hidden="true" />
             <input
               type="text"
               value={playerSearch}
               onChange={(e) => setPlayerSearch(e.target.value)}
               placeholder="Rechercher…"
-              className={`flex-1 bg-transparent outline-none ${t.text} text-base`}
+              className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
+              style={{ fontSize: '16px' }}
               autoFocus
             />
             {playerSearch && (
               <ClearButton
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => setPlayerSearch('')}
-                color={t.clearIconOnWhite}
-                strokeColor={t.clearStrokeOnWhite}
+                color={t.clearIcon}
+                strokeColor={t.clearStroke}
               />
             )}
           </div>
@@ -352,7 +353,7 @@ export const TeamDetail = ({
           </div>
           <button
             onClick={() => { setPlayerPickerOpen(false); setPlayerSearch(''); }}
-            className={`w-full mt-3 py-3 rounded-xl font-semibold ${t.textSecondary}`}
+            className={`w-full py-3 rounded-xl font-semibold ${t.textSecondary}`}
           >
             Annuler
           </button>
