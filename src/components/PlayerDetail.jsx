@@ -49,6 +49,7 @@ export const PlayerDetail = ({
   onUpdate,
   onAddTeam,
   onUpdateTeam,
+  onUpdateTeamSilent,
   onDeleteTeam,
   onSelectTeam,
   initialActiveTab = 'pokemon',
@@ -260,6 +261,8 @@ export const PlayerDetail = ({
     }));
   };
 
+  const [pendingConceptTeam, setPendingConceptTeam] = useState(null);
+
   const handleSaveTeam = async () => {
     const required = requiredPokemonForFormat(newTeamData.format);
     const errors = { name: !newTeamData.name.trim() };
@@ -279,22 +282,52 @@ export const PlayerDetail = ({
       owner: player.name,
     };
     const existingIds = new Set((player.pokemon || []).map((p) => p.pokeId));
-    const pokemonToAdd = newTeamData.pokemon
-      .filter((p) => !existingIds.has(p.pokeId))
-      .map((p) => ({
-        id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
-        pokeId: p.pokeId,
-        name: p.name,
-        level: 50,
-      }));
+    const missingPokemon = newTeamData.pokemon.filter((p) => !existingIds.has(p.pokeId));
+
+    if (missingPokemon.length > 0) {
+      setPendingConceptTeam({ payload, missingPokemon });
+      return;
+    }
 
     await onAddTeam(payload);
-    if (pokemonToAdd.length > 0) {
-      await onUpdate(player._id, {
-        ...player,
-        pokemon: [...(player.pokemon || []), ...pokemonToAdd],
-      });
-    }
+    resetTeamForm();
+    setCreatingTeam(false);
+    switchTab('teams');
+  };
+
+  const confirmTeamSaveAsConcept = async () => {
+    if (!pendingConceptTeam) return;
+    const { payload, missingPokemon } = pendingConceptTeam;
+    const missingIds = new Set(missingPokemon.map((p) => p.pokeId));
+    await onAddTeam({
+      ...payload,
+      isConcept: true,
+      pokemon: payload.pokemon.map((p) => ({
+        ...p,
+        isConcept: missingIds.has(p.pokeId) ? true : undefined,
+      })),
+    });
+    setPendingConceptTeam(null);
+    resetTeamForm();
+    setCreatingTeam(false);
+    switchTab('teams');
+  };
+
+  const confirmTeamAddToRoster = async () => {
+    if (!pendingConceptTeam) return;
+    const { payload, missingPokemon } = pendingConceptTeam;
+    await onAddTeam(payload);
+    const toAdd = missingPokemon.map((p) => ({
+      id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
+      pokeId: p.pokeId,
+      name: p.name,
+      level: 50,
+    }));
+    await onUpdate(player._id, {
+      ...player,
+      pokemon: [...(player.pokemon || []), ...toAdd],
+    });
+    setPendingConceptTeam(null);
     resetTeamForm();
     setCreatingTeam(false);
     switchTab('teams');
@@ -308,6 +341,25 @@ export const PlayerDetail = ({
       .map((p, i) => ({ id: `${Date.now()}-${i}-${p.pokeId}`, pokeId: p.pokeId, name: p.name, level: 50 }));
     if (newEntries.length === 0) { setAddingPokemon(false); return; }
     await onUpdate(player._id, { ...player, pokemon: [...(player.pokemon || []), ...newEntries] });
+
+    // Retire le marquage "À capturer" des équipes concept qui contenaient ces pokémon
+    const addedIds = new Set(newEntries.map((p) => p.pokeId));
+    const affectedConceptTeams = playerTeams.filter((team) =>
+      team.isConcept && (team.pokemon || []).some((p) => p.isConcept && addedIds.has(p.pokeId))
+    );
+    for (const team of affectedConceptTeams) {
+      const updatedPokemon = (team.pokemon || []).map((p) =>
+        addedIds.has(p.pokeId) ? { ...p, isConcept: false } : p
+      );
+      const stillConcept = updatedPokemon.some((p) => p.isConcept);
+      const becomesClassic = !stillConcept;
+      if (becomesClassic && onUpdateTeam) {
+        await onUpdateTeam(team._id, { ...team, isConcept: false, pokemon: updatedPokemon });
+      } else if (!becomesClassic && onUpdateTeamSilent) {
+        await onUpdateTeamSilent(team._id, { ...team, isConcept: true, pokemon: updatedPokemon });
+      }
+    }
+
     toast.success(`${newEntries.length} pokémon ajouté${newEntries.length > 1 ? 's' : ''}`);
     setAddingPokemon(false);
   };
@@ -320,6 +372,7 @@ export const PlayerDetail = ({
     ? teams.filter(
         (team) =>
           team.ownerId === player._id &&
+          !team.isConcept &&
           (team.pokemon || []).some((p) => p.pokeId === deletingPokemonObj.pokeId)
       )
     : [];
@@ -331,7 +384,10 @@ export const PlayerDetail = ({
       for (const team of teamsContainingDeleted) {
         await onUpdateTeam(team._id, {
           ...team,
-          pokemon: (team.pokemon || []).filter((p) => p.pokeId !== pokeIdToRemove),
+          isConcept: true,
+          pokemon: (team.pokemon || []).map((p) =>
+            p.pokeId === pokeIdToRemove ? { ...p, isConcept: true } : p
+          ),
         });
       }
     }
@@ -363,7 +419,10 @@ export const PlayerDetail = ({
       for (const team of affectedTeams) {
         await onUpdateTeam(team._id, {
           ...team,
-          pokemon: (team.pokemon || []).filter((p) => !removedPokeIds.has(p.pokeId)),
+          isConcept: true,
+          pokemon: (team.pokemon || []).map((p) =>
+            removedPokeIds.has(p.pokeId) ? { ...p, isConcept: true } : p
+          ),
         });
       }
     }
@@ -491,6 +550,24 @@ export const PlayerDetail = ({
     ? [...playerTeams].sort((a, b) => (teamPlayCounts.get(b._id) || 0) - (teamPlayCounts.get(a._id) || 0))[0]
     : undefined;
   const rosterSize = player.pokemon?.length || 0;
+
+  // Pokémon concept : présents dans des équipes concept mais pas dans le roster
+  const conceptPokemon = (() => {
+    const seen = new Set();
+    const result = [];
+    playerTeams
+      .filter((team) => team.isConcept)
+      .forEach((team) => {
+        (team.pokemon || []).forEach((p) => {
+          if (p.isConcept && !seen.has(p.pokeId)) {
+            seen.add(p.pokeId);
+            result.push(p);
+          }
+        });
+      });
+    return result;
+  })();
+
   const filteredPokemon = pokemonSearch
     ? (player.pokemon || []).filter((p) => p.name.toLowerCase().includes(pokemonSearch.toLowerCase()) || String(p.pokeId).includes(pokemonSearch.trim()))
     : (player.pokemon || []);
@@ -755,6 +832,43 @@ export const PlayerDetail = ({
           </div>
         </div>
 
+        {/* ── À capturer ── */}
+        {conceptPokemon.length > 0 && (
+          <div className={`rounded-3xl overflow-hidden ${isDark ? 'bg-amber-400/[0.08] border border-amber-400/20' : 'bg-amber-50 border border-amber-200/60'}`}>
+            <div className="px-4 pt-4 pb-3 flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-amber-400/20' : 'bg-amber-100'}`}>
+                <Target size={18} className={isDark ? 'text-amber-400' : 'text-amber-600'} />
+              </div>
+              <div>
+                <p className={`font-black text-sm ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>
+                  À capturer · {conceptPokemon.length} Pokémon
+                </p>
+                <p className={`text-xs ${isDark ? 'text-amber-400/70' : 'text-amber-600/80'}`}>
+                  Complète tes équipes Concept !
+                </p>
+              </div>
+            </div>
+            <div className="px-4 pb-4 flex gap-3 overflow-x-auto scrollbar-hide">
+              {conceptPokemon.map((p) => (
+                <div key={p.pokeId} className="flex flex-col items-center gap-1 flex-shrink-0">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center relative ${isDark ? 'bg-amber-400/10' : 'bg-white/70'}`}>
+                    <img
+                      src={getPokemonImageUrl(p.pokeId)}
+                      alt={p.name}
+                      className="w-14 h-14 object-contain"
+                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                    />
+                    <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center ${isDark ? 'bg-amber-400' : 'bg-amber-500'}`}>
+                      <span className="text-white text-[9px] font-black">!</span>
+                    </div>
+                  </div>
+                  <p className={`text-[10px] font-bold truncate max-w-[60px] text-center ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>{p.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className={`grid grid-cols-3 gap-1 p-1 rounded-2xl ${isDark ? t.surfaceMuted : 'bg-white/40 backdrop-blur-sm'}`}>
           {tabs.map((tab) => (
             <button
@@ -978,93 +1092,121 @@ export const PlayerDetail = ({
                 <p className={`${t.textSecondary} text-sm`}>Aucun résultat</p>
               </div>
             );
-              return (
-              <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
-                {filtered.map((team, idx) => {
-                  const isLast = idx === filtered.length - 1;
-                  const isSelected = selectedItems.includes(team._id);
-                  const inTeamsSelection = selectionMode === 'teams';
-                  const rowContent = (
-                    <>
-                      <span className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inTeamsSelection ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}>
-                        {isSelected && <Check size={14} className="text-white" />}
-                      </span>
-                      <div className={`w-12 h-12 rounded-2xl ${t.surfaceMuted} p-1 grid grid-cols-2 grid-rows-2 gap-0.5 flex-shrink-0`}>
-                        {[0, 1, 2, 3].map((slot) => {
-                          const pokemon = (team.pokemon || [])[slot];
-                          return (
-                            <div key={slot} className="flex items-center justify-center overflow-hidden">
-                              {pokemon && (
-                                <img
-                                  src={getPokemonImageUrl(pokemon.pokeId)}
-                                  alt={pokemon.name}
-                                  className="w-full h-full object-contain"
-                                  onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
-                        <p className={`${t.textSecondary} text-xs mt-0.5`}>
-                          {(team.pokemon || []).length} Pokémon
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {(team.pokemon || []).length < (team.format === '2v2' ? 4 : 3) && (
-                          <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-500'}`}>
-                            À compléter
-                          </span>
-                        )}
-                        <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
-                          {team.format}
-                        </span>
-                      </div>
-                      <span className={`transition-all duration-200 overflow-hidden flex items-center flex-shrink-0 ${inTeamsSelection ? 'w-0 opacity-0' : 'w-[18px] opacity-100'}`}>
-                        <ChevronRight size={18} className={t.textTertiary} />
-                      </span>
-                    </>
-                  );
 
-                  const inner = inTeamsSelection ? (
-                    <button
-                      onClick={() => setSelectedItems(prev => prev.includes(team._id) ? prev.filter((id) => id !== team._id) : [...prev, team._id])}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface} touch-manipulation`}
-                    >
-                      {rowContent}
-                    </button>
-                  ) : onSelectTeam ? (
-                    <button
-                      onClick={() => onSelectTeam(team, activeTab)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface} touch-manipulation`}
-                    >
-                      {rowContent}
-                    </button>
-                  ) : (
-                    <div className={`flex items-center gap-3 px-4 py-3 ${t.surface}`}>
-                      {rowContent}
+              const regularTeams = filtered.filter((team) => !team.isConcept);
+              const conceptTeamsList = filtered.filter((team) => team.isConcept);
+
+              const renderTeamRow = (team, idx, list) => {
+                const isLast = idx === list.length - 1;
+                const isSelected = selectedItems.includes(team._id);
+                const inTeamsSelection = selectionMode === 'teams';
+                const rowContent = (
+                  <>
+                    <span className={`rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 overflow-hidden ${isSelected ? `${t.accentBg} border-transparent` : `${t.textTertiary} border-current`} ${inTeamsSelection ? 'w-6 h-6 opacity-100 scale-100' : 'w-0 h-0 border-0 opacity-0 scale-75 -mr-3'}`}>
+                      {isSelected && <Check size={14} className="text-white" />}
+                    </span>
+                    <div className={`w-12 h-12 rounded-2xl ${t.surfaceMuted} p-1 grid grid-cols-2 grid-rows-2 gap-0.5 flex-shrink-0`}>
+                      {[0, 1, 2, 3].map((slot) => {
+                        const pokemon = (team.pokemon || [])[slot];
+                        return (
+                          <div key={slot} className="flex items-center justify-center overflow-hidden">
+                            {pokemon && (
+                              <img
+                                src={getPokemonImageUrl(pokemon.pokeId)}
+                                alt={pokemon.name}
+                                className="w-full h-full object-contain"
+                                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
+                      <p className={`${t.textSecondary} text-xs mt-0.5`}>
+                        {(team.pokemon || []).length} Pokémon
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {!team.isConcept && (team.pokemon || []).length < (team.format === '2v2' ? 4 : 3) && (
+                        <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-500'}`}>
+                          À compléter
+                        </span>
+                      )}
+                      {team.isConcept && (
+                        <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-yellow-400/20 text-yellow-300' : 'bg-yellow-400/20 text-yellow-700'}`}>
+                          Concept
+                        </span>
+                      )}
+                      <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
+                        {team.format}
+                      </span>
+                    </div>
+                    <span className={`transition-all duration-200 overflow-hidden flex items-center flex-shrink-0 ${inTeamsSelection ? 'w-0 opacity-0' : 'w-[18px] opacity-100'}`}>
+                      <ChevronRight size={18} className={t.textTertiary} />
+                    </span>
+                  </>
+                );
 
-                  return (
-                    <SwipeableRow
-                      key={team._id}
-                      onDelete={canEdit && onDeleteTeam && !inTeamsSelection ? () => setDeletingTeam(team._id) : undefined}
-                      disabled={inTeamsSelection}
-                      surfaceClass={t.surface}
-                      className={[
-                        !isLast ? `border-b ${t.divider}` : '',
-                        idx === 0 ? 'rounded-t-2xl' : '',
-                        isLast ? 'rounded-b-2xl' : '',
-                      ].filter(Boolean).join(' ')}
-                    >
-                      {inner}
-                    </SwipeableRow>
-                  );
-                })}
-              </div>
+                const inner = inTeamsSelection ? (
+                  <button
+                    onClick={() => setSelectedItems(prev => prev.includes(team._id) ? prev.filter((id) => id !== team._id) : [...prev, team._id])}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface} touch-manipulation`}
+                  >
+                    {rowContent}
+                  </button>
+                ) : onSelectTeam ? (
+                  <button
+                    onClick={() => onSelectTeam(team, activeTab)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surface} touch-manipulation`}
+                  >
+                    {rowContent}
+                  </button>
+                ) : (
+                  <div className={`flex items-center gap-3 px-4 py-3 ${t.surface}`}>
+                    {rowContent}
+                  </div>
+                );
+
+                return (
+                  <SwipeableRow
+                    key={team._id}
+                    onDelete={canEdit && onDeleteTeam && !inTeamsSelection ? () => setDeletingTeam(team._id) : undefined}
+                    disabled={inTeamsSelection}
+                    surfaceClass={t.surface}
+                    className={[
+                      !isLast ? `border-b ${t.divider}` : '',
+                      idx === 0 ? 'rounded-t-2xl' : '',
+                      isLast ? 'rounded-b-2xl' : '',
+                    ].filter(Boolean).join(' ')}
+                  >
+                    {inner}
+                  </SwipeableRow>
+                );
+              };
+
+              return (
+                <div className="space-y-4">
+                  {regularTeams.length > 0 && (
+                    <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
+                      {regularTeams.map((team, idx) => renderTeamRow(team, idx, regularTeams))}
+                    </div>
+                  )}
+
+                  {conceptTeamsList.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 px-1 mb-2">
+                        <h3 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
+                          Équipes Concept ({conceptTeamsList.length})
+                        </h3>
+                      </div>
+                      <div className={`${t.surface} rounded-2xl overflow-hidden shadow-sm`}>
+                        {conceptTeamsList.map((team, idx) => renderTeamRow(team, idx, conceptTeamsList))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })()}
           </section>
@@ -1428,6 +1570,7 @@ export const PlayerDetail = ({
           (player.pokemon || []).filter((p) => selectedItems.includes(p.id)).map((p) => p.pokeId)
         );
         const affectedTeams = playerTeams.filter((team) =>
+          !team.isConcept &&
           (team.pokemon || []).some((p) => selectedPokeIds.has(p.pokeId))
         );
         return createPortal(
@@ -1464,12 +1607,14 @@ export const PlayerDetail = ({
               );
             })()}
             {affectedTeams.length > 0 && (
-              <div className={`mt-3 mb-4 p-3 rounded-xl ${t.warningSoftBg}`}>
+              <div className={`mt-3 mb-4 p-3 rounded-xl ${isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}`}>
                 <div className="flex items-start gap-2">
-                  <AlertTriangle size={16} className={`${t.warningSoftText} flex-shrink-0 mt-0.5`} />
+                  <AlertTriangle size={16} className={`${isDark ? 'text-yellow-300' : 'text-yellow-600'} flex-shrink-0 mt-0.5`} />
                   <div>
-                    <p className={`text-sm font-semibold ${t.warningSoftText} mb-1`}>
-                      Présent dans {affectedTeams.length === 1 ? 'une équipe' : `${affectedTeams.length} ${tr('teams.title').toLowerCase()}`}
+                    <p className={`text-sm font-semibold ${isDark ? 'text-yellow-300' : 'text-yellow-700'} mb-1`}>
+                      {affectedTeams.length === 1
+                        ? 'Une équipe va devenir Concept'
+                        : `${affectedTeams.length} équipes vont devenir Concept`}
                     </p>
                     <ul className={`text-sm ${t.text} space-y-0.5`}>
                       {affectedTeams.slice(0, 4).map((team) => (
@@ -1489,14 +1634,14 @@ export const PlayerDetail = ({
                         </li>
                       )}
                     </ul>
-                    <p className={`text-xs ${t.textSecondary} mt-2`}>
-                      Ils seront également retirés de {affectedTeams.length === 1 ? 'cette équipe' : 'ces équipes'}.
-                    </p>
                   </div>
                 </div>
               </div>
             )}
-            <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
+            <p className={`${t.textSecondary} text-sm mb-5`}>
+              {affectedTeams.length > 0 && `Les Pokémon supprimés resteront dans ${affectedTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais seront marqués "À capturer". `}
+              {tr('common.irreversible')}
+            </p>
             <div className="flex gap-2">
               <button
                 onClick={cancelDeletingSelectedPokemon}
@@ -1636,12 +1781,14 @@ export const PlayerDetail = ({
             </p>
 
             {teamsContainingDeleted.length > 0 && (
-              <div className={`mt-3 mb-4 p-3 rounded-xl ${t.warningSoftBg}`}>
+              <div className={`mt-3 mb-4 p-3 rounded-xl ${isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}`}>
                 <div className="flex items-start gap-2">
-                  <AlertTriangle size={16} className={`${t.warningSoftText} flex-shrink-0 mt-0.5`} />
+                  <AlertTriangle size={16} className={`${isDark ? 'text-yellow-300' : 'text-yellow-600'} flex-shrink-0 mt-0.5`} />
                   <div>
-                    <p className={`text-sm font-semibold ${t.warningSoftText} mb-1`}>
-                      Présent dans {teamsContainingDeleted.length === 1 ? 'une équipe' : `${teamsContainingDeleted.length} ${tr('teams.title').toLowerCase()}`}
+                    <p className={`text-sm font-semibold ${isDark ? 'text-yellow-300' : 'text-yellow-700'} mb-1`}>
+                      {teamsContainingDeleted.length === 1
+                        ? 'Une équipe va devenir Concept'
+                        : `${teamsContainingDeleted.length} équipes vont devenir Concept`}
                     </p>
                     <ul className={`text-sm ${t.text} space-y-0.5`}>
                       {teamsContainingDeleted.map((team) => (
@@ -1654,7 +1801,7 @@ export const PlayerDetail = ({
                       ))}
                     </ul>
                     <p className={`text-xs ${t.textSecondary} mt-2`}>
-                      Il sera également retiré de {teamsContainingDeleted.length === 1 ? 'cette équipe' : 'ces équipes'}.
+                      {deletingPokemonObj?.name} restera dans {teamsContainingDeleted.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer".
                     </p>
                   </div>
                 </div>
@@ -1731,6 +1878,54 @@ export const PlayerDetail = ({
         </div>
       , document.body)}
 
+{pendingConceptTeam && createPortal(
+  <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+    <div className={`${t.surface} rounded-2xl p-6 w-full max-w-sm anim-scale-in`}>
+      <div className="flex items-center gap-2 mb-1">
+        <Target size={20} className={t.accent} />
+        <p className={`font-black text-lg ${t.text}`}>Pokémon non possédés</p>
+      </div>
+      <p className={`${t.textSecondary} text-base mb-3`}>
+        {(() => {
+          const names = pendingConceptTeam.missingPokemon.map((p) => p.name).join(', ');
+          return `${names} ${pendingConceptTeam.missingPokemon.length === 1 ? "n'est pas" : "ne sont pas"} dans ton effectif. Que veux-tu faire ?`;
+        })()}
+      </p>
+      <div className="grid grid-cols-6 gap-1 mb-5">
+        {pendingConceptTeam.missingPokemon.map((p) => (
+          <img
+            key={p.pokeId}
+            src={getPokemonImageUrl(p.pokeId)}
+            alt={p.name}
+            className="w-full aspect-square object-contain"
+          />
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={confirmTeamSaveAsConcept}
+          className={`relative w-full py-3 px-4 rounded-xl font-bold border flex items-center justify-center ${isDark ? 'bg-yellow-400/30 text-yellow-300 border-yellow-400/50' : 'bg-yellow-400/25 text-yellow-700 border-yellow-400/60'}`}
+        >
+          <Plus size={16} className="absolute left-4" />
+          Créer une équipe Concept
+        </button>
+        <button
+          onClick={confirmTeamAddToRoster}
+          className={`w-full py-3 px-4 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText}`}
+        >
+          Ajouter à l'effectif
+        </button>
+        <button
+          onClick={() => setPendingConceptTeam(null)}
+          className={`w-full py-3 rounded-xl font-semibold ${t.textSecondary}`}
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>,
+  document.body
+)}
 <AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
     </div>
   );

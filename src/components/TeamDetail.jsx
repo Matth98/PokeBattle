@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Pencil, Shield } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ChevronLeft, Pencil, Shield, BookmarkPlus, Target, Search, Plus } from 'lucide-react';
+import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemon } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { useAuth } from '../hooks/useAuth';
@@ -12,6 +14,10 @@ export const TeamDetail = ({
   onBack,
   onEdit,
   onViewPokemon,
+  onAddTeam,
+  onUpdatePlayer,
+  players = [],
+  teams = [],
   backLabel = 'Équipes',
   initialScrollY = 0,
   isBackground = false,
@@ -20,6 +26,91 @@ export const TeamDetail = ({
   const { dbUser, isSuperAdmin } = useAuth();
   const canEdit = isSuperAdmin ||
     (dbUser?._id && team?.userId && String(team.userId) === String(dbUser._id));
+
+  // Bouton "Enregistrer" : visible si l'équipe n'appartient pas au joueur courant, ou toujours pour SA
+  const canSave = onAddTeam && (
+    isSuperAdmin || (dbUser?.playerId && String(team?.ownerId) !== String(dbUser?.playerId))
+  );
+
+  const [playerPickerOpen, setPlayerPickerOpen] = useState(false);
+  const [playerSearch, setPlayerSearch] = useState('');
+  const [pendingCopy, setPendingCopy] = useState(null); // { targetPlayer, missingPokemon, payload }
+  const [isSavingCopy, setIsSavingCopy] = useState(false);
+
+  const startSave = () => {
+    if (isSuperAdmin) {
+      setPlayerPickerOpen(true);
+    } else {
+      const myPlayer = players.find((p) => String(p._id) === String(dbUser?.playerId));
+      if (myPlayer) prepareOrSaveCopy(myPlayer);
+    }
+  };
+
+  const uniqueTeamName = (name, targetPlayer) => {
+    const existing = new Set(
+      teams.filter((t) => String(t.ownerId) === String(targetPlayer._id)).map((t) => t.name.toLowerCase())
+    );
+    if (!existing.has(name.toLowerCase())) return name;
+    let i = 2;
+    while (existing.has(`${name}-${i}`.toLowerCase())) i++;
+    return `${name}-${i}`;
+  };
+
+  const prepareOrSaveCopy = (targetPlayer) => {
+    setPlayerPickerOpen(false);
+    setPlayerSearch('');
+    const existingIds = new Set((targetPlayer.pokemon || []).map((p) => p.pokeId));
+    const missingPokemon = (team.pokemon || []).filter((p) => !existingIds.has(p.pokeId));
+    const payload = {
+      name: uniqueTeamName(team.name, targetPlayer),
+      format: team.format,
+      ownerId: targetPlayer._id,
+      owner: targetPlayer.name,
+      pokemon: (team.pokemon || []).map((p) => ({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${p.pokeId}`,
+        pokeId: p.pokeId,
+        name: p.name,
+      })),
+    };
+    if (missingPokemon.length > 0) {
+      setPendingCopy({ targetPlayer, missingPokemon, payload });
+    } else {
+      saveCopy(payload, targetPlayer, []);
+    }
+  };
+
+  const saveCopy = async (payload, targetPlayer, pokemonToAdd, asConcept = false) => {
+    if (!onAddTeam) return;
+    setIsSavingCopy(true);
+    try {
+      const finalPayload = asConcept
+        ? {
+            ...payload,
+            isConcept: true,
+            pokemon: payload.pokemon.map((p) => ({
+              ...p,
+              isConcept: pokemonToAdd.some((mp) => mp.pokeId === p.pokeId) ? true : undefined,
+            })),
+          }
+        : payload;
+      await onAddTeam(finalPayload);
+      if (!asConcept && pokemonToAdd.length > 0 && onUpdatePlayer) {
+        const toAdd = pokemonToAdd.map((p) => ({
+          id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
+          pokeId: p.pokeId,
+          name: p.name,
+          level: 50,
+        }));
+        await onUpdatePlayer(targetPlayer._id, {
+          ...targetPlayer,
+          pokemon: [...(targetPlayer.pokemon || []), ...toAdd],
+        });
+      }
+    } finally {
+      setIsSavingCopy(false);
+    }
+    setPendingCopy(null);
+  };
 
   const { getPokemonImageUrl } = usePokemon();
   const rosterPokeIds = (team?.pokemon || []).map((p) => p.pokeId);
@@ -79,16 +170,29 @@ export const TeamDetail = ({
           >
             <ChevronLeft size={24} className="-translate-x-px" />
           </button>
-          {canEdit && onEdit && (
-            <button
-              onClick={() => onEdit(team)}
-              className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
-              style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
-              aria-label={tr('common.edit')}
-            >
-              <Pencil size={20} />
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {canSave && (
+              <button
+                onClick={startSave}
+                disabled={isSavingCopy}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
+                style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+                aria-label="Enregistrer cette équipe"
+              >
+                <BookmarkPlus size={20} />
+              </button>
+            )}
+            {canEdit && onEdit && (
+              <button
+                onClick={() => onEdit(team)}
+                className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
+                style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
+                aria-label={tr('common.edit')}
+              >
+                <Pencil size={20} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -114,12 +218,17 @@ export const TeamDetail = ({
             })}
           </div>
           <h1 className={`text-2xl font-black tracking-tight ${t.text}`}>{team.name}</h1>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-2 flex-wrap justify-center">
             <p className={`${t.textSecondary} text-sm`}>{team.owner}</p>
             <span className={`${t.textSecondary} text-sm`}>·</span>
             <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
               {team.format}
             </span>
+            {team.isConcept && (
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${isDark ? 'bg-yellow-400/20 text-yellow-300' : 'bg-yellow-400/20 text-yellow-700'}`}>
+                Concept
+              </span>
+            )}
           </div>
         </div>
 
@@ -176,7 +285,13 @@ export const TeamDetail = ({
                         </div>
                       )}
                     </div>
-                    <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
+                    {p.isConcept ? (
+                      <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${isDark ? 'bg-yellow-400/20 text-yellow-300' : 'bg-yellow-400/20 text-yellow-700'}`}>
+                        À capturer
+                      </span>
+                    ) : (
+                      <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
+                    )}
                   </button>
                 );
               })}
@@ -186,6 +301,105 @@ export const TeamDetail = ({
       </div>
     </div>
 
+    {/* ── Picker joueur (Super Admin) ── */}
+    {playerPickerOpen && createPortal(
+      <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+        <div className={`${t.surface} rounded-2xl p-6 w-full max-w-sm anim-scale-in`}>
+          <div className="flex items-center gap-2 mb-1">
+            <BookmarkPlus size={20} className={t.accent} />
+            <p className={`font-black text-lg ${t.text}`}>Copier l'équipe pour…</p>
+          </div>
+          <p className={`${t.textSecondary} text-base mb-3`}>Choisis le joueur qui recevra cette équipe.</p>
+          <div className={`flex items-center gap-2 ${t.surfaceMuted} rounded-xl px-3 py-2 mb-3`}>
+            <Search size={15} className={t.textTertiary} />
+            <input
+              type="text"
+              value={playerSearch}
+              onChange={(e) => setPlayerSearch(e.target.value)}
+              placeholder="Rechercher…"
+              className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
+              autoFocus
+            />
+          </div>
+          <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
+            {players
+              .filter((p) => p.name.toLowerCase().includes(playerSearch.toLowerCase()))
+              .map((p) => (
+                <button
+                  key={p._id}
+                  onClick={() => prepareOrSaveCopy(p)}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl font-semibold ${t.text} flex items-center gap-3 transition-colors`}
+                >
+                  <PlayerAvatar player={p} size={32} textSize="text-[11px]" className="flex-shrink-0" />
+                  {p.name}
+                </button>
+              ))}
+          </div>
+          <button
+            onClick={() => { setPlayerPickerOpen(false); setPlayerSearch(''); }}
+            className={`w-full mt-3 py-3 rounded-xl font-semibold ${t.textSecondary}`}
+          >
+            Annuler
+          </button>
+        </div>
+      </div>,
+      document.body
+    )}
+
+    {/* ── Concept / roster choice ── */}
+    {pendingCopy && createPortal(
+      <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+        <div className={`${t.surface} rounded-2xl p-6 w-full max-w-sm anim-scale-in`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Target size={20} className={t.accent} />
+            <p className={`font-black text-lg ${t.text}`}>Pokémon non possédés</p>
+          </div>
+          <p className={`${t.textSecondary} text-base mb-3`}>
+            {(() => {
+              const isMe = String(pendingCopy.targetPlayer._id) === String(dbUser?.playerId);
+              const effectif = isMe ? 'ton effectif' : `l'effectif de ${pendingCopy.targetPlayer.name}`;
+              const names = pendingCopy.missingPokemon.map((p) => p.name).join(', ');
+              return `${names} ${pendingCopy.missingPokemon.length === 1 ? "n'est pas" : "ne sont pas"} dans ${effectif}. Que veux-tu faire ?`;
+            })()}
+          </p>
+          <div className="grid grid-cols-6 gap-1 mb-5">
+            {pendingCopy.missingPokemon.map((p) => (
+              <img
+                key={p.pokeId}
+                src={getPokemonImageUrl(p.pokeId)}
+                alt={p.name}
+                className="w-full aspect-square object-contain"
+              />
+            ))}
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => saveCopy(pendingCopy.payload, pendingCopy.targetPlayer, pendingCopy.missingPokemon, true)}
+              disabled={isSavingCopy}
+              className={`relative w-full py-3 px-4 rounded-xl font-bold border flex items-center justify-center ${isDark ? 'bg-yellow-400/30 text-yellow-300 border-yellow-400/50' : 'bg-yellow-400/25 text-yellow-700 border-yellow-400/60'}`}
+            >
+              <Plus size={16} className="absolute left-4" />
+              Créer une équipe Concept
+            </button>
+            <button
+              onClick={() => saveCopy(pendingCopy.payload, pendingCopy.targetPlayer, pendingCopy.missingPokemon, false)}
+              disabled={isSavingCopy}
+              className={`w-full py-3 px-4 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText}`}
+            >
+              Ajouter à l'effectif
+            </button>
+            <button
+              onClick={() => setPendingCopy(null)}
+              disabled={isSavingCopy}
+              className={`w-full py-3 rounded-xl font-semibold ${t.textSecondary}`}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
     </>
   );
 };

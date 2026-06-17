@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronRight, ChevronDown, Plus, Check, CheckSquare, Shield, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, Check, CheckSquare, Shield, Loader2, Target } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -81,6 +81,7 @@ export const Teams = ({
   const [isDeletingSingle, setIsDeletingSingle] = useState(false);
   const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
   const [pickingPokemon, setPickingPokemon] = useState(false);
+  const [pendingConceptTeam, setPendingConceptTeam] = useState(null);
   const { getPokemonImageUrl } = usePokemon();
 
   const isEditing = Boolean(editingTeam && showForm);
@@ -187,36 +188,104 @@ export const Teams = ({
       ownerId: newTeamData.owner,
       owner: owner?.name,
     };
-    setIsSaving(true);
-    try {
-    if (isEditing) {
-      await onUpdateTeam(editingTeam._id, payload);
-    } else {
-      await onAddTeam(payload);
+
+    // Si l'équipe éditée est déjà Concept, on la resauvegarde directement en Concept
+    // en marquant les nouveaux Pokémon non possédés comme isConcept aussi.
+    if (isEditing && editingTeam.isConcept) {
+      const existingIds = owner ? new Set((owner.pokemon || []).map((p) => p.pokeId)) : new Set();
+      const conceptPayload = {
+        ...payload,
+        isConcept: true,
+        pokemon: payload.pokemon.map((p) => ({
+          ...p,
+          isConcept: !existingIds.has(p.pokeId) ? true : undefined,
+        })),
+      };
+      setIsSaving(true);
+      try {
+        await onUpdateTeam(editingTeam._id, conceptPayload);
+      } finally {
+        setIsSaving(false);
+      }
+      closeFormWithAnimation();
+      return;
     }
 
-    // Synchronise les Pokémon de l'équipe avec le roster du propriétaire :
-    // tout pokeId absent du roster est ajouté.
-    if (owner && onUpdatePlayer) {
+    // Détecte les Pokémon absents du roster du propriétaire (création ou édition d'équipe classique)
+    if (owner) {
       const existingIds = new Set((owner.pokemon || []).map((p) => p.pokeId));
-      const toAdd = newTeamData.pokemon
-        .filter((p) => !existingIds.has(p.pokeId))
-        .map((p) => ({
+      const missingPokemon = newTeamData.pokemon.filter((p) => !existingIds.has(p.pokeId));
+      if (missingPokemon.length > 0) {
+        setPendingConceptTeam({ payload, owner, missingPokemon });
+        return;
+      }
+    }
+
+    setIsSaving(true);
+    try {
+      if (isEditing) {
+        await onUpdateTeam(editingTeam._id, payload);
+      } else {
+        await onAddTeam(payload);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+    closeFormWithAnimation();
+  };
+
+  const confirmSaveAsConcept = async () => {
+    if (!pendingConceptTeam) return;
+    const { payload, missingPokemon } = pendingConceptTeam;
+    const missingIds = new Set(missingPokemon.map((p) => p.pokeId));
+    const conceptPayload = {
+      ...payload,
+      isConcept: true,
+      pokemon: payload.pokemon.map((p) => ({
+        ...p,
+        isConcept: missingIds.has(p.pokeId) ? true : undefined,
+      })),
+    };
+    setIsSaving(true);
+    try {
+      if (isEditing) {
+        await onUpdateTeam(editingTeam._id, conceptPayload);
+      } else {
+        await onAddTeam(conceptPayload);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+    setPendingConceptTeam(null);
+    closeFormWithAnimation();
+  };
+
+  const confirmAddToRoster = async () => {
+    if (!pendingConceptTeam) return;
+    const { payload, owner, missingPokemon } = pendingConceptTeam;
+    setIsSaving(true);
+    try {
+      if (isEditing) {
+        await onUpdateTeam(editingTeam._id, payload);
+      } else {
+        await onAddTeam(payload);
+      }
+      if (onUpdatePlayer) {
+        const toAdd = missingPokemon.map((p) => ({
           id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
           pokeId: p.pokeId,
           name: p.name,
           level: 50,
         }));
-      if (toAdd.length > 0) {
         await onUpdatePlayer(owner._id, {
           ...owner,
           pokemon: [...(owner.pokemon || []), ...toAdd],
         });
       }
-    }
     } finally {
       setIsSaving(false);
     }
+    setPendingConceptTeam(null);
     closeFormWithAnimation();
   };
 
@@ -451,7 +520,12 @@ export const Teams = ({
                     </div>
 
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      {(team.pokemon || []).length < (team.format === '2v2' ? 4 : 3) && (
+                      {team.isConcept && (
+                        <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-amber-400/15 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                          Concept
+                        </span>
+                      )}
+                      {!team.isConcept && (team.pokemon || []).length < (team.format === '2v2' ? 4 : 3) && (
                         <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-500'}`}>
                           À compléter
                         </span>
@@ -783,6 +857,60 @@ export const Teams = ({
         </div>
       , document.body)}
       <AlertModal title={alertMessage?.title} message={alertMessage?.message} onClose={() => setAlertMessage(null)} t={t} />
+
+      {pendingConceptTeam && createPortal(
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 w-full max-w-sm anim-scale-in`}>
+            <div className="flex items-center gap-2 mb-1">
+              <Target size={20} className={t.accent} />
+              <p className={`font-black text-lg ${t.text}`}>Pokémon non possédés</p>
+            </div>
+            <p className={`${t.textSecondary} text-base mb-3`}>
+              {(() => {
+                const isMe = String(pendingConceptTeam.owner._id) === String(dbUser?.playerId);
+                const effectif = isMe ? 'ton effectif' : `l'effectif de ${pendingConceptTeam.owner.name}`;
+                const names = pendingConceptTeam.missingPokemon.map((p) => p.name).join(', ');
+                return `${names} ${pendingConceptTeam.missingPokemon.length === 1 ? "n'est pas" : "ne sont pas"} dans ${effectif}. Que veux-tu faire ?`;
+              })()}
+            </p>
+            <div className="grid grid-cols-6 gap-1 mb-5">
+              {pendingConceptTeam.missingPokemon.map((p) => (
+                <img
+                  key={p.pokeId}
+                  src={getPokemonImageUrl(p.pokeId)}
+                  alt={p.name}
+                  className="w-full aspect-square object-contain"
+                />
+              ))}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={confirmSaveAsConcept}
+                disabled={isSaving}
+                className={`relative w-full py-3 px-4 rounded-xl font-bold border flex items-center justify-center ${isDark ? 'bg-yellow-400/30 text-yellow-300 border-yellow-400/50' : 'bg-yellow-400/25 text-yellow-700 border-yellow-400/60'}`}
+              >
+                <Plus size={16} className="absolute left-4" />
+                Créer une équipe Concept
+              </button>
+              <button
+                onClick={confirmAddToRoster}
+                disabled={isSaving}
+                className={`w-full py-3 px-4 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText}`}
+              >
+                Ajouter à l'effectif
+              </button>
+              <button
+                onClick={() => setPendingConceptTeam(null)}
+                disabled={isSaving}
+                className={`w-full py-3 rounded-xl font-semibold ${t.textSecondary}`}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </>
   );
 };

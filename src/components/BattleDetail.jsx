@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle, BookmarkPlus, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle, BookmarkPlus, Loader2, Target, Search, Plus } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -115,6 +115,7 @@ export const BattleDetail = ({
   onEdit,
   onDelete,
   onAddTeam,
+  onUpdatePlayer,
   onViewPokemon,
   onPlayerClick,
   backLabel = 'Combats',
@@ -134,6 +135,10 @@ export const BattleDetail = ({
   const [savingTeamSlot, setSavingTeamSlot] = useState(null); // 'player1' | 'player2'
   const [namingTeamSlot, setNamingTeamSlot] = useState(null); // slot en cours de nommage
   const [teamNameInput, setTeamNameInput] = useState('');
+  const [playerPickerSlot, setPlayerPickerSlot] = useState(null); // { name, battleTeam, format }
+  const [playerSearch, setPlayerSearch] = useState('');
+  const [pendingCopy, setPendingCopy] = useState(null); // { payload, targetPlayer, missingPokemon }
+  const [isSavingCopy, setIsSavingCopy] = useState(false);
   const [showTypeDetail, setShowTypeDetail] = useState(false);
   const [mvpStats, setMvpStats] = useState(null);
   const [mvpArtwork, setMvpArtwork] = useState(null);
@@ -214,14 +219,14 @@ export const BattleDetail = ({
   };
 
   // Peut sauvegarder l'équipe d'un slot donné
+  // Regular user : peut sauvegarder n'importe quelle équipe (pour lui-même)
+  // Super admin : peut toujours sauvegarder pour n'importe quel joueur
   const canSaveTeam = (slot) => {
     if (!onAddTeam) return false;
-    const playerId = slot === 'player1' ? battle.player1 : battle.player2;
     const battleTeam = slot === 'player1' ? battle.team1 : battle.team2;
-    if (!playerId || !battleTeam?.length) return false;
-    if (teamAlreadyExists(playerId, battleTeam)) return false;
+    if (!battleTeam?.length) return false;
     if (isSuperAdmin) return true;
-    return dbUser?.playerId && String(dbUser.playerId) === String(playerId);
+    return !!dbUser?.playerId;
   };
 
   const openNamingModal = (slot) => {
@@ -229,31 +234,84 @@ export const BattleDetail = ({
     setNamingTeamSlot(slot);
   };
 
-  const handleSaveTeam = async () => {
+  const handleSaveTeam = () => {
     const slot = namingTeamSlot;
     const name = teamNameInput.trim();
     if (!name || !slot) return;
-    const playerId = slot === 'player1' ? battle.player1 : battle.player2;
     const battleTeam = slot === 'player1' ? battle.team1 : battle.team2;
-    const player = players.find((p) => p._id === playerId);
-    if (!player || !battleTeam?.length) return;
+    if (!battleTeam?.length) return;
     setNamingTeamSlot(null);
-    setSavingTeamSlot(slot);
+    if (isSuperAdmin) {
+      setPlayerPickerSlot({ name, battleTeam, format: battle.format });
+    } else {
+      const myPlayer = players.find((p) => String(p._id) === String(dbUser?.playerId));
+      if (myPlayer) prepareOrSaveCopy({ name, battleTeam, format: battle.format }, myPlayer);
+    }
+  };
+
+  const uniqueTeamName = (name, targetPlayer) => {
+    const existing = new Set(
+      teams.filter((t) => String(t.ownerId) === String(targetPlayer._id)).map((t) => t.name.toLowerCase())
+    );
+    if (!existing.has(name.toLowerCase())) return name;
+    let i = 2;
+    while (existing.has(`${name}-${i}`.toLowerCase())) i++;
+    return `${name}-${i}`;
+  };
+
+  const prepareOrSaveCopy = ({ name, battleTeam, format }, targetPlayer) => {
+    setPlayerPickerSlot(null);
+    setPlayerSearch('');
+    const existingIds = new Set((targetPlayer.pokemon || []).map((p) => p.pokeId));
+    const missingPokemon = battleTeam.filter((p) => !existingIds.has(p.pokeId));
+    const payload = {
+      name: uniqueTeamName(name, targetPlayer),
+      format,
+      ownerId: targetPlayer._id,
+      owner: targetPlayer.name,
+      pokemon: battleTeam.map((p) => ({
+        id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
+        pokeId: p.pokeId,
+        name: p.name,
+      })),
+    };
+    if (missingPokemon.length > 0) {
+      setPendingCopy({ payload, targetPlayer, missingPokemon });
+    } else {
+      execSaveCopy(payload, targetPlayer, [], false);
+    }
+  };
+
+  const execSaveCopy = async (payload, targetPlayer, pokemonToAdd, asConcept) => {
+    setIsSavingCopy(true);
     try {
-      await onAddTeam({
-        name,
-        format: battle.format,
-        ownerId: playerId,
-        owner: player.name,
-        pokemon: battleTeam.map((p) => ({
+      const finalPayload = asConcept
+        ? {
+            ...payload,
+            isConcept: true,
+            pokemon: payload.pokemon.map((p) => ({
+              ...p,
+              isConcept: pokemonToAdd.some((mp) => mp.pokeId === p.pokeId) ? true : undefined,
+            })),
+          }
+        : payload;
+      await onAddTeam(finalPayload);
+      if (!asConcept && pokemonToAdd.length > 0 && onUpdatePlayer) {
+        const toAdd = pokemonToAdd.map((p) => ({
           id: `${Date.now()}-${p.pokeId}-${Math.random().toString(36).slice(2, 7)}`,
           pokeId: p.pokeId,
           name: p.name,
-        })),
-      });
+          level: 50,
+        }));
+        await onUpdatePlayer(targetPlayer._id, {
+          ...targetPlayer,
+          pokemon: [...(targetPlayer.pokemon || []), ...toAdd],
+        });
+      }
     } finally {
-      setSavingTeamSlot(null);
+      setIsSavingCopy(false);
     }
+    setPendingCopy(null);
   };
 
   if (!battle) return null;
@@ -411,7 +469,7 @@ export const BattleDetail = ({
               className={`flex items-center gap-1.5 text-xs font-semibold ${t.accent} disabled:opacity-50 flex-shrink-0`}
             >
               {savingTeamSlot === 'player1' ? <Loader2 size={14} className="animate-spin" /> : <BookmarkPlus size={14} />}
-              Enregistrer
+              Copier l'équipe
             </button>
           )}
         />
@@ -430,7 +488,7 @@ export const BattleDetail = ({
               className={`flex items-center gap-1.5 text-xs font-semibold ${t.accent} disabled:opacity-50 flex-shrink-0`}
             >
               {savingTeamSlot === 'player2' ? <Loader2 size={14} className="animate-spin" /> : <BookmarkPlus size={14} />}
-              Enregistrer
+              Copier l'équipe
             </button>
           )}
         />
@@ -734,12 +792,112 @@ export const BattleDetail = ({
         )}
       </div>
 
+      {/* ── Picker joueur (Super Admin) ── */}
+      {playerPickerSlot && createPortal(
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+            <div className="flex items-center gap-2 mb-1">
+              <BookmarkPlus size={20} className={t.accent} />
+              <p className={`font-black text-lg ${t.text}`}>Copier l'équipe pour…</p>
+            </div>
+            <p className={`${t.textSecondary} text-base mb-3`}>Choisis le joueur qui recevra cette équipe.</p>
+            <div className={`flex items-center gap-2 ${t.surfaceMuted} rounded-xl px-3 py-2 mb-3`}>
+              <Search size={15} className={t.textTertiary} />
+              <input
+                type="text"
+                value={playerSearch}
+                onChange={(e) => setPlayerSearch(e.target.value)}
+                placeholder="Rechercher…"
+                className={`flex-1 bg-transparent outline-none ${t.text} text-sm`}
+                autoFocus
+              />
+            </div>
+            <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
+              {players
+                .filter((p) => p.name.toLowerCase().includes(playerSearch.toLowerCase()))
+                .map((p) => (
+                  <button
+                    key={p._id}
+                    onClick={() => prepareOrSaveCopy(playerPickerSlot, p)}
+                    className={`w-full text-left px-3 py-2.5 rounded-xl font-semibold ${t.text} flex items-center gap-3`}
+                  >
+                    <PlayerAvatar player={p} size={32} textSize="text-[11px]" className="flex-shrink-0" />
+                    {p.name}
+                  </button>
+                ))}
+            </div>
+            <button
+              onClick={() => { setPlayerPickerSlot(null); setPlayerSearch(''); }}
+              className={`w-full mt-3 py-3 rounded-xl font-semibold ${t.textSecondary}`}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ── Concept / roster choice ── */}
+      {pendingCopy && createPortal(
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+            <div className="flex items-center gap-2 mb-1">
+              <Target size={20} className={t.accent} />
+              <p className={`font-black text-lg ${t.text}`}>Pokémon non possédés</p>
+            </div>
+            <p className={`${t.textSecondary} text-base mb-3`}>
+              {(() => {
+                const isMe = String(pendingCopy.targetPlayer._id) === String(dbUser?.playerId);
+                const effectif = isMe ? 'ton effectif' : `l'effectif de ${pendingCopy.targetPlayer.name}`;
+                const names = pendingCopy.missingPokemon.map((p) => p.name).join(', ');
+                return `${names} ${pendingCopy.missingPokemon.length === 1 ? "n'est pas" : "ne sont pas"} dans ${effectif}. Que veux-tu faire ?`;
+              })()}
+            </p>
+            <div className="grid grid-cols-6 gap-1 mb-5">
+              {pendingCopy.missingPokemon.map((p) => (
+                <img
+                  key={p.pokeId}
+                  src={getPokemonImageUrl(p.pokeId)}
+                  alt={p.name}
+                  className="w-full aspect-square object-contain"
+                />
+              ))}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => execSaveCopy(pendingCopy.payload, pendingCopy.targetPlayer, pendingCopy.missingPokemon, true)}
+                disabled={isSavingCopy}
+                className={`relative w-full py-3 px-4 rounded-xl font-bold border flex items-center justify-center ${isDark ? 'bg-yellow-400/30 text-yellow-300 border-yellow-400/50' : 'bg-yellow-400/25 text-yellow-700 border-yellow-400/60'}`}
+              >
+                <Plus size={16} className="absolute left-4" />
+                Créer une équipe Concept
+              </button>
+              <button
+                onClick={() => execSaveCopy(pendingCopy.payload, pendingCopy.targetPlayer, pendingCopy.missingPokemon, false)}
+                disabled={isSavingCopy}
+                className={`w-full py-3 px-4 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText}`}
+              >
+                Ajouter à l'effectif
+              </button>
+              <button
+                onClick={() => setPendingCopy(null)}
+                disabled={isSavingCopy}
+                className={`w-full py-3 rounded-xl font-semibold ${t.textSecondary}`}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* ── Modale nommage équipe ── */}
       {namingTeamSlot && createPortal(
         <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
             <p className={`font-black text-lg ${t.text} mb-4`}>
-              Enregistrer l'équipe de {namingTeamSlot === 'player1' ? p1?.name : p2?.name}
+              Copier l'équipe de {namingTeamSlot === 'player1' ? p1?.name : p2?.name}
             </p>
             <input
               type="text"
@@ -762,7 +920,7 @@ export const BattleDetail = ({
                 disabled={!teamNameInput.trim()}
                 className={`flex-1 py-3 rounded-xl font-semibold ${t.accentBg} text-white disabled:opacity-40`}
               >
-                Enregistrer
+                Confirmer
               </button>
             </div>
           </div>

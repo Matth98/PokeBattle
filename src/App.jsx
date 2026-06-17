@@ -558,11 +558,24 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const handleUpdateTeam = async (id, data) => {
     const updated = await updateTeam(id, data);
     if (updated) {
-      setTeams(teams.map(t => t._id === id ? updated : t));
-      setSelectedTeam(updated);
+      // Merge sent data with API response: fields the backend may strip (isConcept, pokemon[].isConcept)
+      // are preserved from data; backend-authoritative fields (timestamps, _id) come from updated.
+      const merged = { ...data, ...updated };
+      setTeams(teams.map(t => t._id === id ? merged : t));
+      setSelectedTeam(merged);
       toast.success(`Équipe « ${updated.name} » mise à jour`);
     } else {
       toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
+  const handleUpdateTeamSilent = async (id, data, toastMsg) => {
+    const updated = await updateTeam(id, data);
+    if (updated) {
+      const merged = { ...data, ...updated };
+      setTeams(teams.map(t => t._id === id ? merged : t));
+      setSelectedTeam(merged);
+      if (toastMsg) toast.success(toastMsg);
     }
   };
 
@@ -814,6 +827,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           onUpdate={handleUpdatePlayer}
           onAddTeam={handleAddTeam}
           onUpdateTeam={handleUpdateTeam}
+          onUpdateTeamSilent={handleUpdateTeamSilent}
           onDeleteTeam={handleDeleteTeam}
           onSelectTeam={(team, activeTab) => {
             setSelectedTeam(team);
@@ -872,6 +886,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           t={t}
           isDark={isDark}
           backLabel={backLabel}
+          players={sortedPlayers}
+          teams={sortedTeams}
+          onAddTeam={handleAddTeam}
+          onUpdatePlayer={handleUpdatePlayer}
           initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('teamDetail') || 0 : 0}
           onBack={() => {
             setSelectedTeam(null);
@@ -949,6 +967,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           }}
           onDelete={handleDeleteBattle}
           onAddTeam={handleAddTeam}
+          onUpdatePlayer={handleUpdatePlayer}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
           onPlayerClick={(p) => { setSelectedPlayer(p); navigateTo('playerDetail'); }}
         />
