@@ -39,6 +39,24 @@ import { useToast } from './Toast';
 
 import { TYPE_SUPER_EFFECTIVE } from '../utils/mvp';
 
+function PokeBallIcon({ id, size = 14, className = '' }) {
+  const clipId = `pb-pd-${id}`;
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className={className}>
+      <g clipPath={`url(#${clipId})`}>
+        <path d="M5.99994 1.19995C3.55794 1.19995 1.54194 3.03595 1.24194 5.39995H3.68994C3.95394 4.36795 4.88994 3.59995 5.99994 3.59995C7.10994 3.59995 8.04594 4.36795 8.31594 5.39995H10.7579C10.4639 3.03595 8.44794 1.19995 5.99994 1.19995Z" fill="currentColor"/>
+        <path d="M6 0C2.694 0 0 2.694 0 6C0 9.306 2.694 12 6 12C9.306 12 12 9.306 12 6C12 2.694 9.312 0 6 0ZM6 1.2C8.448 1.2 10.464 3.036 10.758 5.4H8.316C8.046 4.368 7.116 3.6 6 3.6C4.884 3.6 3.954 4.368 3.69 5.4H1.242C1.542 3.036 3.558 1.2 6 1.2Z" fill="currentColor"/>
+        <path d="M10.7579 5.39995H8.31594C8.04594 4.36795 7.11594 3.59995 5.99994 3.59995C4.88394 3.59995 3.95394 4.36795 3.68994 5.39995H1.24194C1.54194 3.03595 3.55794 1.19995 5.99994 1.19995C8.44194 1.19995 10.4639 3.03595 10.7579 5.39995Z" fill="#FF1C1C"/>
+        <path d="M10.7579 6.59998C10.4639 8.96398 8.44794 10.8 5.99994 10.8C3.55194 10.8 1.54194 8.96398 1.24194 6.59998H3.68994C3.95394 7.63198 4.88994 8.39998 5.99994 8.39998C7.10994 8.39998 8.04594 7.63198 8.31594 6.59998H10.7579Z" fill="white"/>
+        <path d="M6.00005 7.20005C6.66279 7.20005 7.20005 6.66279 7.20005 6.00005C7.20005 5.33731 6.66279 4.80005 6.00005 4.80005C5.33731 4.80005 4.80005 5.33731 4.80005 6.00005C4.80005 6.66279 5.33731 7.20005 6.00005 7.20005Z" fill="white"/>
+      </g>
+      <defs>
+        <clipPath id={clipId}><rect width="12" height="12" fill="white"/></clipPath>
+      </defs>
+    </svg>
+  );
+}
+
 export const PlayerDetail = ({
   player,
   teams = [],
@@ -834,36 +852,35 @@ export const PlayerDetail = ({
 
         {/* ── À capturer ── */}
         {conceptPokemon.length > 0 && (
-          <div className={`rounded-3xl overflow-hidden ${isDark ? 'bg-amber-400/[0.08] border border-amber-400/20' : 'bg-amber-50 border border-amber-200/60'}`}>
-            <div className="px-4 pt-4 pb-3 flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-amber-400/20' : 'bg-amber-100'}`}>
-                <Target size={18} className={isDark ? 'text-amber-400' : 'text-amber-600'} />
-              </div>
-              <div>
-                <p className={`font-black text-sm ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>
-                  À capturer · {conceptPokemon.length} Pokémon
-                </p>
-                <p className={`text-xs ${isDark ? 'text-amber-400/70' : 'text-amber-600/80'}`}>
-                  Complète tes équipes Concept !
+          <div className={`rounded-2xl overflow-hidden ${isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/60 border border-black/[0.06]'}`}>
+            <div className="px-4 pt-3.5 pb-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PokeBallIcon id="capture" size={14} className={isDark ? 'text-white' : 'text-black'} />
+                <p className={`text-xs font-semibold tracking-wide uppercase ${isDark ? 'text-white/50' : 'text-black/40'}`}>
+                  À capturer
                 </p>
               </div>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-white/60' : 'bg-black/[0.06] text-black/40'}`}>
+                {conceptPokemon.length}
+              </span>
             </div>
-            <div className="px-4 pb-4 flex gap-3 overflow-x-auto scrollbar-hide">
+            <div className="px-3 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
               {conceptPokemon.map((p) => (
-                <div key={p.pokeId} className="flex flex-col items-center gap-1 flex-shrink-0">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center relative ${isDark ? 'bg-amber-400/10' : 'bg-white/70'}`}>
+                <button
+                  key={p.pokeId}
+                  onClick={() => onViewPokemon?.({ pokeId: p.pokeId, name: p.name })}
+                  className="flex flex-col items-center gap-1.5 flex-shrink-0"
+                >
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]'}`}>
                     <img
                       src={getPokemonImageUrl(p.pokeId)}
                       alt={p.name}
-                      className="w-14 h-14 object-contain"
+                      className="w-12 h-12 object-contain"
                       onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                     />
-                    <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center ${isDark ? 'bg-amber-400' : 'bg-amber-500'}`}>
-                      <span className="text-white text-[9px] font-black">!</span>
-                    </div>
                   </div>
-                  <p className={`text-[10px] font-bold truncate max-w-[60px] text-center ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>{p.name}</p>
-                </div>
+                  <p className={`text-[10px] font-medium truncate max-w-[56px] text-center ${isDark ? 'text-white/50' : 'text-black/40'}`}>{p.name}</p>
+                </button>
               ))}
             </div>
           </div>
@@ -1888,7 +1905,7 @@ export const PlayerDetail = ({
       <p className={`${t.textSecondary} text-base mb-3`}>
         {(() => {
           const names = pendingConceptTeam.missingPokemon.map((p) => p.name).join(', ');
-          return `${names} ${pendingConceptTeam.missingPokemon.length === 1 ? "n'est pas" : "ne sont pas"} dans ton effectif. Que veux-tu faire ?`;
+          return `${names} ${pendingConceptTeam.missingPokemon.length === 1 ? "n'est pas" : "ne sont pas"} dans ta collection. Que veux-tu faire ?`;
         })()}
       </p>
       <div className="grid grid-cols-6 gap-1 mb-5">
@@ -1913,7 +1930,7 @@ export const PlayerDetail = ({
           onClick={confirmTeamAddToRoster}
           className={`w-full py-3 px-4 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText}`}
         >
-          Ajouter à l'effectif
+          Ajouter à la collection
         </button>
         <button
           onClick={() => setPendingConceptTeam(null)}

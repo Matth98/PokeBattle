@@ -868,9 +868,9 @@ export const Teams = ({
             <p className={`${t.textSecondary} text-base mb-3`}>
               {(() => {
                 const isMe = String(pendingConceptTeam.owner._id) === String(dbUser?.playerId);
-                const effectif = isMe ? 'ton effectif' : `l'effectif de ${pendingConceptTeam.owner.name}`;
+                const collection = isMe ? 'ta collection' : `la collection de ${pendingConceptTeam.owner.name}`;
                 const names = pendingConceptTeam.missingPokemon.map((p) => p.name).join(', ');
-                return `${names} ${pendingConceptTeam.missingPokemon.length === 1 ? "n'est pas" : "ne sont pas"} dans ${effectif}. Que veux-tu faire ?`;
+                return `${names} ${pendingConceptTeam.missingPokemon.length === 1 ? "n'est pas" : "ne sont pas"} dans ${collection}. Que veux-tu faire ?`;
               })()}
             </p>
             <div className="grid grid-cols-6 gap-1 mb-5">
@@ -897,7 +897,7 @@ export const Teams = ({
                 disabled={isSaving}
                 className={`w-full py-3 px-4 rounded-xl font-semibold ${t.accentSoftBg} ${t.accentSoftText}`}
               >
-                Ajouter à l'effectif
+                Ajouter à la collection
               </button>
               <button
                 onClick={() => setPendingConceptTeam(null)}

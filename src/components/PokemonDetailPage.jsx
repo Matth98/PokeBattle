@@ -1,11 +1,39 @@
 import React, { useState, useLayoutEffect, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, Loader2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { AlertTriangle, ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
 import { TabBar, StrategyTab, MovesTab } from './PokemonStrategyTab';
+import { useToast } from './Toast';
 
 const ALL_TYPES = Object.keys(TYPE_HEX);
+
+function PokeBallIcon({ id, size = 20, owned = false }) {
+  const clipId = `pb-pdp-${id}`;
+  if (owned) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g clipPath={`url(#${clipId})`}>
+          <path d="M5.99994 1.19995C3.55794 1.19995 1.54194 3.03595 1.24194 5.39995H3.68994C3.95394 4.36795 4.88994 3.59995 5.99994 3.59995C7.10994 3.59995 8.04594 4.36795 8.31594 5.39995H10.7579C10.4639 3.03595 8.44794 1.19995 5.99994 1.19995Z" fill="#1a1a1a"/>
+          <path d="M6 0C2.694 0 0 2.694 0 6C0 9.306 2.694 12 6 12C9.306 12 12 9.306 12 6C12 2.694 9.312 0 6 0ZM6 1.2C8.448 1.2 10.464 3.036 10.758 5.4H8.316C8.046 4.368 7.116 3.6 6 3.6C4.884 3.6 3.954 4.368 3.69 5.4H1.242C1.542 3.036 3.558 1.2 6 1.2Z" fill="#1a1a1a"/>
+          <path d="M10.7579 5.39995H8.31594C8.04594 4.36795 7.11594 3.59995 5.99994 3.59995C4.88394 3.59995 3.95394 4.36795 3.68994 5.39995H1.24194C1.54194 3.03595 3.55794 1.19995 5.99994 1.19995C8.44194 1.19995 10.4639 3.03595 10.7579 5.39995Z" fill="#FF1C1C"/>
+          <path d="M10.7579 6.59998C10.4639 8.96398 8.44794 10.8 5.99994 10.8C3.55194 10.8 1.54194 8.96398 1.24194 6.59998H3.68994C3.95394 7.63198 4.88994 8.39998 5.99994 8.39998C7.10994 8.39998 8.04594 7.63198 8.31594 6.59998H10.7579Z" fill="white"/>
+          <path d="M6.00005 7.20005C6.66279 7.20005 7.20005 6.66279 7.20005 6.00005C7.20005 5.33731 6.66279 4.80005 6.00005 4.80005C5.33731 4.80005 4.80005 5.33731 4.80005 6.00005C4.80005 6.66279 5.33731 7.20005 6.00005 7.20005Z" fill="white"/>
+        </g>
+        <defs><clipPath id={clipId}><rect width="12" height="12" fill="white"/></clipPath></defs>
+      </svg>
+    );
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="6" cy="6" r="5.4" stroke="currentColor" strokeWidth="1.2"/>
+      <line x1="0.6" y1="6" x2="4.5" y2="6" stroke="currentColor" strokeWidth="1.2"/>
+      <line x1="7.5" y1="6" x2="11.4" y2="6" stroke="currentColor" strokeWidth="1.2"/>
+      <circle cx="6" cy="6" r="1.5" stroke="currentColor" strokeWidth="1.2"/>
+    </svg>
+  );
+}
 
 /* ── Formes géométriques par type pour le Hero ── */
 const HERO_SHAPES = {
@@ -337,10 +365,83 @@ function InfoRow({ labelKey, label, value, accentColor, isDark }) {
   );
 }
 
-export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLabel = 'Recherche' }) => {
+export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLabel = 'Recherche', myPlayer = null, teams = [], onUpdatePlayer, onUpdateTeam, onUpdateTeamSilent }) => {
   const tr = useTranslation();
+  const toast = useToast();
   const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
   const [activeTab, setActiveTab] = useState('presentation');
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  // Snapshot des équipes au moment de l'ouverture de la modale — évite que le contenu
+  // change pendant l'exécution async (teamsContaining se vide quand les équipes passent Concept)
+  const [snapshotTeams, setSnapshotTeams] = useState([]);
+
+  const owned = myPlayer ? (myPlayer.pokemon || []).some(p => p.pokeId === pokeId) : false;
+  const teamsContaining = myPlayer
+    ? teams.filter(team =>
+        team.ownerId === myPlayer._id &&
+        !team.isConcept &&
+        (team.pokemon || []).some(p => p.pokeId === pokeId)
+      )
+    : [];
+
+  const handleToggle = async () => {
+    if (!myPlayer || !onUpdatePlayer) return;
+    if (owned) {
+      setSnapshotTeams(teamsContaining);
+      setConfirmRemove(true);
+    } else {
+      const newEntry = { id: `${Date.now()}-${pokeId}`, pokeId, name: pokeName, level: 50 };
+      await onUpdatePlayer(myPlayer._id, { ...myPlayer, pokemon: [...(myPlayer.pokemon || []), newEntry] });
+      // Retire le marquage isConcept dans les équipes Concept qui contiennent ce pokémon
+      if (onUpdateTeam) {
+        const conceptTeams = teams.filter(team =>
+          team.ownerId === myPlayer._id &&
+          team.isConcept &&
+          (team.pokemon || []).some(p => p.isConcept && p.pokeId === pokeId)
+        );
+        for (const team of conceptTeams) {
+          const updatedPokemon = (team.pokemon || []).map(p =>
+            p.pokeId === pokeId ? { ...p, isConcept: false } : p
+          );
+          const stillConcept = updatedPokemon.some(p => p.isConcept);
+          if (stillConcept && onUpdateTeamSilent) {
+            await onUpdateTeamSilent(team._id, { ...team, isConcept: true, pokemon: updatedPokemon });
+          } else if (!stillConcept && onUpdateTeam) {
+            await onUpdateTeam(team._id, { ...team, isConcept: false, pokemon: updatedPokemon });
+          }
+        }
+      }
+      toast.success(`${pokeName} ajouté à ta collection`);
+    }
+  };
+
+  const handleConfirmRemove = async () => {
+    if (isRemoving) return;
+    const pokemonEntry = (myPlayer.pokemon || []).find(p => p.pokeId === pokeId);
+    if (!pokemonEntry) return;
+    setIsRemoving(true);
+    // Marque le pokémon comme "à capturer" dans toutes les équipes qui le contiennent
+    if (onUpdateTeamSilent) {
+      const affectedTeams = teams.filter(team =>
+        team.ownerId === myPlayer._id &&
+        (team.pokemon || []).some(p => p.pokeId === pokeId)
+      );
+      for (const team of affectedTeams) {
+        const updatedPokemon = (team.pokemon || []).map(p =>
+          p.pokeId === pokeId ? { ...p, isConcept: true } : p
+        );
+        await onUpdateTeamSilent(team._id, { ...team, isConcept: true, pokemon: updatedPokemon });
+      }
+    }
+    await onUpdatePlayer(myPlayer._id, {
+      ...myPlayer,
+      pokemon: (myPlayer.pokemon || []).filter(p => p.pokeId !== pokeId),
+    });
+    toast.success(`${pokeName} retiré de ta collection`);
+    setConfirmRemove(false);
+    setIsRemoving(false);
+  };
 
   useEffect(() => {
     const bg = isDark ? '#18181b' : '#ffffff';
@@ -451,8 +552,23 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               #{String(data.id).padStart(4, '0')}
             </p>
             <h1 className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{data?.name || pokeName}</h1>
-            <div className="flex gap-2 mb-5">
-              {data.types.map(tn => <TypeBadge key={tn} typeName={tn} />)}
+            <div className="flex items-center gap-2 mb-5">
+              <div className="flex gap-2">
+                {data.types.map(tn => <TypeBadge key={tn} typeName={tn} />)}
+              </div>
+              {myPlayer && (
+                <button
+                  onClick={handleToggle}
+                  className={`inline-flex items-center justify-center rounded-full w-6 self-stretch transition-all ${
+                    owned
+                      ? isDark ? 'bg-white/10 text-white' : 'bg-black/[0.06] text-gray-800'
+                      : isDark ? 'bg-white/5 text-zinc-600' : 'bg-black/[0.04] text-gray-300'
+                  }`}
+                  aria-label={owned ? 'Retirer de ma collection' : 'Ajouter à ma collection'}
+                >
+                  <PokeBallIcon id={`${pokeId}-toggle`} size={16} owned={owned} />
+                </button>
+              )}
             </div>
           </div>
 
@@ -534,6 +650,50 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             <MovesTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
           </div>
         </div>
+      )}
+
+      {/* ── Modale retrait pokémon ── */}
+      {confirmRemove && createPortal(
+        <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
+          <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
+            <p className={`font-black text-lg ${t.text} mb-1`}>Retirer {pokeName} ?</p>
+            {snapshotTeams.length > 0 && (
+              <div className={`mt-3 mb-4 p-3 rounded-xl ${isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}`}>
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={16} className={`${isDark ? 'text-yellow-300' : 'text-yellow-600'} flex-shrink-0 mt-0.5`} />
+                  <div>
+                    <p className={`text-sm font-semibold ${isDark ? 'text-yellow-300' : 'text-yellow-700'} mb-1`}>
+                      {snapshotTeams.length === 1 ? 'Une équipe va devenir Concept' : `${snapshotTeams.length} équipes vont devenir Concept`}
+                    </p>
+                    <ul className={`text-sm ${t.text} space-y-0.5`}>
+                      {snapshotTeams.map((team) => (
+                        <li key={team._id} className="flex items-center gap-1.5">
+                          <span className={`inline-flex flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
+                            {team.format}
+                          </span>
+                          <span className="font-semibold">{team.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+            <p className={`${t.textSecondary} text-sm mb-5`}>
+              {snapshotTeams.length > 0 && `${pokeName} restera dans ${snapshotTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}Cette action est irréversible.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmRemove(false)} className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}>
+                Annuler
+              </button>
+              <button onClick={handleConfirmRemove} disabled={isRemoving} className={`flex-1 py-3 rounded-xl font-bold bg-red-500 text-white transition-opacity flex items-center justify-center gap-2 ${isRemoving ? 'opacity-60' : ''}`}>
+                {isRemoving && <Loader2 size={16} className="animate-spin" />}
+                Retirer
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Onglets — fixe en bas d'écran ── */}

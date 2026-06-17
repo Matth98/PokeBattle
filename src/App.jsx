@@ -574,7 +574,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     if (updated) {
       const merged = { ...data, ...updated };
       setTeams((prev) => prev.map(t => t._id === id ? merged : t));
-      setSelectedTeam(merged);
+      setSelectedTeam((prev) => prev?._id === id ? merged : prev);
       if (toastMsg) toast.success(toastMsg);
     }
   };
@@ -1013,6 +1013,11 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             flushSync(() => navigateBack());
             searchPageRef.current?.focus();
           }}
+          myPlayer={players.find(p => p._id === dbUser?.playerId) || null}
+          teams={teams}
+          onUpdatePlayer={handleUpdatePlayer}
+          onUpdateTeam={handleUpdateTeam}
+          onUpdateTeamSilent={handleUpdateTeamSilent}
         />
       )}
 
