@@ -897,7 +897,7 @@ export const PlayerDetail = ({
         {conceptPokemon.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3 px-1">
-              <PokeBallIcon id="capture" size={14} className={isDark ? 'text-white/50' : 'text-black/40'} />
+              <PokeBallIcon id="capture" size={14} className="text-black" />
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 À capturer ({conceptPokemon.length})
               </h2>
