@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
+  HelpCircle,
   Loader2,
   Palette,
   Pencil,
@@ -157,6 +158,7 @@ export const PlayerDetail = ({
   }, [selectionMode]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { onSelectionModeChange?.(!!selectionMode); }, [selectionMode]); // eslint-disable-line react-hooks/exhaustive-deps
   const [deletingSelectedPokemon, setDeletingSelectedPokemon] = useState(false);
+  const [showCaptureInfo, setShowCaptureInfo] = useState(false);
   const [deletingSelectedTeams, setDeletingSelectedTeams] = useState(false);
   const [isDeletingSelectedPokemon, setIsDeletingSelectedPokemon] = useState(false);
   const [isDeletingSelectedTeams, setIsDeletingSelectedTeams] = useState(false);
@@ -901,6 +903,14 @@ export const PlayerDetail = ({
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 À capturer ({conceptPokemon.length})
               </h2>
+              <button
+                onClick={() => setShowCaptureInfo(true)}
+                className={`ml-auto ${t.accent} text-sm font-semibold flex items-center gap-1`}
+                aria-label="En savoir plus sur les Pokémon à capturer"
+              >
+                <HelpCircle size={16} />
+                <span>Infos</span>
+              </button>
             </div>
             <div
               className="overflow-x-auto -mx-5 pb-1"
@@ -1753,6 +1763,45 @@ export const PlayerDetail = ({
                     <span className={`text-[10px] ${t.textSecondary} text-center w-full truncate text-center`}>{p.name}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      , document.body)}
+
+      {/* ── Bottom sheet : info Pokémon à capturer ── */}
+      {showCaptureInfo && createPortal(
+        <div className="fixed inset-0 z-[10000] flex flex-col justify-end anim-fade-in">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowCaptureInfo(false)} />
+          <div className={`relative ${t.surfaceModal} rounded-t-3xl flex flex-col anim-slide-up`} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <PokeBallIcon id="capture-info" size={16} className="text-black" />
+                <h2 className={`font-black text-lg ${t.text}`}>À capturer</h2>
+              </div>
+              <button onClick={() => setShowCaptureInfo(false)} className={`w-8 h-8 rounded-full ${t.surfaceMuted} ${t.text} flex items-center justify-center`}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="px-5 pb-6 space-y-4">
+              <p className={`text-base leading-relaxed ${t.text}`}>
+                Cette section regroupe les Pokémon que <span className="font-semibold">{player.name}</span> n'a pas encore dans sa collection, mais qui figurent dans au moins une de ses <span className="font-semibold">équipes concept</span>.
+              </p>
+              <div className={`rounded-2xl p-4 space-y-3 ${t.surfaceMuted}`}>
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">📋</span>
+                  <div>
+                    <p className={`text-base font-semibold ${t.text}`}>Équipes concept</p>
+                    <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Ce sont des équipes planifiées, créées pour préparer de futurs combats, mais dont certains Pokémon ne sont pas encore capturés.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">✅</span>
+                  <div>
+                    <p className={`text-base font-semibold ${t.text}`}>Disparaît automatiquement</p>
+                    <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Dès qu'un Pokémon est ajouté à la collection, il est retiré de cette liste et intégré aux équipes qui l'attendaient.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
