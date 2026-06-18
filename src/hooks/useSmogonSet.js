@@ -398,16 +398,40 @@ export function useSmogonSet(pokeId) {
         await idbSet('set', cacheKey, data);
         setResult(data);
 
-        // Enrichissement Pokepedia non-bloquant : nature description chargée en arrière-plan
-        if (!cancelled && rawSet.nature) {
-          fetchPokepediaNature(first(rawSet.nature)).then(natureDesc => {
-            if (cancelled || !natureDesc) return;
-            const enriched = { ...data, natureDesc };
-            resultCache.set(cacheKey, enriched);
-            idbSet('set', cacheKey, enriched).catch(() => {});
-            setResult(enriched);
-          }).catch(() => {});
+        // Enrichissement Pokepedia non-bloquant : sprite item + description nature en arrière-plan
+        const enrichPromises = [];
+
+        if (!cancelled && itemName && itemFR?.name) {
+          enrichPromises.push(
+            fetchPokepediaItem(itemFR.name).then(ppData => {
+              if (cancelled || !ppData) return null;
+              return { itemSprite: ppData.sprite || data.itemSprite, itemDesc: ppData.desc || data.itemDesc };
+            }).catch(() => null)
+          );
+        } else {
+          enrichPromises.push(Promise.resolve(null));
         }
+
+        if (!cancelled && rawSet.nature) {
+          enrichPromises.push(
+            fetchPokepediaNature(first(rawSet.nature)).then(natureDesc => {
+              if (cancelled || !natureDesc) return null;
+              return { natureDesc };
+            }).catch(() => null)
+          );
+        } else {
+          enrichPromises.push(Promise.resolve(null));
+        }
+
+        Promise.all(enrichPromises).then(([itemEnrich, natureEnrich]) => {
+          if (cancelled) return;
+          const patch = { ...(itemEnrich || {}), ...(natureEnrich || {}) };
+          if (Object.keys(patch).length === 0) return;
+          const enriched = { ...data, ...patch };
+          resultCache.set(cacheKey, enriched);
+          idbSet('set', cacheKey, enriched).catch(() => {});
+          setResult(enriched);
+        }).catch(() => {});
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {

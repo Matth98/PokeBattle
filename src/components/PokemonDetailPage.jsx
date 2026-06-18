@@ -561,7 +561,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               {myPlayer && (
                 <button
                   onClick={handleToggle}
-                  className={`inline-flex items-center justify-center rounded-full w-8 h-8 transition-all ${
+                  className={`inline-flex items-center justify-center leading-[0] rounded-full w-8 h-8 transition-all ${
                     owned
                       ? isDark ? 'bg-white/10 text-white' : 'bg-black/[0.06] text-gray-800'
                       : isDark ? 'bg-white/5 text-zinc-600' : 'bg-black/[0.04] text-gray-300'
