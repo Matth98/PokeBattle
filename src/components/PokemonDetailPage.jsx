@@ -659,17 +659,6 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
         <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
             <p className={`font-black text-lg ${t.text} mb-3`}>Supprimer {pokeName} ?</p>
-            {data && (
-              <div className="mb-4">
-                <div className="grid grid-cols-6 gap-1">
-                  <img
-                    src={data.officialArtwork || data.sprite}
-                    alt={pokeName}
-                    className="w-full aspect-square object-contain"
-                  />
-                </div>
-              </div>
-            )}
             {snapshotTeams.length > 0 && (
               <div className={`mt-3 mb-4 p-3 rounded-xl ${isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}`}>
                 <div className="flex items-start gap-2">

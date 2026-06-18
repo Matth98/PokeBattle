@@ -1756,7 +1756,7 @@ export const PlayerDetail = ({
             </p>
             {(() => {
               const selectedPokemon = (player.pokemon || []).filter((p) => selectedItems.includes(p.id));
-              if (selectedPokemon.length === 0) return null;
+              if (selectedPokemon.length <= 1) return null;
               const MAX = 12;
               const visible = selectedPokemon.slice(0, MAX);
               const overflow = selectedPokemon.length - MAX;
@@ -1967,17 +1967,6 @@ export const PlayerDetail = ({
               {tr('common.delete')} {deletingPokemonObj?.name} ?
             </p>
 
-            {deletingPokemonObj && (
-              <div className="mb-4">
-                <div className="grid grid-cols-6 gap-1">
-                  <img
-                    src={getPokemonImageUrl(deletingPokemonObj.pokeId)}
-                    alt={deletingPokemonObj.name}
-                    className="w-full aspect-square object-contain"
-                  />
-                </div>
-              </div>
-            )}
 
             {teamsContainingDeleted.length > 0 && (
               <div className={`mt-3 mb-4 p-3 rounded-xl ${isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}`}>
