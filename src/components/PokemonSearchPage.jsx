@@ -181,6 +181,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
                         <img
                           src={getPokemonImageUrl(p.pokeId)}
                           alt={p.name}
+                          loading="lazy"
                           className="w-10 h-10 object-contain flex-shrink-0"
                           onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                         />

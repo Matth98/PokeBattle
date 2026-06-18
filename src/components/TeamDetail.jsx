@@ -222,6 +222,7 @@ export const TeamDetail = ({
           </div>
           <h1 className={`text-2xl font-black tracking-tight ${t.text}`}>{team.name}</h1>
           <div className="flex items-center gap-2 mt-2 flex-wrap justify-center">
+            <PlayerAvatar player={players.find(p => String(p._id) === String(team.ownerId))} size={20} textSize="text-[8px]" />
             <p className={`${t.textSecondary} text-sm`}>{team.owner}</p>
             <span className={`${t.textSecondary} text-sm`}>·</span>
             <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
