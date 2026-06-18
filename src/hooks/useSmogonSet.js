@@ -23,7 +23,7 @@ const FORMATS = [
 ];
 
 // Incrémenter à chaque modification de FORMATS pour invalider le resultCache
-const CACHE_VERSION = 11;
+const CACHE_VERSION = 12;
 
 const NATURE_FR_NAMES = {
   Hardy:'Hardi', Lonely:'Solo', Brave:'Brave', Adamant:'Rigide', Naughty:'Malin',
@@ -222,21 +222,15 @@ async function fetchItemFR(smogonItemName) {
             || null;
     const frName = frEntry?.name || smogonItemName;
 
-    const result = { name: frName, sprite, desc };
-    itemCache.set(slug, result);
+    // Pokepedia en priorité pour le sprite et la description FR
+    const ppData = frEntry?.name ? await fetchPokepediaItem(frName).catch(() => null) : null;
 
-    // Enrichissement Pokepedia non-bloquant : meilleur sprite + description FR en arrière-plan
-    if (frEntry?.name) {
-      fetchPokepediaItem(frName).then(ppData => {
-        if (!ppData) return;
-        const enriched = {
-          name: frName,
-          sprite: ppData.sprite || sprite,
-          desc:   ppData.desc   || desc,
-        };
-        itemCache.set(slug, enriched);
-      }).catch(() => {});
-    }
+    const result = {
+      name:   frName,
+      sprite: ppData?.sprite || sprite,
+      desc:   ppData?.desc   || desc,
+    };
+    itemCache.set(slug, result);
 
     return result;
   } catch {
@@ -398,40 +392,16 @@ export function useSmogonSet(pokeId) {
         await idbSet('set', cacheKey, data);
         setResult(data);
 
-        // Enrichissement Pokepedia non-bloquant : sprite item + description nature en arrière-plan
-        const enrichPromises = [];
-
-        if (!cancelled && itemName && itemFR?.name) {
-          enrichPromises.push(
-            fetchPokepediaItem(itemFR.name).then(ppData => {
-              if (cancelled || !ppData) return null;
-              return { itemSprite: ppData.sprite || data.itemSprite, itemDesc: ppData.desc || data.itemDesc };
-            }).catch(() => null)
-          );
-        } else {
-          enrichPromises.push(Promise.resolve(null));
-        }
-
+        // Enrichissement Pokepedia non-bloquant : description nature en arrière-plan
         if (!cancelled && rawSet.nature) {
-          enrichPromises.push(
-            fetchPokepediaNature(first(rawSet.nature)).then(natureDesc => {
-              if (cancelled || !natureDesc) return null;
-              return { natureDesc };
-            }).catch(() => null)
-          );
-        } else {
-          enrichPromises.push(Promise.resolve(null));
+          fetchPokepediaNature(first(rawSet.nature)).then(natureDesc => {
+            if (cancelled || !natureDesc) return;
+            const enriched = { ...data, natureDesc };
+            resultCache.set(cacheKey, enriched);
+            idbSet('set', cacheKey, enriched).catch(() => {});
+            setResult(enriched);
+          }).catch(() => {});
         }
-
-        Promise.all(enrichPromises).then(([itemEnrich, natureEnrich]) => {
-          if (cancelled) return;
-          const patch = { ...(itemEnrich || {}), ...(natureEnrich || {}) };
-          if (Object.keys(patch).length === 0) return;
-          const enriched = { ...data, ...patch };
-          resultCache.set(cacheKey, enriched);
-          idbSet('set', cacheKey, enriched).catch(() => {});
-          setResult(enriched);
-        }).catch(() => {});
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
