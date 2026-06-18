@@ -60,6 +60,7 @@ function PokeBallIcon({ id, size = 14, className = '' }) {
 }
 
 function CaptureInfoSheet({ isDark, t, player, onClose }) {
+  useBodyScrollLock();
   const H = typeof window !== 'undefined' ? window.innerHeight : 800;
   const y = useMotionValue(H);
   const overlayOpacity = useTransform(y, [0, H * 0.5], [1, 0]);
@@ -125,12 +126,12 @@ function CaptureInfoSheet({ isDark, t, player, onClose }) {
           <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`} />
         </div>
         {/* Contenu */}
-        <div className="px-5 pt-3 pb-10 space-y-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
-          <div className="flex items-center gap-2 mb-1">
+        <div className="px-5 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
+          <div className="flex items-center gap-2 mb-4">
             <PokeBallIcon id="capture-info" size={16} className="text-black" />
             <h2 className={`font-black text-lg ${t.text}`}>À capturer</h2>
           </div>
-          <p className={`text-base leading-relaxed ${t.text}`}>
+          <p className="text-base leading-relaxed text-gray-700 mb-7">
             Cette section regroupe les Pokémon que <span className="font-semibold">{player.name}</span> n'a pas encore dans sa collection, mais qui figurent dans au moins une de ses <span className="font-semibold">équipes concept</span>.
           </p>
           <div className={`rounded-2xl p-4 space-y-3 ${t.surfaceMuted}`}>
