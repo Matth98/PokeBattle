@@ -41,23 +41,6 @@ import { useToast } from './Toast';
 
 import { TYPE_SUPER_EFFECTIVE } from '../utils/mvp';
 
-function PokeBallIcon({ id, size = 14, className = '' }) {
-  const clipId = `pb-pd-${id}`;
-  return (
-    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className={className}>
-      <g clipPath={`url(#${clipId})`}>
-        <path d="M5.99994 1.19995C3.55794 1.19995 1.54194 3.03595 1.24194 5.39995H3.68994C3.95394 4.36795 4.88994 3.59995 5.99994 3.59995C7.10994 3.59995 8.04594 4.36795 8.31594 5.39995H10.7579C10.4639 3.03595 8.44794 1.19995 5.99994 1.19995Z" fill="currentColor"/>
-        <path d="M6 0C2.694 0 0 2.694 0 6C0 9.306 2.694 12 6 12C9.306 12 12 9.306 12 6C12 2.694 9.312 0 6 0ZM6 1.2C8.448 1.2 10.464 3.036 10.758 5.4H8.316C8.046 4.368 7.116 3.6 6 3.6C4.884 3.6 3.954 4.368 3.69 5.4H1.242C1.542 3.036 3.558 1.2 6 1.2Z" fill="currentColor"/>
-        <path d="M10.7579 5.39995H8.31594C8.04594 4.36795 7.11594 3.59995 5.99994 3.59995C4.88394 3.59995 3.95394 4.36795 3.68994 5.39995H1.24194C1.54194 3.03595 3.55794 1.19995 5.99994 1.19995C8.44194 1.19995 10.4639 3.03595 10.7579 5.39995Z" fill="#FF1C1C"/>
-        <path d="M10.7579 6.59998C10.4639 8.96398 8.44794 10.8 5.99994 10.8C3.55194 10.8 1.54194 8.96398 1.24194 6.59998H3.68994C3.95394 7.63198 4.88994 8.39998 5.99994 8.39998C7.10994 8.39998 8.04594 7.63198 8.31594 6.59998H10.7579Z" fill="white"/>
-        <path d="M6.00005 7.20005C6.66279 7.20005 7.20005 6.66279 7.20005 6.00005C7.20005 5.33731 6.66279 4.80005 6.00005 4.80005C5.33731 4.80005 4.80005 5.33731 4.80005 6.00005C4.80005 6.66279 5.33731 7.20005 6.00005 7.20005Z" fill="white"/>
-      </g>
-      <defs>
-        <clipPath id={clipId}><rect width="12" height="12" fill="white"/></clipPath>
-      </defs>
-    </svg>
-  );
-}
 
 function CaptureInfoSheet({ isDark, t, player, onClose }) {
   useBodyScrollLock();
@@ -128,25 +111,25 @@ function CaptureInfoSheet({ isDark, t, player, onClose }) {
         {/* Contenu */}
         <div className="px-5 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
           <div className="flex items-center gap-2 mb-4">
-            <PokeBallIcon id="capture-info" size={16} className="text-black" />
+            <img src="/pokeball-owned.svg" width={16} height={16} alt="" aria-hidden="true" style={{ display: 'block' }} />
             <h2 className={`font-black text-lg ${t.text}`}>À capturer</h2>
           </div>
-          <p className="text-base leading-relaxed text-gray-700 mb-7">
+          <p className={`text-base leading-relaxed mb-7 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
             Cette section regroupe les Pokémon que <span className="font-semibold">{player.name}</span> n'a pas encore dans sa collection, mais qui figurent dans au moins une de ses <span className="font-semibold">équipes concept</span>.
           </p>
           <div className={`rounded-2xl p-4 space-y-3 ${t.surfaceMuted}`}>
-            <div className="flex items-start gap-3">
-              <span className="text-xl">📋</span>
-              <div>
-                <p className={`text-base font-semibold ${t.text}`}>Équipes concept</p>
-                <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Ce sont des équipes planifiées, créées pour préparer de futurs combats, mais dont certains Pokémon ne sont pas encore capturés.</p>
-              </div>
-            </div>
             <div className="flex items-start gap-3">
               <span className="text-xl">✅</span>
               <div>
                 <p className={`text-base font-semibold ${t.text}`}>Disparaît automatiquement</p>
                 <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Dès qu'un Pokémon est ajouté à la collection, il est retiré de cette liste et intégré aux équipes qui l'attendaient.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-xl">📋</span>
+              <div>
+                <p className={`text-base font-semibold ${t.text}`}>Équipes concept</p>
+                <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Ce sont des équipes planifiées, créées pour préparer de futurs combats, mais dont certains Pokémon ne sont pas encore capturés.</p>
               </div>
             </div>
           </div>
@@ -997,7 +980,7 @@ export const PlayerDetail = ({
         {conceptPokemon.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3 px-1">
-              <PokeBallIcon id="capture" size={14} className="text-black" />
+              <img src="/pokeball-owned.svg" width={14} height={14} alt="" aria-hidden="true" style={{ display: 'block' }} />
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
                 À capturer ({conceptPokemon.length})
               </h2>

@@ -366,8 +366,19 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
   // Snapshot des équipes au moment de l'ouverture de la modale — évite que le contenu
   // change pendant l'exécution async (teamsContaining se vide quand les équipes passent Concept)
   const [snapshotTeams, setSnapshotTeams] = useState([]);
+  const [optimisticOwned, setOptimisticOwned] = useState(null);
+
+  // Préchargement des SVGs pour éviter le délai d'apparition
+  useEffect(() => {
+    ['/pokeball-owned.svg', '/pokeball-empty.svg'].forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.decode?.().catch(() => {});
+    });
+  }, []);
 
   const owned = myPlayer ? (myPlayer.pokemon || []).some(p => p.pokeId === pokeId) : false;
+  const displayOwned = optimisticOwned !== null ? optimisticOwned : owned;
   const teamsContaining = myPlayer
     ? teams.filter(team =>
         team.ownerId === myPlayer._id &&
@@ -382,28 +393,36 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       setSnapshotTeams(teamsContaining);
       setConfirmRemove(true);
     } else {
+      setOptimisticOwned(true);
       const newEntry = { id: `${Date.now()}-${pokeId}`, pokeId, name: pokeName, level: 50 };
-      await onUpdatePlayer(myPlayer._id, { ...myPlayer, pokemon: [...(myPlayer.pokemon || []), newEntry] });
-      // Retire le marquage isConcept dans les équipes Concept qui contiennent ce pokémon
-      if (onUpdateTeam) {
-        const conceptTeams = teams.filter(team =>
-          team.ownerId === myPlayer._id &&
-          team.isConcept &&
-          (team.pokemon || []).some(p => p.isConcept && p.pokeId === pokeId)
-        );
-        for (const team of conceptTeams) {
-          const updatedPokemon = (team.pokemon || []).map(p =>
-            p.pokeId === pokeId ? { ...p, isConcept: false } : p
+      try {
+        await onUpdatePlayer(myPlayer._id, { ...myPlayer, pokemon: [...(myPlayer.pokemon || []), newEntry] });
+        // Retire le marquage isConcept dans les équipes Concept qui contiennent ce pokémon
+        if (onUpdateTeam) {
+          const conceptTeams = teams.filter(team =>
+            team.ownerId === myPlayer._id &&
+            team.isConcept &&
+            (team.pokemon || []).some(p => p.isConcept && p.pokeId === pokeId)
           );
-          const stillConcept = updatedPokemon.some(p => p.isConcept);
-          if (stillConcept && onUpdateTeamSilent) {
-            await onUpdateTeamSilent(team._id, { ...team, isConcept: true, pokemon: updatedPokemon });
-          } else if (!stillConcept && onUpdateTeam) {
-            await onUpdateTeam(team._id, { ...team, isConcept: false, pokemon: updatedPokemon });
+          for (const team of conceptTeams) {
+            const updatedPokemon = (team.pokemon || []).map(p =>
+              p.pokeId === pokeId ? { ...p, isConcept: false } : p
+            );
+            const stillConcept = updatedPokemon.some(p => p.isConcept);
+            if (stillConcept && onUpdateTeamSilent) {
+              await onUpdateTeamSilent(team._id, { ...team, isConcept: true, pokemon: updatedPokemon });
+            } else if (!stillConcept && onUpdateTeam) {
+              await onUpdateTeam(team._id, { ...team, isConcept: false, pokemon: updatedPokemon });
+            }
           }
         }
+        toast.success(`${pokeName} ajouté à ta collection`);
+      } catch (e) {
+        setOptimisticOwned(null);
+        throw e;
+      } finally {
+        setOptimisticOwned(null);
       }
-      toast.success(`${pokeName} ajouté à ta collection`);
     }
   };
 
@@ -550,14 +569,14 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               {myPlayer && (
                 <button
                   onClick={handleToggle}
-                  aria-label={owned ? 'Retirer de ma collection' : 'Ajouter à ma collection'}
-                  style={{ display: 'block', padding: 5, borderRadius: '50%', transition: 'background 0.15s' }}
-                  className={owned
+                  aria-label={displayOwned ? 'Retirer de ma collection' : 'Ajouter à ma collection'}
+                  style={{ display: 'block', padding: 5, borderRadius: '50%', transition: 'background 0.2s, opacity 0.15s' }}
+                  className={displayOwned
                     ? isDark ? 'bg-white/10 text-white' : 'bg-black/[0.06] text-gray-800'
                     : isDark ? 'bg-white/5 text-zinc-600' : 'bg-black/[0.04] text-gray-300'
                   }
                 >
-                  <PokeBallIcon size={22} owned={owned} isDark={isDark} />
+                  <PokeBallIcon size={22} owned={displayOwned} isDark={isDark} />
                 </button>
               )}
             </div>

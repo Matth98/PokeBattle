@@ -751,12 +751,16 @@ export function MovesTab({ pokeId, isDark, accentHex }) {
   }
   if (!moves) return null;
 
+  const hasLevelUp = moves.levelUp.length > 0;
+  const hasMachine = moves.machine.length > 0;
+  const hasEgg = moves.egg.length > 0;
+
   return (
     <div className="px-5 pt-4 pb-4">
 
       {/* ── Par niveau ── */}
-      {moves.levelUp.length > 0 && (
-        <div className="mb-10">
+      {hasLevelUp && (
+        <div className={hasMachine || hasEgg ? 'mb-12' : ''}>
           <MoveColHeaders title="Par niveau" isDark={isDark} showLevel />
           {moves.levelUp.map((move, i) => (
             <LevelMoveRow
@@ -772,8 +776,8 @@ export function MovesTab({ pokeId, isDark, accentHex }) {
       )}
 
       {/* ── CT / CS ── */}
-      {moves.machine.length > 0 && (
-        <div className="mb-10">
+      {hasMachine && (
+        <div className={hasEgg ? 'mb-12' : ''}>
           <MoveColHeaders title="CT / CS" isDark={isDark} showMachine />
           {moves.machine.map((move, i) => (
             <MachineMoveRow
@@ -789,8 +793,8 @@ export function MovesTab({ pokeId, isDark, accentHex }) {
       )}
 
       {/* ── Reproduction ── */}
-      {moves.egg.length > 0 && (
-        <div className="mb-10">
+      {hasEgg && (
+        <div>
           <MoveColHeaders title="Reproduction" isDark={isDark} />
           {moves.egg.map((move, i) => (
             <MoveRow

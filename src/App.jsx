@@ -142,6 +142,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     if (currentTab === 'pokemonSearch') {
       searchMemoryRef.current.set('pokemonSearch', searchPageRef.current?.getSearchTerm() ?? searchMemoryRef.current.get('pokemonSearch') ?? '');
       searchMemoryRef.current.set('pokemonSearch-activeTab', searchPageRef.current?.getActiveTab() ?? searchMemoryRef.current.get('pokemonSearch-activeTab') ?? 'pokemon');
+      searchMemoryRef.current.set('pokemonSearch-teamFormatFilter', searchPageRef.current?.getTeamFormatFilter() ?? searchMemoryRef.current.get('pokemonSearch-teamFormatFilter') ?? 'all');
     }
     shouldRestoreRef.current = false;
     setPrevTab(currentTab);
@@ -723,7 +724,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={sortedTeams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('playerDetail') || 0} initialPokemonSearch={searchMemoryRef.current.get('playerDetail-pokemon') || ''} initialTeamsSearch={searchMemoryRef.current.get('playerDetail-teams') || ''} isBackground />}
             {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} initialScrollY={scrollMemoryRef.current.get('teamDetail') || 0} isBackground />}
             {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={sortedPlayers} teams={sortedTeams} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} onAddTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('battleDetail') || 0} isBackground />}
-            {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} teams={sortedTeams} players={sortedPlayers} isBackground initialSearchTerm={searchMemoryRef.current.get('pokemonSearch') || ''} initialActiveTab={searchMemoryRef.current.get('pokemonSearch-activeTab') || 'pokemon'} initialScrollY={scrollMemoryRef.current.get('pokemonSearch') || 0} />}
+            {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} teams={sortedTeams} players={sortedPlayers} isBackground initialSearchTerm={searchMemoryRef.current.get('pokemonSearch') || ''} initialActiveTab={searchMemoryRef.current.get('pokemonSearch-activeTab') || 'pokemon'} initialTeamFormatFilter={searchMemoryRef.current.get('pokemonSearch-teamFormatFilter') || 'all'} initialScrollY={scrollMemoryRef.current.get('pokemonSearch') || 0} />}
           </div>
           {/* Overlay d'assombrissement — z-index élevé pour couvrir tout le contenu */}
           <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.18)', zIndex: 9999, pointerEvents: 'none' }} />
@@ -970,8 +971,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             onBack={navigateBack}
             initialSearchTerm={navDirection === 'pop' ? searchMemoryRef.current.get('pokemonSearch') || '' : ''}
             initialActiveTab={navDirection === 'pop' ? searchMemoryRef.current.get('pokemonSearch-activeTab') || 'pokemon' : 'pokemon'}
+            initialTeamFormatFilter={navDirection === 'pop' ? searchMemoryRef.current.get('pokemonSearch-teamFormatFilter') || 'all' : 'all'}
             onSearchChange={(v) => searchMemoryRef.current.set('pokemonSearch', v)}
             onActiveTabChange={(tab) => searchMemoryRef.current.set('pokemonSearch-activeTab', tab)}
+            onTeamFormatFilterChange={(f) => searchMemoryRef.current.set('pokemonSearch-teamFormatFilter', f)}
             onSelectPokemon={(pokemon) => {
               setSelectedPokemon(pokemon);
               navigateTo('pokemonDetail');

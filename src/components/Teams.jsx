@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback, useId, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronRight, ChevronDown, Plus, Check, CheckSquare, Shield, Loader2, Target } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -13,23 +13,6 @@ import { AlertModal } from './AlertModal';
 
 const emptyTeamData = () => ({ name: '', owner: null, format: '1v1', pokemon: [] });
 
-function PokeBallIcon({ colorBlack = 'black', id }) {
-  const clipId = `pb-${id}`;
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <g clipPath={`url(#${clipId})`}>
-        <path d="M5.99994 1.19995C3.55794 1.19995 1.54194 3.03595 1.24194 5.39995H3.68994C3.95394 4.36795 4.88994 3.59995 5.99994 3.59995C7.10994 3.59995 8.04594 4.36795 8.31594 5.39995H10.7579C10.4639 3.03595 8.44794 1.19995 5.99994 1.19995Z" fill={colorBlack}/>
-        <path d="M6 0C2.694 0 0 2.694 0 6C0 9.306 2.694 12 6 12C9.306 12 12 9.306 12 6C12 2.694 9.312 0 6 0ZM6 1.2C8.448 1.2 10.464 3.036 10.758 5.4H8.316C8.046 4.368 7.116 3.6 6 3.6C4.884 3.6 3.954 4.368 3.69 5.4H1.242C1.542 3.036 3.558 1.2 6 1.2Z" fill={colorBlack}/>
-        <path d="M10.7579 5.39995H8.31594C8.04594 4.36795 7.11594 3.59995 5.99994 3.59995C4.88394 3.59995 3.95394 4.36795 3.68994 5.39995H1.24194C1.54194 3.03595 3.55794 1.19995 5.99994 1.19995C8.44194 1.19995 10.4639 3.03595 10.7579 5.39995Z" fill="#FF1C1C"/>
-        <path d="M10.7579 6.59998C10.4639 8.96398 8.44794 10.8 5.99994 10.8C3.55194 10.8 1.54194 8.96398 1.24194 6.59998H3.68994C3.95394 7.63198 4.88994 8.39998 5.99994 8.39998C7.10994 8.39998 8.04594 7.63198 8.31594 6.59998H10.7579Z" fill="white"/>
-        <path d="M6.00005 7.20005C6.66279 7.20005 7.20005 6.66279 7.20005 6.00005C7.20005 5.33731 6.66279 4.80005 6.00005 4.80005C5.33731 4.80005 4.80005 5.33731 4.80005 6.00005C4.80005 6.66279 5.33731 7.20005 6.00005 7.20005Z" fill="white"/>
-      </g>
-      <defs>
-        <clipPath id={clipId}><rect width="12" height="12" fill="white"/></clipPath>
-      </defs>
-    </svg>
-  );
-}
 
 export const Teams = ({
   teams,
@@ -72,8 +55,6 @@ export const Teams = ({
 
   // formatFilter est piloté depuis App.jsx pour que la couche de fond (swipe-back)
   // reflète toujours l'état courant. Le prop a une valeur par défaut 'all'.
-  const uid = useId();
-
   const [newTeamData, setNewTeamData] = useState(emptyTeamData());
   const [teamFormErrors, setTeamFormErrors] = useState({ name: false, owner: false, pokemon: false });
   const [deletingSelected, setDeletingSelected] = useState(false);
@@ -426,7 +407,7 @@ export const Teams = ({
                       : 'bg-white text-gray-600 shadow-sm'
                 }`}
               >
-                {id === 'all' && <PokeBallIcon colorBlack="black" id={`${uid}-all`} />}
+                {id === 'all' && <img src="/pokeball-owned.svg" width={12} height={12} alt="" aria-hidden="true" style={{ display: 'block' }} />}
                 {label}
               </button>
             );
