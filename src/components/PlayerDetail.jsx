@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import {
@@ -55,6 +56,102 @@ function PokeBallIcon({ id, size = 14, className = '' }) {
         <clipPath id={clipId}><rect width="12" height="12" fill="white"/></clipPath>
       </defs>
     </svg>
+  );
+}
+
+function CaptureInfoSheet({ isDark, t, player, onClose }) {
+  const H = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const y = useMotionValue(H);
+  const overlayOpacity = useTransform(y, [0, H * 0.5], [1, 0]);
+
+  const dismiss = useCallback((vel = 600) => {
+    animate(y, H, { type: 'spring', damping: 18, stiffness: 200, velocity: vel, restDelta: 1 });
+    setTimeout(onClose, 300);
+  }, [y, H, onClose]);
+
+  const snapBack = useCallback(() => {
+    animate(y, 0, { type: 'spring', damping: 30, stiffness: 400 });
+  }, [y]);
+
+  const sheetRef = useRef(null);
+
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+    let startY = 0, lastY = 0, lastTime = 0, tracking = false;
+    const onTouchStart = (e) => { startY = e.touches[0].clientY; lastY = startY; lastTime = Date.now(); tracking = false; };
+    const onTouchMove = (e) => {
+      const cur = e.touches[0].clientY;
+      const delta = cur - startY;
+      lastY = cur; lastTime = Date.now();
+      if (!tracking) { if (delta > 8) tracking = true; else return; }
+      e.preventDefault();
+      if (delta > 0) y.set(delta);
+    };
+    const onTouchEnd = () => {
+      if (!tracking) return;
+      tracking = false;
+      const delta = lastY - startY;
+      const vel = (lastY - startY) / Math.max(1, Date.now() - (lastTime - 50));
+      if (vel > 0.5 || delta > 100) dismiss(vel * 1000); else snapBack();
+    };
+    sheet.addEventListener('touchstart', onTouchStart, { passive: true });
+    sheet.addEventListener('touchmove', onTouchMove, { passive: false });
+    sheet.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      sheet.removeEventListener('touchstart', onTouchStart);
+      sheet.removeEventListener('touchmove', onTouchMove);
+      sheet.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [y, dismiss, snapBack]);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[10000] flex flex-col justify-end"
+      style={{ backgroundColor: 'rgba(0,0,0,0.45)', opacity: overlayOpacity }}
+      onClick={() => dismiss()}
+      onTouchStart={(e) => e.stopPropagation()}
+    >
+      <motion.div
+        ref={sheetRef}
+        onClick={(e) => e.stopPropagation()}
+        className={`relative rounded-t-3xl overflow-hidden ${isDark ? 'bg-zinc-900' : 'bg-white'}`}
+        style={{ y }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`} />
+        </div>
+        {/* Contenu */}
+        <div className="px-5 pt-3 pb-10 space-y-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <PokeBallIcon id="capture-info" size={16} className="text-black" />
+            <h2 className={`font-black text-lg ${t.text}`}>À capturer</h2>
+          </div>
+          <p className={`text-base leading-relaxed ${t.text}`}>
+            Cette section regroupe les Pokémon que <span className="font-semibold">{player.name}</span> n'a pas encore dans sa collection, mais qui figurent dans au moins une de ses <span className="font-semibold">équipes concept</span>.
+          </p>
+          <div className={`rounded-2xl p-4 space-y-3 ${t.surfaceMuted}`}>
+            <div className="flex items-start gap-3">
+              <span className="text-xl">📋</span>
+              <div>
+                <p className={`text-base font-semibold ${t.text}`}>Équipes concept</p>
+                <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Ce sont des équipes planifiées, créées pour préparer de futurs combats, mais dont certains Pokémon ne sont pas encore capturés.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-xl">✅</span>
+              <div>
+                <p className={`text-base font-semibold ${t.text}`}>Disparaît automatiquement</p>
+                <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Dès qu'un Pokémon est ajouté à la collection, il est retiré de cette liste et intégré aux équipes qui l'attendaient.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -282,7 +379,7 @@ export const PlayerDetail = ({
   };
 
   const [pendingConceptTeam, setPendingConceptTeam] = useState(null);
-  useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet || addingPokemon || pickingTeamPokemon || deletingSelectedTeams || !!deletingTeam || !!deletingPokemon || !!pendingConceptTeam);
+  useBodyScrollLock(showAllPokemonSheet || showAllTeamsSheet || addingPokemon || pickingTeamPokemon || deletingSelectedTeams || !!deletingTeam || !!deletingPokemon || !!pendingConceptTeam || showCaptureInfo);
 
   const handleSaveTeam = async () => {
     const required = requiredPokemonForFormat(newTeamData.format);
@@ -1771,42 +1868,9 @@ export const PlayerDetail = ({
 
       {/* ── Bottom sheet : info Pokémon à capturer ── */}
       {showCaptureInfo && createPortal(
-        <div className="fixed inset-0 z-[10000] flex flex-col justify-end anim-fade-in">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowCaptureInfo(false)} />
-          <div className={`relative ${t.surfaceModal} rounded-t-3xl flex flex-col anim-slide-up`} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <PokeBallIcon id="capture-info" size={16} className="text-black" />
-                <h2 className={`font-black text-lg ${t.text}`}>À capturer</h2>
-              </div>
-              <button onClick={() => setShowCaptureInfo(false)} className={`w-8 h-8 rounded-full ${t.surfaceMuted} ${t.text} flex items-center justify-center`}>
-                <X size={16} />
-              </button>
-            </div>
-            <div className="px-5 pb-6 space-y-4">
-              <p className={`text-base leading-relaxed ${t.text}`}>
-                Cette section regroupe les Pokémon que <span className="font-semibold">{player.name}</span> n'a pas encore dans sa collection, mais qui figurent dans au moins une de ses <span className="font-semibold">équipes concept</span>.
-              </p>
-              <div className={`rounded-2xl p-4 space-y-3 ${t.surfaceMuted}`}>
-                <div className="flex items-start gap-3">
-                  <span className="text-xl">📋</span>
-                  <div>
-                    <p className={`text-base font-semibold ${t.text}`}>Équipes concept</p>
-                    <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Ce sont des équipes planifiées, créées pour préparer de futurs combats, mais dont certains Pokémon ne sont pas encore capturés.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="text-xl">✅</span>
-                  <div>
-                    <p className={`text-base font-semibold ${t.text}`}>Disparaît automatiquement</p>
-                    <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Dès qu'un Pokémon est ajouté à la collection, il est retiré de cette liste et intégré aux équipes qui l'attendaient.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      , document.body)}
+        <CaptureInfoSheet isDark={isDark} t={t} player={player} onClose={() => setShowCaptureInfo(false)} />,
+        document.body
+      )}
 
       {/* ── Bottom sheet : toutes les équipes affectées ── */}
       {showAllTeamsSheet && createPortal(
