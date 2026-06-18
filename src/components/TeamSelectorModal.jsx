@@ -1,13 +1,15 @@
 import React from 'react';
-import { X, Shield } from 'lucide-react';
+import { X, Shield, ChevronRight } from 'lucide-react';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { PlayerAvatar } from './PlayerAvatar';
 
 export const TeamSelectorModal = ({
   t,
   isDark,
   teams = [],
+  players = [],
   playerId,
   format,
   onSelect,
@@ -17,7 +19,7 @@ export const TeamSelectorModal = ({
   const { isClosing, handleClose } = useAnimatedClose(onClose, 240);
   useBodyScrollLock();
   const filtered = teams.filter(
-    (team) => team.ownerId === playerId && team.format === format
+    (team) => team.ownerId === playerId && team.format === format && !team.isConcept
   );
 
   return (
@@ -60,16 +62,17 @@ export const TeamSelectorModal = ({
               {filtered.map((team, idx) => {
                 const thumbSlots = (team.pokemon || []).slice(0, 4);
                 const isLast = idx === filtered.length - 1;
+                const ownerPlayer = players.find(p => p._id === team.ownerId);
                 return (
                   <button
                     key={team._id}
                     onClick={() => onSelect(team)}
-                    className={`w-full flex items-center gap-3 p-3 text-left active:bg-black/5 dark:active:bg-white/5 ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left active:bg-black/5 dark:active:bg-white/5 ${
                       !isLast ? `border-b ${t.divider}` : ''
                     }`}
                   >
-                    {/* Mini miniature 2x2 */}
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${t.surface} p-1 grid grid-cols-2 grid-rows-2 gap-0.5`}>
+                    {/* Miniature 2x2 */}
+                    <div className={`flex-shrink-0 w-14 h-14 rounded-xl ${isDark ? t.surfaceMuted : 'bg-black/[0.06]'} p-1 grid grid-cols-2 grid-rows-2 gap-0.5`}>
                       {[0, 1, 2, 3].map((i) => {
                         const p = thumbSlots[i];
                         return (
@@ -88,15 +91,17 @@ export const TeamSelectorModal = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`font-semibold ${t.text} truncate`}>{team.name}</p>
-                      <p className={`${t.textSecondary} text-xs mt-0.5`}>
-                        {(team.pokemon || []).length} Pokémon
-                      </p>
+                      <div className={`${t.textSecondary} text-xs mt-0.5 flex items-center gap-1.5`}>
+                        {ownerPlayer && <PlayerAvatar player={ownerPlayer} size={16} textSize="text-[8px]" className="flex-shrink-0" />}
+                        <span className="truncate">{team.owner} · {(team.pokemon || []).length} Pokémon</span>
+                      </div>
                     </div>
-                    {(team.pokemon || []).length < (team.format === '2v2' ? 4 : 3) && (
-                      <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-500'}`}>
-                        À compléter
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${team.format === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
+                        {team.format || '1v1'}
                       </span>
-                    )}
+                    </div>
+                    <ChevronRight size={16} className={t.textTertiary} />
                   </button>
                 );
               })}

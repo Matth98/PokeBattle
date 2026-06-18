@@ -1178,6 +1178,7 @@ export const Battles = ({
           t={t}
           isDark={isDark}
           teams={teams}
+          players={players}
           playerId={newBattleData[pickerState.slot]}
           format={newBattleData.format}
           onSelect={handleSelectTeam}
