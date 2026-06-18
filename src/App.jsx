@@ -647,16 +647,16 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   if (authLoading) {
     return (
-      <div className={`flex items-center justify-center h-screen ${isDark ? 'bg-[#09090b]' : 'bg-white'}`}>
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: isDark ? '#09090b' : '#ffffff' }}>
+        <img src={`${process.env.PUBLIC_URL}/Match-button.svg`} alt="" style={{ width: '5rem', height: '5rem', animation: 'spin 1.2s linear infinite' }} />
       </div>
     );
   }
 
   if (!user && (!authSettled || authLoading)) {
     return (
-      <div className={`flex items-center justify-center h-screen ${isDark ? 'bg-[#09090b]' : 'bg-white'}`}>
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: isDark ? '#09090b' : '#ffffff' }}>
+        <img src={`${process.env.PUBLIC_URL}/Match-button.svg`} alt="" style={{ width: '5rem', height: '5rem', animation: 'spin 1.2s linear infinite' }} />
       </div>
     );
   }
@@ -671,13 +671,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   if (initialLoading) {
     return (
-      <div className={`flex items-center justify-center h-screen ${isDark ? 'bg-[#09090b]' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
-        <img
-          src={`${process.env.PUBLIC_URL}/Match-button.svg`}
-          alt="Chargement"
-          className="w-20 h-20 animate-spin"
-          style={{ animationDuration: '1.2s', animationTimingFunction: 'linear' }}
-        />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: isDark ? '#09090b' : '#ffffff' }}>
+        <img src={`${process.env.PUBLIC_URL}/Match-button.svg`} alt="" style={{ width: '5rem', height: '5rem', animation: 'spin 1.2s linear infinite' }} />
       </div>
     );
   }

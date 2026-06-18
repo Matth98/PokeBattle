@@ -54,8 +54,8 @@
     <!-- Manifest PWA -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Tailwind + Font Awesome chargés tôt pour que les classes soient dispo dès React -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind chargé en différé pour ne pas bloquer le rendu du splash -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
@@ -74,15 +74,12 @@
       }
       #splash.splash-dark { background: #09090b; }
       #splash.splash-light { background: #ffffff; }
-      .splash-spinner {
-        width: 2rem;
-        height: 2rem;
-        border: 2px solid #a855f7;
-        border-top-color: transparent;
-        border-radius: 9999px;
-        animation: splash-spin 0.7s linear infinite;
+      .splash-logo {
+        width: 5rem;
+        height: 5rem;
+        animation: spin 1.2s linear infinite;
       }
-      @keyframes splash-spin {
+      @keyframes spin {
         to { transform: rotate(360deg); }
       }
     </style>
@@ -91,7 +88,7 @@
   </head>
   <body>
     <noscript>Tu as besoin d'activer JavaScript pour utiliser cette app.</noscript>
-    <div id="splash"><div class="splash-spinner"></div></div>
+    <div id="splash"><img src="%PUBLIC_URL%/Match-button.svg" class="splash-logo" alt="" /></div>
     <div id="root"></div>
     <script>
       // Applique la bonne couleur de fond au splash selon le thème sauvegardé
