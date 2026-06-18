@@ -74,7 +74,7 @@ const fr = {
     format: 'Format',
   },
   pokemon: {
-    searchPlaceholder: 'Pokémon, équipe…',
+    searchPlaceholder: 'Rechercher…',
     defaultTab: 'Pokémon de {name}',
     stats: 'Stats', abilities: 'Talents', characteristics: 'Caractéristiques',
     resistances: 'Résistances', weaknesses: 'Faiblesses',
