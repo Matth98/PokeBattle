@@ -892,9 +892,7 @@ export const Battles = ({
                 // Player1 verrouillé pour les non-admins en mode création
                 const isLocked = slot === 'player1' && !isSuperAdmin && !isEditing;
                 const isJ1 = idx === 0;
-                const slotCard = isJ1
-                  ? isDark ? 'bg-zinc-850' : 'bg-indigo-100/60'
-                  : isDark ? 'bg-zinc-850' : 'bg-orange-100/60';
+                const slotCard = isDark ? 'bg-zinc-850' : 'bg-white';
                 const slotLabel = isJ1
                   ? isDark ? 'text-indigo-400' : 'text-indigo-700'
                   : isDark ? 'text-orange-400' : 'text-orange-700';
@@ -913,7 +911,7 @@ export const Battles = ({
                         type="button"
                         onClick={isLocked ? undefined : () => setOpenPlayerDropdown(openPlayerDropdown === slot ? null : slot)}
                         disabled={isLocked}
-                        className={`w-full ${slotWhiteSurface} rounded-xl px-4 py-3 flex items-center gap-3 text-left${isLocked ? ' opacity-70 cursor-default' : ''}`}
+                        className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3 text-left${isLocked ? ' opacity-70 cursor-default' : ''}`}
                       >
                         {playerId ? (
                           <>
@@ -986,7 +984,7 @@ export const Battles = ({
                             Aucun Pokémon sélectionné
                           </div>
                         ) : (
-                          <div className={`-mx-3 -mb-3 overflow-hidden border-t ${isDark ? 'border-zinc-700/50' : 'border-gray-300/70'}`}>
+                          <div className={`-mx-3 -mb-3 overflow-hidden border-t ${isDark ? 'border-zinc-700/50' : 'border-gray-200/80'}`}>
                             <DraggableList
                               items={slotPokemon}
                               getKey={(p) => p.id}
@@ -1000,7 +998,7 @@ export const Battles = ({
                                   <SwipeableRow
                                     onDelete={() => handleRemovePokemonFromSlot(slot, p.id)}
                                     surfaceClass="bg-transparent"
-                                    className={!isLast ? `border-b ${isDark ? 'border-zinc-700/50' : 'border-gray-300/70'}` : ''}
+                                    className={!isLast ? `border-b ${isDark ? 'border-zinc-700/50' : 'border-gray-200/80'}` : ''}
                                     disabled={isDragging}
                                   >
                                     <div className="flex items-center">
