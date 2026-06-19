@@ -902,7 +902,7 @@ export const Battles = ({
                   : isDark ? 'bg-orange-500' : 'bg-orange-500';
                 const slotWhiteSurface = isDark ? 'bg-zinc-800' : 'bg-white';
                 return (
-                  <div key={slot} className={`rounded-2xl p-3 space-y-2 ${slotCard} ${slotPokemon.length > 0 ? 'pb-0' : ''}`}>
+                  <div key={slot} className={`rounded-2xl p-3 space-y-2 border ${isDark ? 'border-zinc-700/50' : 'border-gray-200/80'} ${slotCard} ${slotPokemon.length > 0 ? 'pb-0' : ''}`}>
                     <label className={`text-xs font-bold uppercase tracking-wide ml-0.5 block ${slotLabel}`}>
                       {idx === 0 ? tr('battles.player1') : tr('battles.player2')}
                     </label>
@@ -1057,7 +1057,7 @@ export const Battles = ({
                   <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>
                     {tr('battles.score')}
                   </label>
-                  <div className={`${t.surfaceInset} rounded-2xl p-4 space-y-3`}>
+                  <div className={`${t.surfaceInset} rounded-2xl p-4 space-y-3 border ${isDark ? 'border-zinc-700/50' : 'border-gray-200/80'}`}>
                     <div className="flex items-center gap-3">
                       <p className={`flex-1 min-w-0 truncate text-left font-black text-base ${newBattleData.winner === 'player1' ? t.success : t.text}`}>
                         {players.find((p) => p._id === newBattleData.player1)?.name || tr('battles.player1')}
