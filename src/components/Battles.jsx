@@ -902,9 +902,9 @@ export const Battles = ({
                 const slotAddBtn = isJ1
                   ? isDark ? 'bg-indigo-500' : 'bg-indigo-500'
                   : isDark ? 'bg-orange-500' : 'bg-orange-500';
-                const slotWhiteSurface = isDark ? 'bg-zinc-800' : 'bg-white/75';
+                const slotWhiteSurface = isDark ? 'bg-zinc-800' : 'bg-white';
                 return (
-                  <div key={slot} className={`rounded-2xl p-3 space-y-2 ${slotCard}`}>
+                  <div key={slot} className={`rounded-2xl p-3 space-y-2 ${slotCard} ${slotPokemon.length > 0 ? 'pb-0' : ''}`}>
                     <label className={`text-xs font-bold uppercase tracking-wide ml-0.5 block ${slotLabel}`}>
                       {idx === 0 ? tr('battles.player1') : tr('battles.player2')}
                     </label>
@@ -926,13 +926,13 @@ export const Battles = ({
                         {!isLocked && <ChevronDown size={16} className={t.textSecondary} />}
                       </button>
                       {!isLocked && openPlayerDropdown === slot && (
-                        <div className={`absolute top-full left-0 right-0 mt-1 ${t.surface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
+                        <div className={`absolute top-full left-0 right-0 mt-1 ${slotWhiteSurface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
                           {selectablePlayers.map((p) => (
                             <button
                               key={p._id}
                               type="button"
                               onClick={() => { handleChangePlayer(slot, p._id); setOpenPlayerDropdown(null); }}
-                              className={`w-full flex items-center gap-3 px-4 py-3 text-left ${t.surfaceMuted} hover:opacity-80`}
+                              className={`w-full flex items-center gap-3 px-4 py-3 text-left ${slotWhiteSurface} hover:opacity-80`}
                             >
                               <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
                               <span className={`font-medium ${t.text}`}>{p.name}</span>
@@ -954,7 +954,7 @@ export const Battles = ({
                           </p>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 pb-1">
                           <button
                             onClick={() => setPickerState({ slot, mode: 'team' })}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${isJ1 ? isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-500/15 text-indigo-700' : isDark ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-500/15 text-orange-700'}`}
@@ -986,7 +986,7 @@ export const Battles = ({
                             Aucun Pokémon sélectionné
                           </div>
                         ) : (
-                          <div className={`${slotWhiteSurface} rounded-2xl overflow-hidden`}>
+                          <div className={`-mx-3 -mb-3 overflow-hidden border-t ${isDark ? 'border-zinc-700/50' : 'border-gray-300/70'}`}>
                             <DraggableList
                               items={slotPokemon}
                               getKey={(p) => p.id}
@@ -999,8 +999,8 @@ export const Battles = ({
                                 return (
                                   <SwipeableRow
                                     onDelete={() => handleRemovePokemonFromSlot(slot, p.id)}
-                                    surfaceClass={slotWhiteSurface}
-                                    className={!isLast ? `border-b ${isDark ? 'border-zinc-700/50' : t.divider}` : ''}
+                                    surfaceClass="bg-transparent"
+                                    className={!isLast ? `border-b ${isDark ? 'border-zinc-700/50' : 'border-gray-300/70'}` : ''}
                                     disabled={isDragging}
                                   >
                                     <div className="flex items-center">
