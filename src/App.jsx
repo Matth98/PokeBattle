@@ -426,7 +426,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   const refreshPlayers = async () => {
     const p = await fetchPlayers();
-    if (p) setPlayers(p);
+    if (p) {
+      setPlayers(p);
+      setSelectedPlayer(prev => prev ? (p.find(x => String(x._id) === String(prev._id)) ?? prev) : null);
+    }
   };
 
   // Charge les données seulement une fois l'utilisateur authentifié
@@ -483,6 +486,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     const updated = await syncPlayerPokemon(id, data.pokemon);
     if (updated) {
       setPlayers(prev => prev.map(p => p._id === id ? updated : p));
+      setSelectedPlayer(prev => prev && String(prev._id) === String(id) ? updated : prev);
     }
     // Pas de toast.error — l'erreur est ignorée silencieusement
   };
