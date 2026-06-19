@@ -891,9 +891,21 @@ export const Battles = ({
                 const selectablePlayers = players.filter((p) => p._id !== newBattleData[otherSlot]);
                 // Player1 verrouillé pour les non-admins en mode création
                 const isLocked = slot === 'player1' && !isSuperAdmin && !isEditing;
+                const isJ1 = idx === 0;
+                const slotCard = isJ1
+                  ? isDark ? 'bg-zinc-850' : 'bg-indigo-100/60'
+                  : isDark ? 'bg-zinc-850' : 'bg-orange-100/60';
+                const slotLabel = isJ1
+                  ? isDark ? 'text-indigo-400' : 'text-indigo-700'
+                  : isDark ? 'text-orange-400' : 'text-orange-700';
+                const slotBorder = '';
+                const slotAddBtn = isJ1
+                  ? isDark ? 'bg-indigo-500' : 'bg-indigo-500'
+                  : isDark ? 'bg-orange-500' : 'bg-orange-500';
+                const slotWhiteSurface = isDark ? 'bg-zinc-800' : 'bg-white/75';
                 return (
-                  <div key={slot} className="space-y-2">
-                    <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} ml-1 block`}>
+                  <div key={slot} className={`rounded-2xl p-3 space-y-2 ${slotCard}`}>
+                    <label className={`text-xs font-bold uppercase tracking-wide ml-0.5 block ${slotLabel}`}>
                       {idx === 0 ? tr('battles.player1') : tr('battles.player2')}
                     </label>
                     <div className="relative">
@@ -901,7 +913,7 @@ export const Battles = ({
                         type="button"
                         onClick={isLocked ? undefined : () => setOpenPlayerDropdown(openPlayerDropdown === slot ? null : slot)}
                         disabled={isLocked}
-                        className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3 text-left${isLocked ? ' opacity-70 cursor-default' : ''}`}
+                        className={`w-full ${slotWhiteSurface} rounded-xl px-4 py-3 flex items-center gap-3 text-left${isLocked ? ' opacity-70 cursor-default' : ''}`}
                       >
                         {playerId ? (
                           <>
@@ -945,14 +957,14 @@ export const Battles = ({
                         <div className="flex gap-2">
                           <button
                             onClick={() => setPickerState({ slot, mode: 'team' })}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${t.accentSoftBg} ${t.accentSoftText}`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${isJ1 ? isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-500/15 text-indigo-700' : isDark ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-500/15 text-orange-700'}`}
                           >
                             <Shield size={15} />
                             Équipe
                           </button>
                           <button
                             onClick={() => setPickerState({ slot, mode: 'pokemon' })}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${t.accentBg} text-white`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${slotAddBtn} text-white`}
                           >
                             <Plus size={15} />
                             Ajouter
@@ -970,11 +982,11 @@ export const Battles = ({
                         </div>
 
                         {slotPokemon.length === 0 ? (
-                          <div className={`${t.surfaceInset} rounded-2xl p-4 text-center ${t.textSecondary} text-sm`}>
+                          <div className={`p-4 text-center ${t.textSecondary} text-sm`}>
                             Aucun Pokémon sélectionné
                           </div>
                         ) : (
-                          <div className={`${t.surfaceInset} rounded-2xl overflow-hidden`}>
+                          <div className={`${slotWhiteSurface} rounded-2xl overflow-hidden`}>
                             <DraggableList
                               items={slotPokemon}
                               getKey={(p) => p.id}
@@ -987,8 +999,8 @@ export const Battles = ({
                                 return (
                                   <SwipeableRow
                                     onDelete={() => handleRemovePokemonFromSlot(slot, p.id)}
-                                    surfaceClass={t.surfaceInset}
-                                    className={!isLast ? `border-b ${t.divider}` : ''}
+                                    surfaceClass={slotWhiteSurface}
+                                    className={!isLast ? `border-b ${isDark ? 'border-zinc-700/50' : t.divider}` : ''}
                                     disabled={isDragging}
                                   >
                                     <div className="flex items-center">
@@ -1059,7 +1071,7 @@ export const Battles = ({
                         {players.find((p) => p._id === newBattleData.player2)?.name || tr('battles.player2')}
                       </p>
                     </div>
-                    <div className={`pt-2 border-t ${t.divider}`}>
+                    <div className={`pt-2 border-t ${t.divider} -mx-4 px-4`}>
                       <label className={`block text-xs font-semibold ${t.textSecondary} mb-1`}>
                         {tr('battles.selectWinner')}
                       </label>
