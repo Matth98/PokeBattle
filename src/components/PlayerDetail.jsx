@@ -1020,7 +1020,7 @@ export const PlayerDetail = ({
                 {conceptPokemon.map((p) => (
                   <button
                     key={p.pokeId}
-                    onClick={() => onViewPokemon?.({ pokeId: p.pokeId, name: p.name || resolvePokemonName(p.pokeId, p.gender), gender: p.gender, altPokeId: p.altPokeId })}
+                    onClick={() => { const _n = p.name || resolvePokemonName(p.pokeId, p.gender); onViewPokemon?.({ pokeId: p.pokeId, name: _n, gender: p.gender ?? (_n?.includes('♀') ? 'female' : _n?.includes('♂') ? 'male' : null), altPokeId: p.altPokeId }); }}
                     className="flex flex-col items-center gap-1.5 flex-shrink-0"
                   >
                     <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]'}`}>
@@ -1144,7 +1144,7 @@ export const PlayerDetail = ({
                       <button
                         onClick={() => inPokemonSelection
                           ? setSelectedItems(prev => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])
-                          : onViewPokemon?.({ pokeId: p.pokeId, name: pName, gender: p.gender, altPokeId: p.altPokeId })
+                          : onViewPokemon?.({ pokeId: p.pokeId, name: pName, gender: p.gender ?? (pName?.includes('♀') ? 'female' : pName?.includes('♂') ? 'male' : null), altPokeId: p.altPokeId })
                         }
                         className={`w-full flex items-center gap-3 pr-4 py-3 ${t.surface} text-left relative touch-manipulation`}
                         style={{ paddingLeft: inPokemonSelection ? '52px' : '16px', transition: 'padding-left 200ms' }}
@@ -1161,7 +1161,7 @@ export const PlayerDetail = ({
                           onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                         />
                         <div className="flex-1 min-w-0">
-                          <p className={`font-semibold ${t.text} truncate`}>{pName}</p>
+                          <p className={`font-semibold ${t.text} truncate`}>{pName.replace(/[♂♀]/g, '$&︎')}</p>
                           {(() => {
                             const types = pokemonTypes[p.pokeId] || [];
                             if (types.length === 0) return null;

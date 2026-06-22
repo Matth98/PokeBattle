@@ -2,6 +2,7 @@ import React, { useState, useLayoutEffect, useEffect, useRef, useCallback } from
 import { createPortal } from 'react-dom';
 import { AlertTriangle, ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
+import { getPokemonSpriteId } from '../hooks/usePokemon';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -358,12 +359,21 @@ function InfoRow({ labelKey, label, value, accentColor, isDark }) {
 export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltPokeId, t, isDark, onBack, backLabel = 'Recherche', myPlayer = null, teams = [], onUpdatePlayer, onUpdateTeam, onUpdateTeamSilent }) => {
   const tr = useTranslation();
   const toast = useToast();
-  const [activePokeId, setActivePokeId] = useState(initialAltPokeId ?? pokeId);
-  const [activePokeName, setActivePokeName] = useState(pokeName);
   // activeGender : 'female' | 'male' | null — suit la forme affichée
   // Déduit depuis le nom si initialGender est absent (backend peut stripper le champ)
   const inferredGender = initialGender
     ?? (pokeName?.includes('♀') ? 'female' : pokeName?.includes('♂') ? 'male' : null);
+  // Résout l'altPokeId depuis le cache si absent (backend peut stripper le champ)
+  const resolvedAltPokeId = (() => {
+    if (initialAltPokeId) return initialAltPokeId;
+    if (inferredGender === 'female') {
+      const id = getPokemonSpriteId({ pokeId, gender: 'female' });
+      return id !== pokeId ? id : undefined;
+    }
+    return undefined;
+  })();
+  const [activePokeId, setActivePokeId] = useState(resolvedAltPokeId ?? pokeId);
+  const [activePokeName, setActivePokeName] = useState(pokeName);
   const [activeGender, setActiveGender] = useState(inferredGender);
   const { data, loading, error } = usePokemonDetail(activePokeId, activePokeName);
   const [activeTab, setActiveTab] = useState('presentation');
@@ -618,7 +628,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
             <p className={`text-sm font-mono font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
               #{String(data.id).padStart(4, '0')}
             </p>
-            <h1 className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{data?.name || pokeName}</h1>
+            <h1 className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{activePokeName || data?.name}</h1>
             <div className="flex items-center gap-2 mb-5">
               <div className="flex gap-2">
                 {data.types.map(tn => <TypeBadge key={tn} typeName={tn} />)}

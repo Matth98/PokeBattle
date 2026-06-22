@@ -91,7 +91,7 @@ const ToastViewport = ({ toasts, isDark, onDismiss }) => (
           <span className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${badge}`}>
             <Icon size={14} strokeWidth={3} />
           </span>
-          <span className="text-sm font-semibold truncate">{t.message}</span>
+          <span className="text-sm font-semibold truncate">{t.message.replace(/[♂♀]/g, '$&︎')}</span>
         </button>
       );
     })}
