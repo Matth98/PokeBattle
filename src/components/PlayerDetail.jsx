@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { ClearButton } from './ClearButton';
 import { AlertModal } from './AlertModal';
-import { usePokemon } from '../hooks/usePokemon';
+import { usePokemon, resolvePokemonName, getPokemonSpriteId, getPokemonImageUrl as getPokemonImageUrlStatic } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
@@ -440,10 +440,11 @@ export const PlayerDetail = ({
 
   const handleAddPokemon = async (pokemonOrArray) => {
     const toAdd = Array.isArray(pokemonOrArray) ? pokemonOrArray : [pokemonOrArray];
-    const existingIds = new Set((player.pokemon || []).map((p) => p.pokeId));
+    const resolveGenderFromEntry = (p) => p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null);
+    const existingKeys = new Set((player.pokemon || []).map((p) => `${p.pokeId}:${resolveGenderFromEntry(p) ?? ''}`));
     const newEntries = toAdd
-      .filter((p) => !existingIds.has(p.pokeId))
-      .map((p, i) => ({ id: `${Date.now()}-${i}-${p.pokeId}`, pokeId: p.pokeId, name: p.name, level: 50 }));
+      .filter((p) => !existingKeys.has(`${p.pokeId}:${resolveGenderFromEntry(p) ?? ''}`))
+      .map((p, i) => ({ id: `${Date.now()}-${i}-${p.pokeId}`, pokeId: p.pokeId, name: p.name, level: 50, ...(p.gender ? { gender: p.gender } : {}), ...(p.altPokeId ? { altPokeId: p.altPokeId } : {}) }));
     if (newEntries.length === 0) { setAddingPokemon(false); return; }
     await onUpdate(player._id, { ...player, pokemon: [...(player.pokemon || []), ...newEntries] });
 
@@ -476,12 +477,26 @@ export const PlayerDetail = ({
     ? player.pokemon.find((p) => p.id === deletingPokemon)
     : null;
 
+  const resolveEntryGender = (p) => p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null);
+  // Si l'entrée n'a pas d'indicateur de genre mais qu'une autre entrée avec ♀ existe pour le même pokeId,
+  // on peut déduire que celle-ci est le mâle/la forme de base.
+  const deletingRawGender = deletingPokemonObj ? resolveEntryGender(deletingPokemonObj) : undefined;
+  const hasFemaleRosterSibling = deletingPokemonObj && deletingRawGender === null
+    ? (player.pokemon || []).some(p => p.id !== deletingPokemonObj.id && p.pokeId === deletingPokemonObj.pokeId && resolveEntryGender(p) === 'female')
+    : false;
+  // null + sibling femelle → 'male' ; sinon on garde la valeur brute
+  const deletingGender = deletingRawGender !== null ? deletingRawGender : (hasFemaleRosterSibling ? 'male' : null);
+  // Pour la comparaison : null = forme de base/mâle
+  const effectiveGender = (g) => g ?? 'male';
   const teamsContainingDeleted = deletingPokemonObj
     ? teams.filter(
-        (team) =>
-          team.ownerId === player._id &&
-          !team.isConcept &&
-          (team.pokemon || []).some((p) => p.pokeId === deletingPokemonObj.pokeId)
+        (team) => {
+          if (team.ownerId !== player._id || team.isConcept) return false;
+          return (team.pokemon || []).some((p) =>
+            p.pokeId === deletingPokemonObj.pokeId &&
+            effectiveGender(resolveEntryGender(p)) === effectiveGender(deletingGender)
+          );
+        }
       )
     : [];
 
@@ -491,13 +506,14 @@ export const PlayerDetail = ({
     if (!deletingPokemonObj) return;
     setIsDeletingPokemon(true);
     const pokeIdToRemove = deletingPokemonObj.pokeId;
+    const matchesDeleted = (p) => p.pokeId === pokeIdToRemove && effectiveGender(resolveEntryGender(p)) === effectiveGender(deletingGender);
     if (onUpdateTeam) {
       for (const team of teamsContainingDeleted) {
         await onUpdateTeam(team._id, {
           ...team,
           isConcept: true,
           pokemon: (team.pokemon || []).map((p) =>
-            p.pokeId === pokeIdToRemove ? { ...p, isConcept: true } : p
+            matchesDeleted(p) ? { ...p, isConcept: true } : p
           ),
         });
       }
@@ -507,13 +523,13 @@ export const PlayerDetail = ({
         (team) =>
           team.ownerId === player._id &&
           team.isConcept &&
-          (team.pokemon || []).some((p) => p.pokeId === pokeIdToRemove && !p.isConcept)
+          (team.pokemon || []).some((p) => matchesDeleted(p) && !p.isConcept)
       );
       for (const team of conceptTeamsContaining) {
         await onUpdateTeamSilent(team._id, {
           ...team,
           pokemon: (team.pokemon || []).map((p) =>
-            p.pokeId === pokeIdToRemove ? { ...p, isConcept: true } : p
+            matchesDeleted(p) ? { ...p, isConcept: true } : p
           ),
         });
       }
@@ -1004,18 +1020,18 @@ export const PlayerDetail = ({
                 {conceptPokemon.map((p) => (
                   <button
                     key={p.pokeId}
-                    onClick={() => onViewPokemon?.({ pokeId: p.pokeId, name: p.name })}
+                    onClick={() => onViewPokemon?.({ pokeId: p.pokeId, name: p.name || resolvePokemonName(p.pokeId, p.gender), gender: p.gender, altPokeId: p.altPokeId })}
                     className="flex flex-col items-center gap-1.5 flex-shrink-0"
                   >
                     <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]'}`}>
                       <img
-                        src={getPokemonImageUrl(p.pokeId)}
-                        alt={p.name}
+                        src={getPokemonImageUrlStatic(getPokemonSpriteId(p))}
+                        alt={p.name || resolvePokemonName(p.pokeId, p.gender)}
                         className="w-12 h-12 object-contain"
                         onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                       />
                     </div>
-                    <p className={`text-[10px] font-medium truncate max-w-[56px] text-center ${isDark ? 'text-white/50' : 'text-black/40'}`}>{p.name}</p>
+                    <p className={`text-[10px] font-medium truncate max-w-[56px] text-center ${isDark ? 'text-white/50' : 'text-black/40'}`}>{p.name || resolvePokemonName(p.pokeId, p.gender)}</p>
                   </button>
                 ))}
                 <div className="w-3 flex-shrink-0" />
@@ -1112,6 +1128,7 @@ export const PlayerDetail = ({
                   const isLast = idx === filtered.length - 1;
                   const isSelected = selectedItems.includes(p.id);
                   const inPokemonSelection = selectionMode === 'pokemon';
+                  const pName = p.name || resolvePokemonName(p.pokeId, p.gender);
                   return (
                     <SwipeableRow
                       key={p.id}
@@ -1127,7 +1144,7 @@ export const PlayerDetail = ({
                       <button
                         onClick={() => inPokemonSelection
                           ? setSelectedItems(prev => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])
-                          : onViewPokemon?.({ pokeId: p.pokeId, name: p.name })
+                          : onViewPokemon?.({ pokeId: p.pokeId, name: pName, gender: p.gender, altPokeId: p.altPokeId })
                         }
                         className={`w-full flex items-center gap-3 pr-4 py-3 ${t.surface} text-left relative touch-manipulation`}
                         style={{ paddingLeft: inPokemonSelection ? '52px' : '16px', transition: 'padding-left 200ms' }}
@@ -1138,13 +1155,13 @@ export const PlayerDetail = ({
                           {isSelected && <Check size={14} className="text-white" />}
                         </span>
                         <img
-                          src={getPokemonImageUrl(p.pokeId)}
-                          alt={p.name}
+                          src={getPokemonImageUrlStatic(getPokemonSpriteId(p))}
+                          alt={pName}
                           className="w-11 h-11 object-contain flex-shrink-0"
                           onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                         />
                         <div className="flex-1 min-w-0">
-                          <p className={`font-semibold ${t.text} truncate`}>{p.name}</p>
+                          <p className={`font-semibold ${t.text} truncate`}>{pName}</p>
                           {(() => {
                             const types = pokemonTypes[p.pokeId] || [];
                             if (types.length === 0) return null;
@@ -1481,7 +1498,7 @@ export const PlayerDetail = ({
           t={t}
           isDark={isDark}
           title="Ajouter un Pokémon"
-          alreadyPickedIds={(player.pokemon || []).map((p) => p.pokeId)}
+          alreadyPickedIds={(player.pokemon || []).map((p) => `${p.pokeId}:${(p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null)) ?? ''}`)}
           onSelect={handleAddPokemon}
           onClose={() => setAddingPokemon(false)}
           multiSelect
@@ -1710,8 +1727,8 @@ export const PlayerDetail = ({
           t={t}
           isDark={isDark}
           title="Ajouter un Pokémon"
-          alreadyPickedIds={newTeamData.pokemon.map((p) => p.pokeId)}
-          defaultResults={(player.pokemon || []).map((p) => ({ pokeId: p.pokeId, name: p.name }))}
+          alreadyPickedIds={newTeamData.pokemon.map((p) => `${p.pokeId}:${p.gender ?? ''}`)}
+          defaultResults={(player.pokemon || []).map((p) => ({ pokeId: p.pokeId, name: p.name, gender: p.gender, altPokeId: p.altPokeId }))}
           defaultLabel={`Pokémon de ${player.name}`}
           onSelect={handleSelectTeamPokemon}
           onClose={() => setPickingTeamPokemon(false)}
@@ -1721,12 +1738,16 @@ export const PlayerDetail = ({
 
       {/* ── Modal Confirmation suppression multiple Pokémon ── */}
       {deletingSelectedPokemon && (() => {
-        const selectedPokeIds = new Set(
-          (player.pokemon || []).filter((p) => selectedItems.includes(p.id)).map((p) => p.pokeId)
+        const resolveGender = (p) => p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null);
+        const effectiveG = (g) => g ?? 'male';
+        // Clés composées pokeId:effectiveGender pour distinguer mâle et femelle
+        const selectedKeys = new Set(
+          (player.pokemon || []).filter((p) => selectedItems.includes(p.id))
+            .map((p) => `${p.pokeId}:${effectiveG(resolveGender(p))}`)
         );
         const affectedTeams = playerTeams.filter((team) =>
           !team.isConcept &&
-          (team.pokemon || []).some((p) => selectedPokeIds.has(p.pokeId))
+          (team.pokemon || []).some((p) => selectedKeys.has(`${p.pokeId}:${effectiveG(resolveGender(p))}`))
         );
         return createPortal(
         <div className={`fixed inset-0 ${t.overlay} ${isDeletingSelectedPokemonClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>

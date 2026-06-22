@@ -355,11 +355,16 @@ function InfoRow({ labelKey, label, value, accentColor, isDark }) {
   );
 }
 
-export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLabel = 'Recherche', myPlayer = null, teams = [], onUpdatePlayer, onUpdateTeam, onUpdateTeamSilent }) => {
+export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltPokeId, t, isDark, onBack, backLabel = 'Recherche', myPlayer = null, teams = [], onUpdatePlayer, onUpdateTeam, onUpdateTeamSilent }) => {
   const tr = useTranslation();
   const toast = useToast();
-  const [activePokeId, setActivePokeId] = useState(pokeId);
+  const [activePokeId, setActivePokeId] = useState(initialAltPokeId ?? pokeId);
   const [activePokeName, setActivePokeName] = useState(pokeName);
+  // activeGender : 'female' | 'male' | null — suit la forme affichée
+  // Déduit depuis le nom si initialGender est absent (backend peut stripper le champ)
+  const inferredGender = initialGender
+    ?? (pokeName?.includes('♀') ? 'female' : pokeName?.includes('♂') ? 'male' : null);
+  const [activeGender, setActiveGender] = useState(inferredGender);
   const { data, loading, error } = usePokemonDetail(activePokeId, activePokeName);
   const [activeTab, setActiveTab] = useState('presentation');
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -379,36 +384,50 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
     });
   }, []);
 
-  const owned = myPlayer ? (myPlayer.pokemon || []).some(p => p.pokeId === pokeId) : false;
+  // Déduit le genre depuis le nom si le champ gender a été strippé par le backend
+  const resolveGender = (p) => p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null);
+  const matchesForm = (p) => p.pokeId === pokeId && resolveGender(p) === activeGender;
+
+  const owned = myPlayer ? (myPlayer.pokemon || []).some(matchesForm) : false;
   const displayOwned = optimisticOwned !== null ? optimisticOwned : owned;
   const teamsContaining = myPlayer
     ? teams.filter(team =>
         team.ownerId === myPlayer._id &&
         !team.isConcept &&
-        (team.pokemon || []).some(p => p.pokeId === pokeId)
+        (team.pokemon || []).some(matchesForm)
       )
     : [];
 
   const handleToggle = async () => {
     if (!myPlayer || !onUpdatePlayer) return;
     if (owned) {
-      setSnapshotTeams(teamsContaining);
-      setConfirmRemove(true);
+      if (teamsContaining.length > 0) {
+        setSnapshotTeams(teamsContaining);
+        setConfirmRemove(true);
+      } else {
+        await handleConfirmRemove();
+      }
     } else {
       setOptimisticOwned(true);
-      const newEntry = { id: `${Date.now()}-${pokeId}`, pokeId, name: pokeName, level: 50 };
+      const newEntry = {
+        id: `${Date.now()}-${pokeId}`,
+        pokeId,
+        name: activePokeName,
+        level: 50,
+        ...(activeGender ? { gender: activeGender } : {}),
+        ...(activePokeId !== pokeId ? { altPokeId: activePokeId } : {}),
+      };
       try {
         await onUpdatePlayer(myPlayer._id, { ...myPlayer, pokemon: [...(myPlayer.pokemon || []), newEntry] });
-        // Retire le marquage isConcept dans les équipes Concept qui contiennent ce pokémon
         if (onUpdateTeam) {
           const conceptTeams = teams.filter(team =>
             team.ownerId === myPlayer._id &&
             team.isConcept &&
-            (team.pokemon || []).some(p => p.isConcept && p.pokeId === pokeId)
+            (team.pokemon || []).some(p => p.isConcept && matchesForm(p))
           );
           for (const team of conceptTeams) {
             const updatedPokemon = (team.pokemon || []).map(p =>
-              p.pokeId === pokeId ? { ...p, isConcept: false } : p
+              p.pokeId === activePokeId ? { ...p, isConcept: false } : p
             );
             const stillConcept = updatedPokemon.some(p => p.isConcept);
             if (stillConcept && onUpdateTeamSilent) {
@@ -418,7 +437,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             }
           }
         }
-        toast.success(`${pokeName} ajouté à ta collection`);
+        toast.success(`${activePokeName} ajouté à ta collection`);
       } catch (e) {
         setOptimisticOwned(null);
         throw e;
@@ -430,27 +449,26 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
 
   const handleConfirmRemove = async () => {
     if (isRemoving) return;
-    const pokemonEntry = (myPlayer.pokemon || []).find(p => p.pokeId === pokeId);
+    const pokemonEntry = (myPlayer.pokemon || []).find(matchesForm);
     if (!pokemonEntry) return;
     setIsRemoving(true);
-    // Marque le pokémon comme "à capturer" dans toutes les équipes qui le contiennent
     if (onUpdateTeamSilent) {
       const affectedTeams = teams.filter(team =>
         team.ownerId === myPlayer._id &&
-        (team.pokemon || []).some(p => p.pokeId === pokeId)
+        (team.pokemon || []).some(matchesForm)
       );
       for (const team of affectedTeams) {
         const updatedPokemon = (team.pokemon || []).map(p =>
-          p.pokeId === pokeId ? { ...p, isConcept: true } : p
+          matchesForm(p) ? { ...p, isConcept: true } : p
         );
         await onUpdateTeamSilent(team._id, { ...team, isConcept: true, pokemon: updatedPokemon });
       }
     }
     await onUpdatePlayer(myPlayer._id, {
       ...myPlayer,
-      pokemon: (myPlayer.pokemon || []).filter(p => p.pokeId !== pokeId),
+      pokemon: (myPlayer.pokemon || []).filter(p => !matchesForm(p)),
     });
-    toast.success(`${pokeName} supprimé de ta collection`);
+    toast.success(`${activePokeName} supprimé de ta collection`);
     setConfirmRemove(false);
     setIsRemoving(false);
   };
@@ -605,8 +623,14 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                           key={form.pokeId}
                           onClick={() => {
                             if (form.pokeId === activePokeId) return;
+                            setOptimisticOwned(null);
                             setActivePokeId(form.pokeId);
                             setActivePokeName(form.name);
+                            setActiveGender(
+                              form.apiName?.endsWith('-female') ? 'female'
+                              : form.apiName?.endsWith('-male') ? 'male'
+                              : null
+                            );
                             window.scrollTo({ top: 0, behavior: 'instant' });
                           }}
                           className="flex-shrink-0 w-16 h-16 flex items-center justify-center"
@@ -702,7 +726,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
       {confirmRemove && createPortal(
         <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full anim-scale-in`}>
-            <p className={`font-black text-lg ${t.text} mb-3`}>Supprimer {pokeName} ?</p>
+            <p className={`font-black text-lg ${t.text} mb-3`}>Supprimer {activePokeName} ?</p>
             {snapshotTeams.length > 0 && (
               <div className={`mt-3 mb-4 p-3 rounded-xl ${isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}`}>
                 <div className="flex items-start gap-2">
@@ -726,7 +750,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
               </div>
             )}
             <p className={`${t.textSecondary} text-sm mb-5`}>
-              {snapshotTeams.length > 0 && `${pokeName} restera dans ${snapshotTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}Le Pokémon sera retiré de ta collection.
+              {snapshotTeams.length > 0 && `${activePokeName} restera dans ${snapshotTeams.length === 1 ? 'cette équipe' : 'ces équipes'} mais sera marqué "À capturer". `}Le Pokémon sera retiré de ta collection.
             </p>
             <div className="flex gap-2">
               <button onClick={() => setConfirmRemove(false)} className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}>

@@ -9,6 +9,7 @@ import FR_DESCRIPTIONS_ALOLA  from '../data/frDescriptionsAlola';
 import FR_DESCRIPTIONS_GALAR  from '../data/frDescriptionsGalar';
 import FR_DESCRIPTIONS_FORMES from '../data/frDescriptionsFormes';
 import pokemonFormsFr          from '../data/pokemon-forms-fr.json';
+import { registerGenderForm }  from '../hooks/usePokemon';
 
 const FORMS_FR_MAP = Object.fromEntries(pokemonFormsFr.map(f => [f.pokeId, f.name]));
 
@@ -25,6 +26,8 @@ function deriveFormNameFr(apiName, speciesName) {
   if (n.endsWith('-mega-y'))    return `Méga ${speciesName} Y`;
   if (n.endsWith('-mega'))      return `Méga ${speciesName}`;
   if (n.endsWith('-gmax'))      return `${speciesName} Gigamax`;
+  if (n.endsWith('-female'))    return `${speciesName} ♀`;
+  if (n.endsWith('-male'))      return `${speciesName} ♂`;
   if (n.endsWith('-alola'))     return `${speciesName} d'Alola`;
   if (n.endsWith('-galar'))     return `${speciesName} de Galar`;
   if (n.endsWith('-hisui'))     return `${speciesName} de Hisui`;
@@ -198,10 +201,16 @@ export async function processPokemonDetail(pokeId, language, pokemonNameOverride
 
   let flavorText = flavorEntry?.flavor_text?.replace(/\f/g, ' ').replace(/\n/g, ' ') || '';
   if (language === 'fr' && !speciesData.flavor_text_entries?.some(e => e.language.name === 'fr')) {
-    flavorText = FR_DESCRIPTIONS_PLA[pokemonData.id] || FR_DESCRIPTIONS_GEN9[pokemonData.id] || flavorText;
+    const numSpeciesId = Number(speciesId);
+    flavorText = FR_DESCRIPTIONS_PLA[pokemonData.id]
+              || FR_DESCRIPTIONS_PLA[numSpeciesId]
+              || FR_DESCRIPTIONS_GEN9[pokemonData.id]
+              || FR_DESCRIPTIONS_GEN9[numSpeciesId]
+              || flavorText;
   }
-  if (language === 'fr' && formVariant === 'hisui' && (!flavorEntry || flavorEntry.language?.name !== 'fr')) {
-    flavorText = FR_DESCRIPTIONS_HISUI[pokemonData.id] || flavorText;
+  if (language === 'fr' && (!flavorEntry || flavorEntry.language?.name !== 'fr')) {
+    const numSpeciesId = Number(speciesId);
+    flavorText = FR_DESCRIPTIONS_HISUI[pokemonData.id] || FR_DESCRIPTIONS_HISUI[numSpeciesId] || flavorText;
   }
   if (language === 'fr' && formVariant === 'alola') {
     flavorText = FR_DESCRIPTIONS_ALOLA[pokemonData.id] || flavorText;
@@ -217,9 +226,15 @@ export async function processPokemonDetail(pokeId, language, pokemonNameOverride
   const genus = genusEntry?.genus || '';
 
   const nameEntry = pickLang(speciesData.names, language);
-  const name = (isAlternateForm && pokemonNameOverride)
-    ? pokemonNameOverride
-    : (nameEntry?.name || pokemonData.name);
+  const speciesDisplayName = nameEntry?.name || pokemonData.name;
+  let name;
+  if (isAlternateForm && pokemonNameOverride) {
+    name = pokemonNameOverride;
+  } else if (isAlternateForm) {
+    name = deriveFormNameFr(pokemonData.name, speciesDisplayName);
+  } else {
+    name = speciesDisplayName;
+  }
 
   let genderText;
   if (speciesData.gender_rate === -1) {
@@ -229,7 +244,7 @@ export async function processPokemonDetail(pokeId, language, pokemonNameOverride
     genderText = `${100 - femalePercent}% ♂︎  -  ${femalePercent}% ♀︎`;
   }
 
-  const speciesName = nameEntry?.name || pokemonData.name;
+  const speciesName = speciesDisplayName;
 
   const varietyItems = (speciesData.varieties || [])
     .map(v => {
@@ -248,6 +263,13 @@ export async function processPokemonDetail(pokeId, language, pokemonNameOverride
   // ferait apparaître de faux pokémon.
   const varieties = varietyItems
     .filter(v => !isBattleOnlyForm(v.apiName || ''));
+
+  // Enregistre uniquement les formes femelles (la forme mâle = sprite de base, pas de doublon).
+  varieties.forEach(v => {
+    if (v.pokeId >= 10000 && v.apiName?.endsWith('-female')) {
+      registerGenderForm(Number(speciesId), v.name, 'female', v.pokeId);
+    }
+  });
 
   return {
     id:             pokemonData.id,

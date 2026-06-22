@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronRight, ChevronDown, Plus, Check, CheckSquare, Shield, Loader2, Target } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, Check, CheckSquare, Shield, Loader2, Target, GripVertical } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { usePokemon } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { PokemonPicker } from './PokemonPicker';
 import { SwipeableRow } from './SwipeableRow';
+import { DraggableList } from './DraggableList';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { AlertModal } from './AlertModal';
@@ -148,6 +149,7 @@ export const Teams = ({
       pokemon: prev.pokemon.filter((p) => p.id !== id),
     }));
   };
+
 
   const handleSaveTeam = async () => {
     const errors = {
@@ -745,28 +747,44 @@ export const Teams = ({
                   </div>
                 ) : (
                   <div className={`${t.surfaceInset} rounded-2xl overflow-hidden`}>
-                    {newTeamData.pokemon.map((p, idx) => {
-                      const isLast = idx === newTeamData.pokemon.length - 1;
-                      return (
-                        <SwipeableRow
-                          key={p.id}
-                          onDelete={() => handleRemovePokemonFromForm(p.id)}
-                          surfaceClass={t.surfaceInset}
-                          className={!isLast ? `border-b ${t.divider}` : ''}
-                        >
-                          <div className="flex items-center gap-3 px-4 py-2.5">
-                            <img
-                              src={getPokemonImageUrl(p.pokeId)}
-                              alt={p.name}
-                              className="w-10 h-10 object-contain flex-shrink-0"
-                              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                            />
-                            <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</span>
-                            <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
-                          </div>
-                        </SwipeableRow>
-                      );
-                    })}
+                    <DraggableList
+                      items={newTeamData.pokemon}
+                      getKey={(p) => p.id}
+                      onReorder={(next) => setNewTeamData((prev) => ({ ...prev, pokemon: next }))}
+                      renderItem={(p, dragHandleProps, isDragging) => {
+                        const idx = newTeamData.pokemon.findIndex((x) => x.id === p.id);
+                        const isLast = idx === newTeamData.pokemon.length - 1;
+                        return (
+                          <SwipeableRow
+                            onDelete={() => handleRemovePokemonFromForm(p.id)}
+                            surfaceClass={t.surfaceInset}
+                            className={!isLast ? `border-b ${t.divider}` : ''}
+                            disabled={isDragging}
+                          >
+                            <div className="flex items-center">
+                              <span
+                                {...dragHandleProps}
+                                onClick={(e) => e.stopPropagation()}
+                                className={`${t.textTertiary} flex-shrink-0 px-2 py-2.5 select-none`}
+                                aria-label="Réorganiser"
+                              >
+                                <GripVertical size={18} />
+                              </span>
+                              <div className="flex items-center gap-3 flex-1 pr-4 py-2.5">
+                                <img
+                                  src={getPokemonImageUrl(p.pokeId)}
+                                  alt={p.name}
+                                  className="w-10 h-10 object-contain flex-shrink-0"
+                                  onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                />
+                                <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</span>
+                                <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
+                              </div>
+                            </div>
+                          </SwipeableRow>
+                        );
+                      }}
+                    />
                   </div>
                 )}
               </div>}
@@ -778,13 +796,13 @@ export const Teams = ({
       {/* Modal Sélection d'un Pokémon pour l'équipe */}
       {pickingPokemon && (() => {
         const owner = players.find((p) => p._id === newTeamData.owner);
-        const ownerRoster = (owner?.pokemon || []).map((p) => ({ pokeId: p.pokeId, name: p.name }));
+        const ownerRoster = (owner?.pokemon || []).map((p) => ({ pokeId: p.pokeId, name: p.name, gender: p.gender, altPokeId: p.altPokeId }));
         return createPortal(
           <PokemonPicker
             t={t}
             isDark={isDark}
             title="Ajouter un Pokémon"
-            alreadyPickedIds={newTeamData.pokemon.map((p) => p.pokeId)}
+            alreadyPickedIds={newTeamData.pokemon.map((p) => `${p.pokeId}:${p.gender ?? ''}`)}
             defaultResults={ownerRoster}
             defaultLabel={owner ? `Pokémon de ${owner.name}` : null}
             onSelect={handleSelectPokemon}

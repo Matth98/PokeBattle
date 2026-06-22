@@ -25,6 +25,7 @@ import { useThemeMode } from './hooks/useThemeMode';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useEdgeSwipeBack } from './hooks/useEdgeSwipeBack';
 import { useOfflineSync, OFFLINE_TOTAL } from './hooks/useOfflineSync';
+import { prefetchSeedAltPokeIds } from './hooks/usePokemon';
 
 
 const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
@@ -53,6 +54,9 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   };
   const { done: syncDone, total: syncTotal, finished: syncFinished, syncing: syncSyncing, hasNewData: syncHasNewData, reset: syncReset } = useOfflineSync(offlineMode);
 
+
+  // ── Prefetch des altPokeId pour les formes femelles seeds (sprites) ──
+  useEffect(() => { prefetchSeedAltPokeIds(); }, []);
 
   // ── Préchargement des avatars par défaut (après le premier paint) ──
   useEffect(() => {
@@ -993,6 +997,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
         <PokemonDetailPage
           pokeId={selectedPokemon?.pokeId}
           pokeName={selectedPokemon?.name}
+          initialGender={selectedPokemon?.gender}
+          initialAltPokeId={selectedPokemon?.altPokeId}
           t={t}
           isDark={isDark}
           backLabel={backLabel}

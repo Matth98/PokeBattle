@@ -56,8 +56,9 @@ export const PokemonPicker = ({
       onSelect(p);
       return;
     }
+    const key = (sp) => `${sp.pokeId}:${sp.gender ?? ''}`;
     setSelectedPokemon((prev) => {
-      if (prev.some((sp) => sp.pokeId === p.pokeId)) return prev.filter((sp) => sp.pokeId !== p.pokeId);
+      if (prev.some((sp) => key(sp) === key(p))) return prev.filter((sp) => key(sp) !== key(p));
       if (prev.length >= maxSelect) return prev;
       return [...prev, p];
     });
@@ -69,14 +70,14 @@ export const PokemonPicker = ({
   };
 
   const PokemonRow = ({ p, idx, total }) => {
-    const isPicked = alreadyPickedIds.includes(p.pokeId);
-    const isSelected = multiSelect && selectedPokemon.some((sp) => sp.pokeId === p.pokeId);
+    const isPicked = alreadyPickedIds.includes(`${p.pokeId}:${p.gender ?? ''}`);
+    const isSelected = multiSelect && selectedPokemon.some((sp) => `${sp.pokeId}:${sp.gender ?? ''}` === `${p.pokeId}:${p.gender ?? ''}`);
     const isAtMax = multiSelect && selectedPokemon.length >= maxSelect && !isSelected;
     const isLast = idx === total - 1;
     const disabled = isPicked || isAtMax;
     return (
       <button
-        key={p.pokeId}
+        key={`${p.pokeId}:${p.gender ?? ''}`}
         onClick={() => !disabled && handleRowClick(p)}
         disabled={disabled}
         className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition ${
@@ -89,7 +90,7 @@ export const PokemonPicker = ({
           </span>
         )}
         <img
-          src={getPokemonImageUrl(p.pokeId)}
+          src={getPokemonImageUrl(p.altPokeId ?? p.pokeId)}
           alt={p.name}
           className="w-10 h-10 object-contain flex-shrink-0"
           onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -159,7 +160,7 @@ export const PokemonPicker = ({
               )}
               <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
                 {flatDisplayed.map((p, idx) => (
-                  <PokemonRow key={p.pokeId} p={p} idx={idx} total={flatDisplayed.length} />
+                  <PokemonRow key={`${p.pokeId}:${p.gender ?? ''}`} p={p} idx={idx} total={flatDisplayed.length} />
                 ))}
               </div>
             </>

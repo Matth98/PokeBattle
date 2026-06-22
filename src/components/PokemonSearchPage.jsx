@@ -339,14 +339,14 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
               const isLast = idx === searchResults.length - 1;
               return (
                 <button
-                  key={p.pokeId}
+                  key={`${p.pokeId}:${p.gender ?? ''}`}
                   onClick={() => onSelectPokemon(p)}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 text-left active:bg-black/5 dark:active:bg-white/5 ${
                     !isLast ? `border-b ${t.divider}` : ''
                   }`}
                 >
                   <img
-                    src={getPokemonImageUrl(p.pokeId)}
+                    src={getPokemonImageUrl(p.altPokeId ?? p.pokeId)}
                     alt={p.name}
                     className="w-10 h-10 object-contain flex-shrink-0"
                     onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}

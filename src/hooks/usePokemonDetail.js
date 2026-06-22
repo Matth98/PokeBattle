@@ -6,7 +6,7 @@ import { idbGet, idbSet } from '../utils/offlineDB';
 // Re-export STAT_FR pour la compatibilité avec les composants qui l'importent directement
 export { STAT_FR };
 
-const DETAIL_CACHE_VERSION = 5;
+const DETAIL_CACHE_VERSION = 6;
 
 export function usePokemonDetail(pokeId, pokemonNameOverride = null) {
   const [data,    setData]    = useState(null);

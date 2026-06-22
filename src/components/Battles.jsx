@@ -172,6 +172,7 @@ export const Battles = ({
   const [alertMessage, setAlertMessage] = useState(null);
   const [openPlayerDropdown, setOpenPlayerDropdown] = useState(null);
   const [openWinnerDropdown, setOpenWinnerDropdown] = useState(false);
+  const playerDropdownRefs = useRef({});
   const closeFormWithAnimation = useCallback(() => {
     setIsFormClosing(true);
     setTimeout(() => {
@@ -258,7 +259,7 @@ export const Battles = ({
     if (!player || !player.pokemon) return [];
     return [...player.pokemon]
       .sort((a, b) => a.pokeId - b.pokeId)
-      .map((p) => ({ pokeId: p.pokeId, name: p.name }));
+      .map((p) => ({ pokeId: p.pokeId, name: p.name, gender: p.gender, altPokeId: p.altPokeId }));
   };
 
   // Génère une équipe aléatoire pour un slot :
@@ -880,7 +881,39 @@ export const Battles = ({
               </div>
 
               {/* Overlays fermeture dropdowns */}
-              {openPlayerDropdown && <div className="fixed inset-0 z-40" onClick={() => setOpenPlayerDropdown(null)} />}
+              {openPlayerDropdown && createPortal(
+                <>
+                  <div className="fixed inset-0 z-[10000]" onClick={() => setOpenPlayerDropdown(null)} />
+                  {(() => {
+                    const anchor = playerDropdownRefs.current[openPlayerDropdown];
+                    const rect = anchor?.getBoundingClientRect();
+                    if (!rect || !rect.width) return null;
+                    const slot = openPlayerDropdown;
+                    const otherSlot = slot === 'player1' ? 'player2' : 'player1';
+                    const selectablePlayers = players.filter((p) => p._id !== newBattleData[otherSlot]);
+                    const slotWhiteSurface = isDark ? 'bg-zinc-800' : 'bg-white';
+                    return (
+                      <div
+                        className={`fixed z-[10001] ${slotWhiteSurface} rounded-xl shadow-lg overflow-hidden border ${t.divider}`}
+                        style={{ top: rect.bottom + 4, left: rect.left, width: rect.width }}
+                      >
+                        {selectablePlayers.map((p) => (
+                          <button
+                            key={p._id}
+                            type="button"
+                            onClick={() => { handleChangePlayer(slot, p._id); setOpenPlayerDropdown(null); }}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left ${slotWhiteSurface} hover:opacity-80`}
+                          >
+                            <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
+                            <span className={`font-medium ${t.text}`}>{p.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </>,
+                document.body
+              )}
               {openWinnerDropdown && <div className="fixed inset-0 z-40" onClick={() => setOpenWinnerDropdown(false)} />}
 
               {/* Sections joueurs */}
@@ -906,8 +939,9 @@ export const Battles = ({
                     <label className={`text-xs font-bold uppercase tracking-wide ml-0.5 block ${slotLabel}`}>
                       {idx === 0 ? tr('battles.player1') : tr('battles.player2')}
                     </label>
-                    <div className="relative">
+                    <div>
                       <button
+                        ref={(el) => { playerDropdownRefs.current[slot] = el; }}
                         type="button"
                         onClick={isLocked ? undefined : () => setOpenPlayerDropdown(openPlayerDropdown === slot ? null : slot)}
                         disabled={isLocked}
@@ -923,21 +957,6 @@ export const Battles = ({
                         )}
                         {!isLocked && <ChevronDown size={16} className={t.textSecondary} />}
                       </button>
-                      {!isLocked && openPlayerDropdown === slot && (
-                        <div className={`absolute top-full left-0 right-0 mt-1 ${slotWhiteSurface} rounded-xl shadow-lg z-50 overflow-hidden border ${t.divider}`}>
-                          {selectablePlayers.map((p) => (
-                            <button
-                              key={p._id}
-                              type="button"
-                              onClick={() => { handleChangePlayer(slot, p._id); setOpenPlayerDropdown(null); }}
-                              className={`w-full flex items-center gap-3 px-4 py-3 text-left ${slotWhiteSurface} hover:opacity-80`}
-                            >
-                              <PlayerAvatar player={p} size={32} textSize="text-xs" className="flex-shrink-0" />
-                              <span className={`font-medium ${t.text}`}>{p.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
                     </div>
 
                     {playerId && (
@@ -1185,7 +1204,7 @@ export const Battles = ({
           t={t}
           isDark={isDark}
           title="Ajouter un Pokémon"
-          alreadyPickedIds={(battleSelectedPokemon[pickerState.slot] || []).map((p) => p.pokeId)}
+          alreadyPickedIds={(battleSelectedPokemon[pickerState.slot] || []).map((p) => `${p.pokeId}:${p.gender ?? ''}`)}
           defaultResults={getPlayerRoster(newBattleData[pickerState.slot])}
           defaultLabel={`Pokémon de ${players.find((p) => p._id === newBattleData[pickerState.slot])?.name || 'joueur'}`}
           onSelect={handleAddPokemonToSlot}
