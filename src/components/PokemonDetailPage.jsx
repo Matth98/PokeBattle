@@ -749,11 +749,11 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
               </div>
             </div>
 
-          <div style={{ display: activeTab === 'strategie' ? 'block' : 'none' }}>
+          <div style={{ display: activeTab === 'strategie' ? 'block' : 'none', paddingTop: activeTab === 'strategie' ? 'calc(env(safe-area-inset-top) + 4.5rem)' : undefined }}>
             <StrategyTab pokeId={activePokeId} isDark={isDark} accentHex={accentHex} />
           </div>
 
-          <div style={{ display: activeTab === 'attaques' ? 'block' : 'none' }}>
+          <div style={{ display: activeTab === 'attaques' ? 'block' : 'none', paddingTop: activeTab === 'attaques' ? 'calc(env(safe-area-inset-top) + 4.5rem)' : undefined }}>
             <MovesTab pokeId={activePokeId} isDark={isDark} accentHex={accentHex} />
           </div>
         </div>
