@@ -1116,7 +1116,7 @@ export const PlayerDetail = ({
                 )}
               </div>
             ) : (() => {
-              const genderRank = (g) => g === 'male' ? 0 : g === 'female' ? 1 : 2;
+              const genderRank = (g) => g === 'female' ? 1 : 0;
               const filtered = [...filteredPokemon].sort((a, b) => a.pokeId !== b.pokeId ? a.pokeId - b.pokeId : genderRank(a.gender) - genderRank(b.gender));
               if (filtered.length === 0) return (
                 <div className={`${t.surface} rounded-2xl p-8 text-center`}>
