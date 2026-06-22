@@ -555,9 +555,13 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, 
 
 // ─── StrategyTab ──────────────────────────────────────────────────────────────
 
-export function StrategyTab({ pokeId, isDark, accentHex }) {
+export function StrategyTab({ pokeId, isDark, accentHex, onEmpty }) {
   const { result, loading, error, retry } = useSmogonSet(pokeId);
   const [selectedMove, setSelectedMove] = useState(null);
+
+  useEffect(() => {
+    if (!loading) onEmpty?.(result === null);
+  }, [loading, result, onEmpty]);
 
   if (loading) {
     return (

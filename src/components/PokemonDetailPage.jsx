@@ -507,6 +507,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
   }, [activeTab]);
 
   const [scrolled, setScrolled] = useState(() => window.scrollY > 20);
+  const [strategyEmpty, setStrategyEmpty] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -595,7 +596,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
 
       {/* ── Contenu ── */}
       {!loading && !error && data && (
-        <div style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}>
+        <div style={{ paddingBottom: activeTab === 'strategie' && strategyEmpty ? 0 : 'calc(env(safe-area-inset-bottom) + 7rem)' }}>
           {/* Hero — visible uniquement sur l'onglet Présentation */}
           <div
             className="relative flex justify-center items-end"
@@ -762,7 +763,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
             </div>
 
           <div style={{ display: activeTab === 'strategie' ? 'block' : 'none', paddingTop: activeTab === 'strategie' ? 'calc(env(safe-area-inset-top) + 4.5rem)' : undefined }}>
-            <StrategyTab pokeId={activePokeId} isDark={isDark} accentHex={accentHex} />
+            <StrategyTab pokeId={activePokeId} isDark={isDark} accentHex={accentHex} onEmpty={setStrategyEmpty} />
           </div>
 
           <div style={{ display: activeTab === 'attaques' ? 'block' : 'none', paddingTop: activeTab === 'attaques' ? 'calc(env(safe-area-inset-top) + 4.5rem)' : undefined }}>
