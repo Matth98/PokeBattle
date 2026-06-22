@@ -1020,7 +1020,7 @@ export const PlayerDetail = ({
                 {conceptPokemon.map((p) => (
                   <button
                     key={p.pokeId}
-                    onClick={() => { const _n = p.name || resolvePokemonName(p.pokeId, p.gender); onViewPokemon?.({ pokeId: p.pokeId, name: _n, gender: p.gender ?? (_n?.includes('♀') ? 'female' : _n?.includes('♂') ? 'male' : null), altPokeId: p.altPokeId }); }}
+                    onClick={() => { const _n = resolvePokemonName(p.pokeId, p.gender) || p.name; onViewPokemon?.({ pokeId: p.pokeId, name: _n, gender: p.gender ?? (_n?.includes('♀') ? 'female' : _n?.includes('♂') ? 'male' : null), altPokeId: p.altPokeId }); }}
                     className="flex flex-col items-center gap-1.5 flex-shrink-0"
                   >
                     <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]'}`}>
@@ -1116,7 +1116,8 @@ export const PlayerDetail = ({
                 )}
               </div>
             ) : (() => {
-              const filtered = [...filteredPokemon].sort((a, b) => a.pokeId - b.pokeId);
+              const genderRank = (g) => g === 'male' ? 0 : g === 'female' ? 1 : 2;
+              const filtered = [...filteredPokemon].sort((a, b) => a.pokeId !== b.pokeId ? a.pokeId - b.pokeId : genderRank(a.gender) - genderRank(b.gender));
               if (filtered.length === 0) return (
                 <div className={`${t.surface} rounded-2xl p-8 text-center`}>
                   <p className={`${t.textSecondary} text-sm`}>Aucun résultat</p>
@@ -1128,7 +1129,7 @@ export const PlayerDetail = ({
                   const isLast = idx === filtered.length - 1;
                   const isSelected = selectedItems.includes(p.id);
                   const inPokemonSelection = selectionMode === 'pokemon';
-                  const pName = p.name || resolvePokemonName(p.pokeId, p.gender);
+                  const pName = resolvePokemonName(p.pokeId, p.gender) || p.name;
                   return (
                     <SwipeableRow
                       key={p.id}
