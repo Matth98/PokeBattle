@@ -1020,7 +1020,7 @@ export const PlayerDetail = ({
                 {conceptPokemon.map((p) => (
                   <button
                     key={p.pokeId}
-                    onClick={() => { const _n = resolvePokemonName(p.pokeId, p.gender) || p.name; onViewPokemon?.({ pokeId: p.pokeId, name: _n, gender: p.gender ?? (_n?.includes('♀') ? 'female' : _n?.includes('♂') ? 'male' : null), altPokeId: p.altPokeId }); }}
+                    onClick={() => { const _g = p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null); const _n = resolvePokemonName(p.pokeId, _g) || p.name; onViewPokemon?.({ pokeId: p.pokeId, name: _n, gender: _g, altPokeId: p.altPokeId }); }}
                     className="flex flex-col items-center gap-1.5 flex-shrink-0"
                   >
                     <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]'}`}>
@@ -1129,7 +1129,8 @@ export const PlayerDetail = ({
                   const isLast = idx === filtered.length - 1;
                   const isSelected = selectedItems.includes(p.id);
                   const inPokemonSelection = selectionMode === 'pokemon';
-                  const pName = resolvePokemonName(p.pokeId, p.gender) || p.name;
+                  const _g = p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null);
+                  const pName = resolvePokemonName(p.pokeId, _g) || p.name;
                   return (
                     <SwipeableRow
                       key={p.id}
@@ -1145,7 +1146,7 @@ export const PlayerDetail = ({
                       <button
                         onClick={() => inPokemonSelection
                           ? setSelectedItems(prev => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])
-                          : onViewPokemon?.({ pokeId: p.pokeId, name: pName, gender: p.gender ?? (pName?.includes('♀') ? 'female' : pName?.includes('♂') ? 'male' : null), altPokeId: p.altPokeId })
+                          : onViewPokemon?.({ pokeId: p.pokeId, name: pName, gender: _g, altPokeId: p.altPokeId })
                         }
                         className={`w-full flex items-center gap-3 pr-4 py-3 ${t.surface} text-left relative touch-manipulation`}
                         style={{ paddingLeft: inPokemonSelection ? '52px' : '16px', transition: 'padding-left 200ms' }}
