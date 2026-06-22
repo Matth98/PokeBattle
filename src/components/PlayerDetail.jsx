@@ -1116,8 +1116,9 @@ export const PlayerDetail = ({
                 )}
               </div>
             ) : (() => {
+              const effectiveGender = (p) => p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null);
               const genderRank = (g) => g === 'female' ? 1 : 0;
-              const filtered = [...filteredPokemon].sort((a, b) => a.pokeId !== b.pokeId ? a.pokeId - b.pokeId : genderRank(a.gender) - genderRank(b.gender));
+              const filtered = [...filteredPokemon].sort((a, b) => a.pokeId !== b.pokeId ? a.pokeId - b.pokeId : genderRank(effectiveGender(a)) - genderRank(effectiveGender(b)));
               if (filtered.length === 0) return (
                 <div className={`${t.surface} rounded-2xl p-8 text-center`}>
                   <p className={`${t.textSecondary} text-sm`}>Aucun résultat</p>
