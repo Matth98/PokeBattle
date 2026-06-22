@@ -902,7 +902,7 @@ export const Battles = ({
                   : isDark ? 'bg-orange-500' : 'bg-orange-500';
                 const slotWhiteSurface = isDark ? 'bg-zinc-800' : 'bg-white';
                 return (
-                  <div key={slot} className={`rounded-2xl p-3 space-y-2 border ${isDark ? 'border-zinc-700/50' : 'border-gray-200/80'} ${slotCard} ${slotPokemon.length > 0 ? 'pb-0' : ''}`}>
+                  <div key={slot} className={`rounded-2xl p-3 space-y-2 overflow-hidden border ${isDark ? 'border-zinc-700/50' : 'border-gray-200/80'} ${slotCard} ${slotPokemon.length > 0 ? 'pb-0' : ''}`}>
                     <label className={`text-xs font-bold uppercase tracking-wide ml-0.5 block ${slotLabel}`}>
                       {idx === 0 ? tr('battles.player1') : tr('battles.player2')}
                     </label>
@@ -911,7 +911,7 @@ export const Battles = ({
                         type="button"
                         onClick={isLocked ? undefined : () => setOpenPlayerDropdown(openPlayerDropdown === slot ? null : slot)}
                         disabled={isLocked}
-                        className={`w-full ${t.inputSoft} rounded-xl px-4 py-3 flex items-center gap-3 text-left${isLocked ? ' opacity-70 cursor-default' : ''}`}
+                        className={`w-full ${t.inputSoft} rounded-xl px-3 py-2 flex items-center gap-3 text-left${isLocked ? ' opacity-70 cursor-default' : ''}`}
                       >
                         {playerId ? (
                           <>
@@ -997,7 +997,7 @@ export const Battles = ({
                                 return (
                                   <SwipeableRow
                                     onDelete={() => handleRemovePokemonFromSlot(slot, p.id)}
-                                    surfaceClass="bg-transparent"
+                                    surfaceClass={isDark ? 'bg-zinc-850' : 'bg-white'}
                                     className={!isLast ? `border-b ${isDark ? 'border-zinc-700/50' : 'border-gray-200/80'}` : ''}
                                     disabled={isDragging}
                                   >
@@ -1077,7 +1077,7 @@ export const Battles = ({
                         <button
                           type="button"
                           onClick={() => setOpenWinnerDropdown(!openWinnerDropdown)}
-                          className={`w-full ${t.inputSoft} rounded-lg px-3 py-2 flex items-center gap-3 text-left`}
+                          className={`w-full ${t.inputSoft} rounded-lg px-3 py-2 flex items-center gap-3 text-left min-h-[44px]`}
                         >
                           {newBattleData.winner ? (
                             <>
