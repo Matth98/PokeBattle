@@ -847,7 +847,7 @@ export const Teams = ({
         <div className={`fixed inset-0 ${t.overlay} anim-fade-in z-[9999] flex items-center justify-center p-4`}>
           <div className={`${t.surface} rounded-2xl p-6 w-full max-w-sm anim-scale-in`}>
             <div className="flex items-center gap-2 mb-1">
-              <Target size={20} className={t.accent} />
+              <img src="/pokeball-open.png" alt="" className="w-7 h-7" />
               <p className={`font-black text-lg ${t.text}`}>Pokémon non possédés</p>
             </div>
             <p className={`${t.textSecondary} text-base mb-3`}>
