@@ -8,6 +8,32 @@ import FR_DESCRIPTIONS_HISUI  from '../data/frDescriptionsHisui';
 import FR_DESCRIPTIONS_ALOLA  from '../data/frDescriptionsAlola';
 import FR_DESCRIPTIONS_GALAR  from '../data/frDescriptionsGalar';
 import FR_DESCRIPTIONS_FORMES from '../data/frDescriptionsFormes';
+import pokemonFormsFr          from '../data/pokemon-forms-fr.json';
+
+const FORMS_FR_MAP = Object.fromEntries(pokemonFormsFr.map(f => [f.pokeId, f.name]));
+
+// Formes automatiques déclenchées en combat — invisibles à la construction d'équipe.
+const BATTLE_ONLY_SUFFIXES = ['-totem', '-busted', '-blade', '-noice', '-hangry', '-zen'];
+function isBattleOnlyForm(apiName) {
+  const n = apiName.toLowerCase();
+  return BATTLE_ONLY_SUFFIXES.some(s => n.endsWith(s)) || n.includes('-totem-');
+}
+
+function deriveFormNameFr(apiName, speciesName) {
+  const n = apiName.toLowerCase();
+  if (n.endsWith('-mega-x'))    return `Méga ${speciesName} X`;
+  if (n.endsWith('-mega-y'))    return `Méga ${speciesName} Y`;
+  if (n.endsWith('-mega'))      return `Méga ${speciesName}`;
+  if (n.endsWith('-gmax'))      return `${speciesName} Gigamax`;
+  if (n.endsWith('-alola'))     return `${speciesName} d'Alola`;
+  if (n.endsWith('-galar'))     return `${speciesName} de Galar`;
+  if (n.endsWith('-hisui'))     return `${speciesName} de Hisui`;
+  if (n.endsWith('-paldea'))    return `${speciesName} de Paldéa`;
+  // Forme générique : on retire le nom de base et on capitalise le suffixe
+  const parts = apiName.split('-');
+  const suffix = parts.slice(1).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  return suffix ? `${speciesName} — ${suffix}` : speciesName;
+}
 
 export const STAT_FR = {
   hp: 'PV', attack: 'ATT', defense: 'DEF',
@@ -203,6 +229,26 @@ export async function processPokemonDetail(pokeId, language, pokemonNameOverride
     genderText = `${100 - femalePercent}% ♂︎  -  ${femalePercent}% ♀︎`;
   }
 
+  const speciesName = nameEntry?.name || pokemonData.name;
+
+  const varietyItems = (speciesData.varieties || [])
+    .map(v => {
+      const id = parseInt(v.pokemon.url.match(/\/(\d+)\/$/)?.[1], 10);
+      if (isNaN(id)) return null;
+      const frName = id >= 10000
+        ? (FORMS_FR_MAP[id] || deriveFormNameFr(v.pokemon.name, speciesName))
+        : speciesName;
+      return { pokeId: id, name: frName, apiName: v.pokemon.name };
+    })
+    .filter(Boolean);
+
+  // Formes cosmétiques (couleurs, motifs…) : dans pokemonData.forms mais pas dans varieties.
+  // On ne lit les forms que pour la variété par défaut : les variantes alternatives (ex :
+  // Mimiqui Débusqué) ont des form-IDs différents de leurs pokemon-IDs — les inclure
+  // ferait apparaître de faux pokémon.
+  const varieties = varietyItems
+    .filter(v => !isBattleOnlyForm(v.apiName || ''));
+
   return {
     id:             pokemonData.id,
     name,
@@ -224,5 +270,6 @@ export async function processPokemonDetail(pokeId, language, pokemonNameOverride
     baseExperience: pokemonData.base_experience ?? '—',
     officialArtwork: pokemonData.sprites?.other?.['official-artwork']?.front_default,
     sprite:         pokemonData.sprites?.front_default,
+    varieties,
   };
 }

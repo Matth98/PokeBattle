@@ -358,7 +358,9 @@ function InfoRow({ labelKey, label, value, accentColor, isDark }) {
 export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLabel = 'Recherche', myPlayer = null, teams = [], onUpdatePlayer, onUpdateTeam, onUpdateTeamSilent }) => {
   const tr = useTranslation();
   const toast = useToast();
-  const { data, loading, error } = usePokemonDetail(pokeId, pokeName);
+  const [activePokeId, setActivePokeId] = useState(pokeId);
+  const [activePokeName, setActivePokeName] = useState(pokeName);
+  const { data, loading, error } = usePokemonDetail(activePokeId, activePokeName);
   const [activeTab, setActiveTab] = useState('presentation');
   const [confirmRemove, setConfirmRemove] = useState(false);
   useBodyScrollLock(confirmRemove);
@@ -589,6 +591,40 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
                 </p>
               )}
 
+              {/* Formes */}
+              {data.varieties && data.varieties.length > 1 && (
+                <div className="mb-10">
+                  <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>Formes</h2>
+                  <div
+                    className={`rounded-xl overflow-x-auto ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]'}`}
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    <div className="flex gap-3 p-3 justify-center" style={{ width: 'max-content', minWidth: '100%' }}>
+                      {data.varieties.map(form => (
+                        <button
+                          key={form.pokeId}
+                          onClick={() => {
+                            if (form.pokeId === activePokeId) return;
+                            setActivePokeId(form.pokeId);
+                            setActivePokeName(form.name);
+                            window.scrollTo({ top: 0, behavior: 'instant' });
+                          }}
+                          className="flex-shrink-0 w-16 h-16 flex items-center justify-center"
+                          aria-label={form.name}
+                        >
+                          <img
+                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${form.pokeId}.png`}
+                            alt={form.name}
+                            className="w-14 h-14 object-contain"
+                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Stats */}
               <h2 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>{tr('pokemon.stats')}</h2>
               <div className="space-y-2 mb-10">
@@ -653,11 +689,11 @@ export const PokemonDetailPage = ({ pokeId, pokeName, t, isDark, onBack, backLab
             </div>
 
           <div style={{ display: activeTab === 'strategie' ? 'block' : 'none' }}>
-            <StrategyTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
+            <StrategyTab pokeId={activePokeId} isDark={isDark} accentHex={accentHex} />
           </div>
 
           <div style={{ display: activeTab === 'attaques' ? 'block' : 'none' }}>
-            <MovesTab pokeId={pokeId} isDark={isDark} accentHex={accentHex} />
+            <MovesTab pokeId={activePokeId} isDark={isDark} accentHex={accentHex} />
           </div>
         </div>
       )}
