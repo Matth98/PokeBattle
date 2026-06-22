@@ -588,7 +588,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
           <div
             className="relative flex justify-center items-end"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)',
+              paddingTop: 'calc(env(safe-area-inset-top) + 4rem)',
               minHeight: 'calc(env(safe-area-inset-top) + 200px)',
               clipPath: 'inset(0 0 -80px 0)',
               background: `linear-gradient(160deg, ${accentHex}ee 0%, ${accentHex}88 55%, ${isDark ? '#1c1c1e' : 'white'} 100%)`,
