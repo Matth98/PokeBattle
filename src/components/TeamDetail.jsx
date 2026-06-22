@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { ChevronLeft, Pencil, Shield, BookmarkPlus, Target, Search, Plus } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { ClearButton } from './ClearButton';
-import { usePokemon } from '../hooks/usePokemon';
+import { usePokemon, getPokemonSpriteId } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { useAuth } from '../hooks/useAuth';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -210,7 +210,7 @@ export const TeamDetail = ({
                 <div key={i} className="flex items-center justify-center overflow-hidden">
                   {p ? (
                     <img
-                      src={getPokemonImageUrl(p.pokeId)}
+                      src={getPokemonImageUrl(getPokemonSpriteId(p))}
                       alt={p.name}
                       className="w-full h-full object-contain"
                       onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -260,7 +260,7 @@ export const TeamDetail = ({
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left ${!isLast ? `border-b ${t.divider}` : ''}`}
                   >
                     <img
-                      src={getPokemonImageUrl(p.pokeId)}
+                      src={getPokemonImageUrl(getPokemonSpriteId(p))}
                       alt={p.name}
                       className="w-11 h-11 object-contain flex-shrink-0"
                       onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -387,7 +387,7 @@ export const TeamDetail = ({
             {pendingCopy.missingPokemon.map((p) => (
               <img
                 key={p.pokeId}
-                src={getPokemonImageUrl(p.pokeId)}
+                src={getPokemonImageUrl(getPokemonSpriteId(p))}
                 alt={p.name}
                 className="w-full aspect-square object-contain"
               />

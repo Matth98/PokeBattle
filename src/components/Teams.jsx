@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from
 import { createPortal } from 'react-dom';
 import { ChevronRight, ChevronDown, Plus, Check, CheckSquare, Shield, Loader2, Target, GripVertical } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
-import { usePokemon } from '../hooks/usePokemon';
+import { usePokemon, getPokemonSpriteId } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { PokemonPicker } from './PokemonPicker';
@@ -484,7 +484,7 @@ export const Teams = ({
                           <div key={i} className="flex items-center justify-center overflow-hidden">
                             {p ? (
                               <img
-                                src={getPokemonImageUrl(p.pokeId)}
+                                src={getPokemonImageUrl(getPokemonSpriteId(p))}
                                 alt={p.name}
                                 className="w-full h-full object-contain"
                                 onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -772,7 +772,7 @@ export const Teams = ({
                               </span>
                               <div className="flex items-center gap-3 flex-1 pr-4 py-2.5">
                                 <img
-                                  src={getPokemonImageUrl(p.pokeId)}
+                                  src={getPokemonImageUrl(getPokemonSpriteId(p))}
                                   alt={p.name}
                                   className="w-10 h-10 object-contain flex-shrink-0"
                                   onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -802,7 +802,7 @@ export const Teams = ({
             t={t}
             isDark={isDark}
             title="Ajouter un Pokémon"
-            alreadyPickedIds={newTeamData.pokemon.map((p) => `${p.pokeId}:${p.gender ?? ''}`)}
+            alreadyPickedIds={newTeamData.pokemon.map((p) => { const g = p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null); return `${p.pokeId}:${g ?? ''}`; })}
             defaultResults={ownerRoster}
             defaultLabel={owner ? `Pokémon de ${owner.name}` : null}
             onSelect={handleSelectPokemon}
@@ -880,7 +880,7 @@ export const Teams = ({
               {pendingConceptTeam.missingPokemon.map((p) => (
                 <img
                   key={p.pokeId}
-                  src={getPokemonImageUrl(p.pokeId)}
+                  src={getPokemonImageUrl(getPokemonSpriteId(p))}
                   alt={p.name}
                   className="w-full aspect-square object-contain"
                 />

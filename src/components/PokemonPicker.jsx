@@ -51,14 +51,16 @@ export const PokemonPicker = ({
     ? searchResults
     : (defaultResults ? [...defaultResults].sort((a, b) => a.pokeId - b.pokeId) : []);
 
+  const resolveGender = (p) => p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null);
+  const entryKey = (p) => `${p.pokeId}:${resolveGender(p) ?? ''}`;
+
   const handleRowClick = (p) => {
     if (!multiSelect) {
       onSelect(p);
       return;
     }
-    const key = (sp) => `${sp.pokeId}:${sp.gender ?? ''}`;
     setSelectedPokemon((prev) => {
-      if (prev.some((sp) => key(sp) === key(p))) return prev.filter((sp) => key(sp) !== key(p));
+      if (prev.some((sp) => entryKey(sp) === entryKey(p))) return prev.filter((sp) => entryKey(sp) !== entryKey(p));
       if (prev.length >= maxSelect) return prev;
       return [...prev, p];
     });
@@ -70,8 +72,8 @@ export const PokemonPicker = ({
   };
 
   const PokemonRow = ({ p, idx, total }) => {
-    const isPicked = alreadyPickedIds.includes(`${p.pokeId}:${p.gender ?? ''}`);
-    const isSelected = multiSelect && selectedPokemon.some((sp) => `${sp.pokeId}:${sp.gender ?? ''}` === `${p.pokeId}:${p.gender ?? ''}`);
+    const isPicked = alreadyPickedIds.includes(entryKey(p));
+    const isSelected = multiSelect && selectedPokemon.some((sp) => entryKey(sp) === entryKey(p));
     const isAtMax = multiSelect && selectedPokemon.length >= maxSelect && !isSelected;
     const isLast = idx === total - 1;
     const disabled = isPicked || isAtMax;
@@ -160,7 +162,7 @@ export const PokemonPicker = ({
               )}
               <div className={`${t.surfaceMuted} rounded-2xl overflow-hidden`}>
                 {flatDisplayed.map((p, idx) => (
-                  <PokemonRow key={`${p.pokeId}:${p.gender ?? ''}`} p={p} idx={idx} total={flatDisplayed.length} />
+                  <PokemonRow key={entryKey(p)} p={p} idx={idx} total={flatDisplayed.length} />
                 ))}
               </div>
             </>

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle, BookmarkPlus, Loader2, Target, Search, Plus } from 'lucide-react';
 import { formatDate } from '../utils/dates';
-import { usePokemon } from '../hooks/usePokemon';
+import { usePokemon, getPokemonSpriteId } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useAuth } from '../hooks/useAuth';
@@ -85,7 +85,7 @@ const TeamSection = ({ player, isWinner, pokemon, getPokemonImageUrl, t, tr, onP
               className={`w-full flex items-center gap-3 px-4 py-3 text-left ${!isLast ? `border-b ${t.divider}` : ''}`}
             >
               <img
-                src={getPokemonImageUrl(pk.pokeId)}
+                src={getPokemonImageUrl(getPokemonSpriteId(pk))}
                 alt={pk.name}
                 className={`w-10 h-10 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
                 onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -864,7 +864,7 @@ export const BattleDetail = ({
               {pendingCopy.missingPokemon.map((p) => (
                 <img
                   key={p.pokeId}
-                  src={getPokemonImageUrl(p.pokeId)}
+                  src={getPokemonImageUrl(getPokemonSpriteId(p))}
                   alt={p.name}
                   className="w-full aspect-square object-contain"
                 />

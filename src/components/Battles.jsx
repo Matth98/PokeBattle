@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Plus, Check, CheckSquare, Zap, Calendar, ChevronUp, ChevronDown, Shield, GripVertical, Loader2, Trophy, Dices } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { groupBattlesByDate, sortBattlesDesc } from '../utils/battles';
-import { usePokemon } from '../hooks/usePokemon';
+import { usePokemon, getPokemonSpriteId } from '../hooks/usePokemon';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -691,7 +691,7 @@ export const Battles = ({
                                 {b.team1.map((pk, i) => (
                                   <img
                                     key={pk.id || i}
-                                    src={getPokemonImageUrl(pk.pokeId)}
+                                    src={getPokemonImageUrl(getPokemonSpriteId(pk))}
                                     alt={pk.name}
                                     className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
                                     onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -731,7 +731,7 @@ export const Battles = ({
                                 {b.team2.map((pk, i) => (
                                   <img
                                     key={pk.id || i}
-                                    src={getPokemonImageUrl(pk.pokeId)}
+                                    src={getPokemonImageUrl(getPokemonSpriteId(pk))}
                                     alt={pk.name}
                                     className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
                                     onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -1048,7 +1048,7 @@ export const Battles = ({
                                           {p.eliminated && <Check size={12} className="text-white" />}
                                         </span>
                                         <img
-                                          src={getPokemonImageUrl(p.pokeId)}
+                                          src={getPokemonImageUrl(getPokemonSpriteId(p))}
                                           alt={p.name}
                                           className={`w-10 h-10 object-contain flex-shrink-0 ${p.eliminated ? 'grayscale opacity-50' : ''}`}
                                           onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
@@ -1204,7 +1204,7 @@ export const Battles = ({
           t={t}
           isDark={isDark}
           title="Ajouter un Pokémon"
-          alreadyPickedIds={(battleSelectedPokemon[pickerState.slot] || []).map((p) => `${p.pokeId}:${p.gender ?? ''}`)}
+          alreadyPickedIds={(battleSelectedPokemon[pickerState.slot] || []).map((p) => { const g = p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null); return `${p.pokeId}:${g ?? ''}`; })}
           defaultResults={getPlayerRoster(newBattleData[pickerState.slot])}
           defaultLabel={`Pokémon de ${players.find((p) => p._id === newBattleData[pickerState.slot])?.name || 'joueur'}`}
           onSelect={handleAddPokemonToSlot}

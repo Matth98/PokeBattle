@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Shield, ChevronRight } from 'lucide-react';
-import { usePokemon } from '../hooks/usePokemon';
+import { usePokemon, getPokemonSpriteId } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -79,7 +79,7 @@ export const TeamSelectorModal = ({
                           <div key={i} className="flex items-center justify-center overflow-hidden">
                             {p ? (
                               <img
-                                src={getPokemonImageUrl(p.pokeId)}
+                                src={getPokemonImageUrl(getPokemonSpriteId(p))}
                                 alt={p.name}
                                 className="w-full h-full object-contain"
                                 onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}

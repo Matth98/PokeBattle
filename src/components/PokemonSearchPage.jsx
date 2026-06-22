@@ -2,7 +2,7 @@ import React, { useState, useRef, useImperativeHandle, useLayoutEffect, useMemo 
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { ClearButton } from './ClearButton';
 import { PlayerAvatar } from './PlayerAvatar';
-import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
+import { usePokemon, POKEMON_BY_GENERATION, getPokemonSpriteId } from '../hooks/usePokemon';
 import { useTranslation } from '../hooks/useTranslation';
 
 
@@ -179,7 +179,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
                         }`}
                       >
                         <img
-                          src={getPokemonImageUrl(p.pokeId)}
+                          src={getPokemonImageUrl(getPokemonSpriteId(p))}
                           alt={p.name}
                           loading="lazy"
                           className="w-10 h-10 object-contain flex-shrink-0"
@@ -243,7 +243,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
                           const p = (team.pokemon || [])[i];
                           return (
                             <div key={i} className="flex items-center justify-center overflow-hidden">
-                              {p ? <img src={getPokemonImageUrl(p.pokeId)} alt={p.name} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} /> : null}
+                              {p ? <img src={getPokemonImageUrl(getPokemonSpriteId(p))} alt={p.name} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} /> : null}
                             </div>
                           );
                         })}
@@ -302,7 +302,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
                         <div key={i} className="flex items-center justify-center overflow-hidden">
                           {p ? (
                             <img
-                              src={getPokemonImageUrl(p.pokeId)}
+                              src={getPokemonImageUrl(getPokemonSpriteId(p))}
                               alt={p.name}
                               className="w-full h-full object-contain"
                               onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}

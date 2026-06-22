@@ -56,7 +56,7 @@ const GENDER_FORM_SEEDS = [
   { pokeId: 916,  gender: 'female' }, // Gourmelet ♀
 ].map(({ pokeId, gender }) => ({
   pokeId,
-  name: `${POKEMON_NAME_MAP.get(pokeId) || ''} ♀`,
+  name: toTextGlyph(`${POKEMON_NAME_MAP.get(pokeId) || ''} ♀`),
   gender,
   altPokeId: null,
 }));
@@ -109,7 +109,7 @@ export async function prefetchSeedAltPokeIds() {
       if (!femaleVariety) continue;
       const altId = parseInt(femaleVariety.pokemon.url.match(/\/(\d+)\/$/)?.[1], 10);
       if (!isNaN(altId)) {
-        const name = `${POKEMON_NAME_MAP.get(seed.pokeId) || ''} ♀`;
+        const name = toTextGlyph(`${POKEMON_NAME_MAP.get(seed.pokeId) || ''} ♀`);
         registerGenderForm(seed.pokeId, name, 'female', altId);
       }
     } catch { /* silently ignore — sprite reste le sprite de base */ }
@@ -125,6 +125,7 @@ export function getGenderForms() {
 // gender        : 'female' | 'male'
 // altPokeId     : ID interne PokeAPI (ex: 10025) — pour sprites uniquement
 export function registerGenderForm(speciesPokeId, name, gender, altPokeId) {
+  name = toTextGlyph(name);
   const existing = GENDER_FORMS_CACHE.find((f) => f.pokeId === speciesPokeId && f.gender === gender);
   if (existing) {
     if (existing.name === name && existing.altPokeId === altPokeId) return;

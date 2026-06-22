@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Search, Users, Shield, Zap, ChevronRight, Trophy, Loader2 } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { sortBattlesDesc } from '../utils/battles';
-import { usePokemon } from '../hooks/usePokemon';
+import { usePokemon, getPokemonSpriteId } from '../hooks/usePokemon';
 import { usePokemonTypes } from '../hooks/usePokemonTypes';
 import { calcTypeAdv } from '../utils/mvp';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -545,7 +545,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                     {(b.team1 || []).length > 0 && (
                       <div className="flex gap-0.5 justify-center flex-wrap mt-1">
                         {b.team1.map((pk, i) => (
-                          <img key={pk.id || i} src={getPokemonImageUrl(pk.pokeId)} alt={pk.name}
+                          <img key={pk.id || i} src={getPokemonImageUrl(getPokemonSpriteId(pk))} alt={pk.name}
                             className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
                             onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
                         ))}
@@ -577,7 +577,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                     {(b.team2 || []).length > 0 && (
                       <div className="flex gap-0.5 justify-center flex-wrap mt-1">
                         {b.team2.map((pk, i) => (
-                          <img key={pk.id || i} src={getPokemonImageUrl(pk.pokeId)} alt={pk.name}
+                          <img key={pk.id || i} src={getPokemonImageUrl(getPokemonSpriteId(pk))} alt={pk.name}
                             className={`w-6 h-6 object-contain flex-shrink-0 ${pk.eliminated ? 'grayscale opacity-50' : ''}`}
                             onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
                         ))}
@@ -735,7 +735,7 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   </div>
                   {/* Sprite */}
                   <img
-                    src={getPokemonImageUrl(p.pokeId)}
+                    src={getPokemonImageUrl(getPokemonSpriteId(p))}
                     alt={p.name}
                     className="w-16 h-16 object-contain"
                     onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
