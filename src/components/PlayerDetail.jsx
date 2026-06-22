@@ -41,6 +41,9 @@ import { useToast } from './Toast';
 
 import { TYPE_SUPER_EFFECTIVE } from '../utils/mvp';
 
+const normalize = (str = '') =>
+  str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
 
 function CaptureInfoSheet({ isDark, t, player, onClose }) {
   useBodyScrollLock();
@@ -713,7 +716,7 @@ export const PlayerDetail = ({
   })();
 
   const filteredPokemon = pokemonSearch
-    ? (player.pokemon || []).filter((p) => p.name.toLowerCase().includes(pokemonSearch.toLowerCase()) || String(p.pokeId).includes(pokemonSearch.trim()))
+    ? (player.pokemon || []).filter((p) => normalize(p.name).includes(normalize(pokemonSearch)) || String(p.pokeId).includes(pokemonSearch.trim()))
     : (player.pokemon || []);
   const filteredTeams = teamsSearch
     ? playerTeams.filter((team) => {
