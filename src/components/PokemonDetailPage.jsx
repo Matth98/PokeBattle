@@ -494,6 +494,13 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
     window.scrollTo({ top: scrollPositions.current[activeTab] ?? 0, behavior: 'instant' });
   }, [activeTab]);
 
+  const [scrolled, setScrolled] = useState(() => window.scrollY > 20);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const primaryType = data?.types?.[0] || 'normal';
   const accentHex = (isDark ? TYPE_HEX_DARK : TYPE_HEX)[primaryType] || '#6390F0';
 
