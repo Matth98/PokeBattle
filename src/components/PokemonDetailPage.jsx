@@ -523,9 +523,31 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
     <div className={`min-h-screen ${isDark ? 'bg-zinc-900' : 'bg-white'}`}>
       {/* Fond fixe anti-overscroll iOS — couvre le viewport même pendant le bounce */}
       <div className={`fixed inset-0 -z-10 ${isDark ? 'bg-zinc-900' : 'bg-white'}`} />
-      {/* ── Bouton retour — flotte par-dessus le hero ── */}
-      <div className="sticky top-0 z-20" style={{ height: 0, overflow: 'visible' }}>
-        <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
+      {/* ── Topbar ── */}
+      <div
+        className="sticky top-0 z-20 px-4 relative"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)',
+          paddingBottom: '0.75rem',
+        }}
+      >
+        {/* Layer blur */}
+        <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
+          opacity: scrolled ? 1 : 0,
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+        }} />
+        {/* Layer dégradé */}
+        <div className="absolute inset-x-0 top-0 -bottom-12 pointer-events-none transition-opacity duration-300" style={{
+          opacity: scrolled ? 1 : 0,
+          background: isDark
+            ? 'linear-gradient(to bottom, rgba(9,9,11,0.85) 0%, transparent 100%)'
+            : 'linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, transparent 100%)',
+        }} />
+        {/* Contenu topbar */}
+        <div className="relative flex items-center">
           <button
             onClick={onBack}
             className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-xl ${isDark ? '' : 'border border-white/20'} ${isDark ? '' : 'shadow-[0_4px_24px_rgba(0,0,0,0.12)]'} ${isDark ? 'bg-white/10 text-white' : 'bg-white/60 text-gray-900'}`}
@@ -534,6 +556,17 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
           >
             <ChevronLeft size={24} className="-translate-x-px" />
           </button>
+          {/* Asset Pokémon centré */}
+          {data && (
+            <img
+              src={data.officialArtwork || data.sprite}
+              alt=""
+              aria-hidden="true"
+              className="absolute left-1/2 top-1/2 object-contain pointer-events-none"
+              style={{ width: 44, height: 44, transform: 'translate(-50%, -50%)' }}
+              onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+            />
+          )}
         </div>
       </div>
 
@@ -559,7 +592,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
           <div
             className="relative flex justify-center items-end"
             style={{
-              paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)',
+              paddingTop: '1.5rem',
               minHeight: 'calc(env(safe-area-inset-top) + 200px)',
               clipPath: 'inset(0 0 -80px 0)',
               background: `linear-gradient(160deg, ${accentHex}ee 0%, ${accentHex}88 55%, ${isDark ? '#1c1c1e' : 'white'} 100%)`,
