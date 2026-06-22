@@ -501,7 +501,9 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
   }, [activeTab]);
 
   useLayoutEffect(() => {
-    window.scrollTo({ top: scrollPositions.current[activeTab] ?? 0, behavior: 'instant' });
+    const restoredY = scrollPositions.current[activeTab] ?? 0;
+    window.scrollTo({ top: restoredY, behavior: 'instant' });
+    setScrolled(restoredY > 20);
   }, [activeTab]);
 
   const [scrolled, setScrolled] = useState(() => window.scrollY > 20);
