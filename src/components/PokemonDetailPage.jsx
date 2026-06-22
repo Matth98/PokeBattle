@@ -584,7 +584,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
       {/* ── Contenu ── */}
       {!loading && !error && data && (
         <div style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}>
-          {/* Hero */}
+          {/* Hero — visible uniquement sur l'onglet Présentation */}
           <div
             className="relative flex justify-center items-end"
             style={{
@@ -592,6 +592,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
               minHeight: 'calc(env(safe-area-inset-top) + 200px)',
               clipPath: 'inset(0 0 -80px 0)',
               background: `linear-gradient(160deg, ${accentHex}ee 0%, ${accentHex}88 55%, ${isDark ? '#1c1c1e' : 'white'} 100%)`,
+              display: activeTab === 'presentation' ? undefined : 'none',
             }}
           >
             <HeroBg typeName={primaryType} />
