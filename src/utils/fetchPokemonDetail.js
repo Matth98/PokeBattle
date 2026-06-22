@@ -26,8 +26,8 @@ function deriveFormNameFr(apiName, speciesName) {
   if (n.endsWith('-mega-y'))    return `Méga ${speciesName} Y`;
   if (n.endsWith('-mega'))      return `Méga ${speciesName}`;
   if (n.endsWith('-gmax'))      return `${speciesName} Gigamax`;
-  if (n.endsWith('-female'))    return `${speciesName} ♀`;
-  if (n.endsWith('-male'))      return `${speciesName} ♂`;
+  if (n.endsWith('-female'))    return `${speciesName} ♀︎`;
+  if (n.endsWith('-male'))      return `${speciesName} ♂︎`;
   if (n.endsWith('-alola'))     return `${speciesName} d'Alola`;
   if (n.endsWith('-galar'))     return `${speciesName} de Galar`;
   if (n.endsWith('-hisui'))     return `${speciesName} de Hisui`;
