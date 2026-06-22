@@ -613,8 +613,8 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
             />
           </div>
 
-          {/* Numéro + nom + types — toujours visibles */}
-          <div className="px-5 pb-0" style={{ paddingTop: '2.3rem' }}>
+          {/* Numéro + nom + types */}
+          <div className="px-5 pb-0" style={{ paddingTop: '2.3rem', display: activeTab === 'presentation' ? undefined : 'none' }}>
             <p className={`text-sm font-mono font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
               #{String(data.id).padStart(4, '0')}
             </p>
