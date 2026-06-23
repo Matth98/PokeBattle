@@ -396,7 +396,13 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
 
   // Déduit le genre depuis le nom si le champ gender a été strippé par le backend
   const resolveGender = (p) => p.gender ?? (p.name?.includes('♀') ? 'female' : p.name?.includes('♂') ? 'male' : null);
-  const matchesForm = (p) => p.pokeId === pokeId && resolveGender(p) === activeGender;
+  const genderMatches = (storedGender) => {
+    if (storedGender === activeGender) return true;
+    // A stored entry with no gender is the default (male/neutral) form
+    if (storedGender === null && (activeGender === 'male' || activeGender === null)) return true;
+    return false;
+  };
+  const matchesForm = (p) => p.pokeId === pokeId && genderMatches(resolveGender(p));
 
   const owned = myPlayer ? (myPlayer.pokemon || []).some(matchesForm) : false;
   const displayOwned = optimisticOwned !== null ? optimisticOwned : owned;
