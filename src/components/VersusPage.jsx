@@ -452,7 +452,7 @@ export function VersusPage({
         )}
 
         {(!p1 || !p2) && (
-          <div className="flex flex-col items-center justify-center text-center !mt-0" style={{ minHeight: 'calc(-220px + 100dvh)' }}>
+          <div className="flex flex-col items-center justify-center text-center !mt-0" style={{ minHeight: 'calc(-194px + 100dvh)' }}>
             <p className={`font-black text-base ${t.text} mb-1`}>Sélectionne deux joueurs</p>
             <p className={`${t.textSecondary} text-sm`}>Appuie sur les deux emplacements ci-dessus pour choisir les joueurs à comparer.</p>
           </div>
