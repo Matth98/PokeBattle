@@ -11,7 +11,7 @@ import { TYPE_SUPER_EFFECTIVE } from '../utils/mvp';
 import { sortBattlesDesc, groupBattlesByDate } from '../utils/battles';
 import { formatDate } from '../utils/dates';
 
-function PlayerSelectorSheet({ players, excludeId, isDark, t, onSelect, onClose }) {
+function PlayerSelectorSheet({ players, excludeId, isDark, t, onSelect, onClose, onClear, hasPlayer }) {
   useBodyScrollLock();
   const H = typeof window !== 'undefined' ? window.innerHeight : 800;
   const y = useMotionValue(H);
@@ -92,6 +92,14 @@ function PlayerSelectorSheet({ players, excludeId, isDark, t, onSelect, onClose 
               </button>
             ))}
           </div>
+          {hasPlayer && onClear && (
+            <button
+              onClick={() => { onClear(); dismiss(); }}
+              className={`mt-3 w-full py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+            >
+              Réinitialiser
+            </button>
+          )}
         </div>
       </motion.div>
     </motion.div>
@@ -360,35 +368,26 @@ export function VersusPage({
         </div>
       </div>
 
-      <div className={`px-5 space-y-6 mt-6 ${p1 && p2 ? 'pb-40' : ''}`}>
+      <div className={`px-5 space-y-6 mt-6 ${p1 && p2 ? 'pb-16' : ''}`} style={p1 && p2 ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' } : undefined}>
         {/* Sélecteur de joueurs — 3 blocs séparés */}
         <div className="flex items-center gap-3">
           {/* P1 */}
-          <div className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[114px]`}>
-            <div className="relative">
-              <button onClick={() => setSelectorFor('p1')}>
-                {p1 ? (
-                  <PlayerAvatar player={p1} size={52} textSize="text-xl" />
-                ) : (
-                  <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
-                    <span className={`text-xl ${t.textTertiary}`}>?</span>
-                  </div>
-                )}
-              </button>
-              {p1 && (
-                <button
-                  onClick={() => setP1Id(null)}
-                  className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black leading-none ${isDark ? 'bg-zinc-700 text-zinc-300' : 'bg-gray-200 text-gray-600'}`}
-                  aria-label="Retirer"
-                >×</button>
+          <div className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px]`}>
+            <button onClick={() => setSelectorFor('p1')}>
+              {p1 ? (
+                <PlayerAvatar player={p1} size={52} textSize="text-xl" />
+              ) : (
+                <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
+                  <span className={`text-xl ${t.textTertiary}`}>?</span>
+                </div>
               )}
-            </div>
-            <button onClick={() => setSelectorFor('p1')} className="flex flex-col items-center gap-0.5 w-full min-w-0">
-              <p className={`text-xs font-bold truncate w-full text-center ${p1 ? t.text : t.textTertiary}`}>
+            </button>
+            <button onClick={() => setSelectorFor('p1')} className="flex flex-col items-center gap-1 w-full min-w-0">
+              <p className={`text-sm font-bold truncate w-full text-center ${p1 ? t.text : t.textTertiary}`}>
                 {p1 ? p1.name : 'Choisir'}
               </p>
-              <span className={`text-[10px] font-semibold flex items-center gap-0.5 ${t.accent}`}>
-                {p1 ? 'Changer' : 'Joueur'} <ChevronDown size={10} />
+              <span className={`text-xs font-semibold flex items-center gap-0.5 ${t.accent}`}>
+                {p1 ? 'Changer' : 'Joueur'} <ChevronDown size={12} />
               </span>
             </button>
           </div>
@@ -399,31 +398,22 @@ export function VersusPage({
           </div>
 
           {/* P2 */}
-          <div className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[114px]`}>
-            <div className="relative">
-              <button onClick={() => setSelectorFor('p2')}>
-                {p2 ? (
-                  <PlayerAvatar player={p2} size={52} textSize="text-xl" />
-                ) : (
-                  <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
-                    <span className={`text-xl ${t.textTertiary}`}>?</span>
-                  </div>
-                )}
-              </button>
-              {p2 && (
-                <button
-                  onClick={() => setP2Id(null)}
-                  className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black leading-none ${isDark ? 'bg-zinc-700 text-zinc-300' : 'bg-gray-200 text-gray-600'}`}
-                  aria-label="Retirer"
-                >×</button>
+          <div className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px]`}>
+            <button onClick={() => setSelectorFor('p2')}>
+              {p2 ? (
+                <PlayerAvatar player={p2} size={52} textSize="text-xl" />
+              ) : (
+                <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
+                  <span className={`text-xl ${t.textTertiary}`}>?</span>
+                </div>
               )}
-            </div>
-            <button onClick={() => setSelectorFor('p2')} className="flex flex-col items-center gap-0.5 w-full min-w-0">
-              <p className={`text-xs font-bold truncate w-full text-center ${p2 ? t.text : t.textTertiary}`}>
+            </button>
+            <button onClick={() => setSelectorFor('p2')} className="flex flex-col items-center gap-1 w-full min-w-0">
+              <p className={`text-sm font-bold truncate w-full text-center ${p2 ? t.text : t.textTertiary}`}>
                 {p2 ? p2.name : 'Choisir'}
               </p>
-              <span className={`text-[10px] font-semibold flex items-center gap-0.5 ${t.accent}`}>
-                {p2 ? 'Changer' : 'Joueur'} <ChevronDown size={10} />
+              <span className={`text-xs font-semibold flex items-center gap-0.5 ${t.accent}`}>
+                {p2 ? 'Changer' : 'Joueur'} <ChevronDown size={12} />
               </span>
             </button>
           </div>
@@ -431,23 +421,25 @@ export function VersusPage({
 
         {/* Filtre de date — juste après le sélecteur de joueurs */}
         {p1 && p2 && h2hDates.length > 1 && (
-          <div className={`flex items-center gap-3 ${t.surface} rounded-xl px-3 py-2`}>
-            <span className={`text-xs font-semibold ${t.textSecondary} flex-shrink-0`}>Date</span>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className={`flex-1 bg-transparent outline-none ${t.text} text-sm appearance-none`}
-            >
-              <option value="">Tous les combats</option>
-              {h2hDates.map((date) => (
-                <option key={date} value={date}>{formatDate(date)}</option>
-              ))}
-            </select>
-            {dateFilter && (
-              <button onClick={() => setDateFilter('')} className={`text-xs font-semibold ${t.accent} flex-shrink-0`}>
-                Effacer
-              </button>
-            )}
+          <div>
+            <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>Date</label>
+            <div className={`${isDark ? 'bg-white/10' : 'bg-white/40'} rounded-xl px-3 py-2 flex items-center gap-2`}>
+              <Calendar size={16} className={t.textTertiary} />
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className={`flex-1 bg-transparent outline-none ${t.text} appearance-none`}
+              >
+                <option value="">Tous les combats</option>
+                {h2hDates.map((date) => (
+                  <option key={date} value={date}>{formatDate(date)}</option>
+                ))}
+              </select>
+              {dateFilter
+                ? <button onClick={() => setDateFilter('')} className={`text-xs font-semibold ${t.accent} flex-shrink-0`}>Effacer</button>
+                : <ChevronDown size={16} className={`${t.textTertiary} flex-shrink-0`} />
+              }
+            </div>
           </div>
         )}
 
@@ -726,6 +718,11 @@ export function VersusPage({
             else setP2Id(player._id);
           }}
           onClose={() => setSelectorFor(null)}
+          hasPlayer={selectorFor === 'p1' ? !!p1 : !!p2}
+          onClear={() => {
+            if (selectorFor === 'p1') setP1Id(null);
+            else setP2Id(null);
+          }}
         />,
         document.body
       )}
