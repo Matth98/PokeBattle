@@ -2,7 +2,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { ChevronLeft, ChevronDown, ChevronUp, Plus, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Plus, Calendar, Swords } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { getPokemonImageUrl as getPokemonImageUrlStatic, getPokemonSpriteId } from '../hooks/usePokemon';
@@ -316,14 +316,14 @@ export function VersusPage({
   useBodyScrollLock(!!selectorFor);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh flex flex-col">
       <div
         aria-hidden="true"
         className="fixed inset-0 -z-10"
         style={{
           background: isDark
-            ? 'radial-gradient(130% 75% at 0% 0%, rgba(0,203,255,0.06) 0%, rgba(0,203,255,0) 100%), #09090b'
-            : 'radial-gradient(130% 100% at 0% 0%, rgba(0,203,255,0.35) 0%, rgba(0,203,255,0) 100%), #EFF6F9',
+            ? 'radial-gradient(130% 75% at 0% 0%, rgba(72,0,255,0.06) 0%, rgba(72,0,255,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(125,252,116,0.05) 0%, rgba(125,252,116,0) 100%), #09090b'
+            : 'radial-gradient(130% 100% at 0% 0%, rgba(72,0,255,0.35) 0%, rgba(72,0,255,0) 100%), radial-gradient(ellipse 120% 70% at 100% 0%, rgba(125,252,116,0.28) 0%, rgba(125,252,116,0) 100%), #EFF6F9',
         }}
       />
 
@@ -368,67 +368,64 @@ export function VersusPage({
         </div>
       </div>
 
-      <div className={`px-5 space-y-6 mt-6 ${p1 && p2 ? 'pb-16' : ''}`} style={p1 && p2 ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' } : undefined}>
+      <div className={`relative z-10 flex-1 flex flex-col px-5 space-y-6 mt-6 ${p1 && p2 ? '' : ''}`} style={p1 && p2 ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' } : undefined}>
         {/* Sélecteur de joueurs — 3 blocs séparés */}
         <div className="flex items-center gap-3">
           {/* P1 */}
-          <div className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px]`}>
-            <button onClick={() => setSelectorFor('p1')}>
-              {p1 ? (
-                <PlayerAvatar player={p1} size={52} textSize="text-xl" />
-              ) : (
-                <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
-                  <span className={`text-xl ${t.textTertiary}`}>?</span>
-                </div>
-              )}
-            </button>
-            <button onClick={() => setSelectorFor('p1')} className="flex flex-col items-center gap-1 w-full min-w-0">
+          <button onClick={() => setSelectorFor('p1')} className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px]`}>
+            {p1 ? (
+              <PlayerAvatar player={p1} size={52} textSize="text-xl" />
+            ) : (
+              <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
+                <span className={`text-xl ${t.textTertiary}`}>?</span>
+              </div>
+            )}
+            <div className="flex flex-col items-center gap-1 w-full min-w-0">
               <p className={`text-sm font-bold truncate w-full text-center ${p1 ? t.text : t.textTertiary}`}>
                 {p1 ? p1.name : 'Choisir'}
               </p>
               <span className={`text-xs font-semibold flex items-center gap-0.5 ${t.accent}`}>
                 {p1 ? 'Changer' : 'Joueur'} <ChevronDown size={12} />
               </span>
-            </button>
-          </div>
+            </div>
+          </button>
 
           {/* VS */}
           <div className="flex-shrink-0 flex items-center justify-center w-9">
-            <span className={`font-black text-sm ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}>VS</span>
+            <Swords size={18} className={isDark ? 'text-indigo-400' : 'text-indigo-600'} />
           </div>
 
           {/* P2 */}
-          <div className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px]`}>
-            <button onClick={() => setSelectorFor('p2')}>
-              {p2 ? (
-                <PlayerAvatar player={p2} size={52} textSize="text-xl" />
-              ) : (
-                <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
-                  <span className={`text-xl ${t.textTertiary}`}>?</span>
-                </div>
-              )}
-            </button>
-            <button onClick={() => setSelectorFor('p2')} className="flex flex-col items-center gap-1 w-full min-w-0">
+          <button onClick={() => setSelectorFor('p2')} className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px]`}>
+            {p2 ? (
+              <PlayerAvatar player={p2} size={52} textSize="text-xl" />
+            ) : (
+              <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
+                <span className={`text-xl ${t.textTertiary}`}>?</span>
+              </div>
+            )}
+            <div className="flex flex-col items-center gap-1 w-full min-w-0">
               <p className={`text-sm font-bold truncate w-full text-center ${p2 ? t.text : t.textTertiary}`}>
                 {p2 ? p2.name : 'Choisir'}
               </p>
               <span className={`text-xs font-semibold flex items-center gap-0.5 ${t.accent}`}>
                 {p2 ? 'Changer' : 'Joueur'} <ChevronDown size={12} />
               </span>
-            </button>
-          </div>
+            </div>
+          </button>
         </div>
 
         {/* Filtre de date — juste après le sélecteur de joueurs */}
         {p1 && p2 && h2hDates.length > 1 && (
           <div>
             <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>Date</label>
-            <div className={`${isDark ? 'bg-white/10' : 'bg-white/40'} rounded-xl px-3 py-2 flex items-center gap-2`}>
+            <label htmlFor="versus-date-select" className={`${isDark ? 'bg-white/10' : 'bg-white/40'} rounded-xl px-3 py-2 flex items-center gap-2 cursor-pointer`}>
               <Calendar size={16} className={t.textTertiary} />
               <select
+                id="versus-date-select"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className={`flex-1 bg-transparent outline-none ${t.text} appearance-none`}
+                className={`flex-1 bg-transparent outline-none ${t.text} appearance-none cursor-pointer`}
               >
                 <option value="">Tous les combats</option>
                 {h2hDates.map((date) => (
@@ -436,15 +433,18 @@ export function VersusPage({
                 ))}
               </select>
               {dateFilter
-                ? <button onClick={() => setDateFilter('')} className={`text-xs font-semibold ${t.accent} flex-shrink-0`}>Effacer</button>
+                ? <button
+                    onClick={(e) => { e.preventDefault(); setDateFilter(''); }}
+                    className={`text-xs font-semibold ${t.accent} flex-shrink-0 py-1 px-2 -mr-2`}
+                  >Effacer</button>
                 : <ChevronDown size={16} className={`${t.textTertiary} flex-shrink-0`} />
               }
-            </div>
+            </label>
           </div>
         )}
 
         {(!p1 || !p2) && (
-          <div className="flex flex-col items-center justify-center text-center !mt-0" style={{ minHeight: 'calc(-194px + 100dvh)' }}>
+          <div className="flex-1 flex flex-col items-center justify-center text-center !mt-0">
             <p className={`font-black text-base ${t.text} mb-1`}>Sélectionne deux joueurs</p>
             <p className={`${t.textSecondary} text-sm`}>Appuie sur les deux emplacements ci-dessus pour choisir les joueurs à comparer.</p>
           </div>
@@ -454,47 +454,52 @@ export function VersusPage({
           <>
             {/* ── Face à face — score + forme uniquement ── */}
             <section>
-              <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} px-1 mb-3`}>
-                Face à face
-              </h2>
-              <div className={`${t.surface} rounded-2xl p-5 flex flex-col items-center gap-3`}>
+              <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+                <div className="px-4 pt-4 pb-0 text-center">
+                  <h2 className={`font-black text-xl ${t.text}`}>Face à face</h2>
+                </div>
+                <div className="px-5 pb-5 pt-2 flex flex-col items-center gap-3">
                 <div className="flex items-center gap-4">
                   <span className={`text-5xl font-black ${h2hScore.p1 > h2hScore.p2 ? 'text-emerald-500' : h2hScore.p1 < h2hScore.p2 ? 'text-red-500' : t.text}`}>{h2hScore.p1}</span>
                   <span className={`text-2xl font-bold ${t.textTertiary}`}>–</span>
                   <span className={`text-5xl font-black ${h2hScore.p2 > h2hScore.p1 ? 'text-emerald-500' : h2hScore.p2 < h2hScore.p1 ? 'text-red-500' : t.text}`}>{h2hScore.p2}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 max-w-[90px]">
+                <div className="flex items-center gap-2 w-full justify-center">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <PlayerAvatar player={p1} size={20} textSize="text-[9px]" />
-                    <span className={`text-xs font-semibold ${t.textSecondary} truncate`}>{p1.name}</span>
+                    <span className={`text-xs font-semibold ${t.textSecondary} whitespace-nowrap`}>{p1.name}</span>
                   </div>
                   <span className={`text-xs ${t.textTertiary} flex-shrink-0`}>vs</span>
-                  <div className="flex items-center gap-1.5 max-w-[90px]">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <PlayerAvatar player={p2} size={20} textSize="text-[9px]" />
-                    <span className={`text-xs font-semibold ${t.textSecondary} truncate`}>{p2.name}</span>
+                    <span className={`text-xs font-semibold ${t.textSecondary} whitespace-nowrap`}>{p2.name}</span>
                   </div>
+                </div>
                 </div>
               </div>
             </section>
 
-            {/* ── Stats globales — masquées si une date est filtrée ── */}
+            {/* ── Statistiques globales — masquées si une date est filtrée ── */}
             {!dateFilter && stats1 && stats2 && (
               <section>
-                <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} px-1 mb-3`}>
-                  Stats globales
-                </h2>
                 <div className={`${t.surface} rounded-2xl overflow-hidden`}>
-                  <div className={`flex items-center px-4 py-2 border-b ${t.divider}`}>
-                    <div className="w-1/3" />
-                    <div className="w-1/3 flex flex-col items-center gap-1">
+                  {/* Titre */}
+                  <div className="px-4 pt-4 pb-1 text-center">
+                    <h2 className={`font-black text-xl ${t.text}`}>Stats globales</h2>
+                  </div>
+                  {/* En-têtes joueurs */}
+                  <div className={`flex items-center px-4 py-3 border-b ${t.divider}`}>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <PlayerAvatar player={p1} size={28} textSize="text-xs" />
-                      <span className={`text-xs font-bold truncate block ${t.text}`}>{p1.name}</span>
+                      <span className={`font-black text-sm truncate ${t.text}`}>{p1.name}</span>
                     </div>
-                    <div className="w-1/3 flex flex-col items-center gap-1">
+                    <Swords size={15} className={`flex-shrink-0 mx-2 ${t.textTertiary}`} />
+                    <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
+                      <span className={`font-black text-sm truncate text-right ${t.text}`}>{p2.name}</span>
                       <PlayerAvatar player={p2} size={28} textSize="text-xs" />
-                      <span className={`text-xs font-bold truncate block ${t.text}`}>{p2.name}</span>
                     </div>
                   </div>
+                  {/* Lignes */}
                   {[
                     { label: 'Victoires',           v1: stats1.wins,        v2: stats2.wins,        cmp: 'max', fmt: (v) => v },
                     { label: 'Défaites',            v1: stats1.losses,      v2: stats2.losses,      cmp: 'min', fmt: (v) => v },
@@ -507,18 +512,9 @@ export function VersusPage({
                       v1: stats1.mostUsedTypeEntry?.[0] || null,
                       v2: stats2.mostUsedTypeEntry?.[0] || null,
                       cmp: null,
-                      fmt: (v) => v ? (TYPE_FR[v] || v) : '—',
                       render: (typeKey) => typeKey ? (
-                        <span
-                          className="pl-1 inline-flex items-stretch rounded-full overflow-hidden"
-                          style={{ backgroundColor: TYPE_HEX[typeKey] || '#828282' }}
-                        >
-                          <img
-                            src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${typeKey}.svg`}
-                            alt=""
-                            className="w-5 h-5 object-contain flex-shrink-0"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                          />
+                        <span className="pl-1 inline-flex items-stretch rounded-full overflow-hidden" style={{ backgroundColor: TYPE_HEX[typeKey] || '#828282' }}>
+                          <img src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${typeKey}.svg`} alt="" className="w-5 h-5 object-contain flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                           <span className="self-center pr-2 text-[10px] font-bold text-white uppercase leading-none">{TYPE_FR[typeKey] || typeKey}</span>
                         </span>
                       ) : <span className={t.textTertiary}>—</span>,
@@ -528,11 +524,8 @@ export function VersusPage({
                       v1: stats1.favoriteFormat ? stats1.favoriteFormat[0] : null,
                       v2: stats2.favoriteFormat ? stats2.favoriteFormat[0] : null,
                       cmp: null,
-                      fmt: (v) => v || '—',
                       render: (fmt) => fmt ? (
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${fmt === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>
-                          {fmt}
-                        </span>
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${fmt === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>{fmt}</span>
                       ) : <span className={t.textTertiary}>—</span>,
                     },
                     {
@@ -540,24 +533,10 @@ export function VersusPage({
                       v1: stats1.mvp || null,
                       v2: stats2.mvp || null,
                       cmp: null,
-                      fmt: (v) => v?.name || '—',
                       render: (mvp) => mvp ? (
                         <div className="flex flex-col items-center gap-0.5">
                           <img src={getPokemonImageUrlStatic(mvp.pokeId)} alt={mvp.name} className="w-10 h-10 object-contain" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
                           <span className={`text-xs font-semibold ${t.text} text-center leading-tight`}>{mvp.name}</span>
-                        </div>
-                      ) : <span className={t.textTertiary}>—</span>,
-                    },
-                    {
-                      label: 'Pokémon + utilisé',
-                      v1: stats1.mostUsedPokemon || null,
-                      v2: stats2.mostUsedPokemon || null,
-                      cmp: null,
-                      fmt: (v) => v?.name || '—',
-                      render: (pk) => pk ? (
-                        <div className="flex flex-col items-center gap-0.5">
-                          <img src={getPokemonImageUrlStatic(pk.pokeId)} alt={pk.name} className="w-10 h-10 object-contain" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
-                          <span className={`text-xs font-semibold ${t.text} text-center leading-tight`}>{pk.name}</span>
                         </div>
                       ) : <span className={t.textTertiary}>—</span>,
                     },
@@ -567,21 +546,15 @@ export function VersusPage({
                     const isLast = idx === arr.length - 1;
                     return (
                       <div key={label} className={`flex items-center px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''}`}>
-                        <div className="w-1/3">
-                          <span className={`text-xs font-medium ${t.textSecondary}`}>{label}</span>
-                        </div>
-                        <div className="w-1/3 flex justify-center">
+                        <div className="flex-1 flex justify-start">
                           {render ? render(v1) : (
-                            <span className={`text-sm font-bold ${win1 ? 'text-emerald-500' : win2 ? 'text-red-500' : t.text}`}>
-                              {fmt(v1)}
-                            </span>
+                            <span className={`font-black text-xl ${win1 ? 'text-emerald-500' : win2 ? 'text-red-500' : t.text}`}>{fmt(v1)}</span>
                           )}
                         </div>
-                        <div className="w-1/3 flex justify-center">
+                        <span className={`flex-1 text-center text-sm font-semibold ${t.textSecondary}`}>{label}</span>
+                        <div className="flex-1 flex justify-end">
                           {render ? render(v2) : (
-                            <span className={`text-sm font-bold ${win2 ? 'text-emerald-500' : win1 ? 'text-red-500' : t.text}`}>
-                              {fmt(v2)}
-                            </span>
+                            <span className={`font-black text-xl ${win2 ? 'text-emerald-500' : win1 ? 'text-red-500' : t.text}`}>{fmt(v2)}</span>
                           )}
                         </div>
                       </div>
