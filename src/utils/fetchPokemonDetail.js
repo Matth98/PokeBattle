@@ -273,6 +273,7 @@ export async function processPokemonDetail(pokeId, language, pokemonNameOverride
 
   return {
     id:             pokemonData.id,
+    displayId:      Number(speciesId),
     name,
     types:          typeNames,
     stats,

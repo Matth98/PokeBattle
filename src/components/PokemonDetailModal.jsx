@@ -348,7 +348,7 @@ export const PokemonDetailModal = ({ pokeId, pokeName, t, isDark, onClose }) => 
 
             {/* Numéro + nom + types — toujours visibles */}
             <div className="px-5 pt-4 pb-0">
-              <p className={`text-sm font-mono font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>#{String(data.id).padStart(4, '0')}</p>
+              <p className={`text-sm font-mono font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>#{String(data.displayId ?? data.id).padStart(4, '0')}</p>
               <h1 className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{data?.name || pokeName}</h1>
               <div className="flex gap-2 mb-3">
                 {data.types.map(tn => <TypeBadge key={tn} typeName={tn} />)}

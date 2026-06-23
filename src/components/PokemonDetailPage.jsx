@@ -637,7 +637,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
           {/* Numéro + nom + types */}
           <div className="px-5 pb-0" style={{ paddingTop: '2.3rem', display: activeTab === 'presentation' ? undefined : 'none' }}>
             <p className={`text-sm font-mono font-semibold ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-              #{String(data.id).padStart(4, '0')}
+              #{String(data.displayId ?? data.id).padStart(4, '0')}
             </p>
             <h1 className={`text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{activePokeName || data?.name}</h1>
             <div className="flex items-center gap-2 mb-5">
