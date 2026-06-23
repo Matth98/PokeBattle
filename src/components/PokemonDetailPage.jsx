@@ -490,12 +490,14 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
   }, [isDark]);
 
   const scrollPositions = useRef({ presentation: 0, strategie: 0, attaques: 0 });
+  const suppressScroll = useRef(false);
 
   const handleTabChange = useCallback((tab) => {
     if (tab === activeTab) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+    suppressScroll.current = true;
     scrollPositions.current[activeTab] = window.scrollY;
     setActiveTab(tab);
   }, [activeTab]);
@@ -504,12 +506,18 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
     const restoredY = scrollPositions.current[activeTab] ?? 0;
     window.scrollTo({ top: restoredY, behavior: 'instant' });
     setScrolled(restoredY > 20);
+    const t = setTimeout(() => { suppressScroll.current = false; }, 100);
+    return () => clearTimeout(t);
   }, [activeTab]);
 
   const [scrolled, setScrolled] = useState(() => window.scrollY > 20);
   const [strategyEmpty, setStrategyEmpty] = useState(false);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      if (suppressScroll.current) return;
+      if (document.documentElement.style.overflow === 'hidden') return;
+      setScrolled(window.scrollY > 20);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
