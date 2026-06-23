@@ -740,6 +740,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
                 isDark={isDark}
                 initialP1Id={selectedVersusPlayers.p1Id}
                 initialP2Id={selectedVersusPlayers.p2Id}
+                initialScrollY={scrollMemoryRef.current.get('versusDetail') || 0}
                 backLabel={backLabel}
                 onBack={() => {}}
                 isBackground
@@ -927,8 +928,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           isDark={isDark}
           initialP1Id={selectedVersusPlayers.p1Id}
           initialP2Id={selectedVersusPlayers.p2Id}
+          initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('versusDetail') || 0 : 0}
           backLabel={backLabel}
           onBack={navigateBack}
+          onPlayersChange={(p1Id, p2Id) => setSelectedVersusPlayers({ p1Id, p2Id })}
           onSelectBattle={(b) => { setSelectedBattle(b); navigateTo('battleDetail'); }}
           onAddBattle={(p1Id, p2Id) => {
             setNewBattleInitialPlayers({ p1Id, p2Id });

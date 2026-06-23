@@ -114,7 +114,9 @@ export function VersusPage({
   isDark,
   initialP1Id = null,
   initialP2Id = null,
+  initialScrollY = 0,
   onBack,
+  onPlayersChange,
   backLabel = 'Joueur',
   isBackground = false,
   onSelectBattle,
@@ -122,6 +124,9 @@ export function VersusPage({
 }) {
   const [p1Id, setP1Id] = useState(initialP1Id);
   const [p2Id, setP2Id] = useState(initialP2Id);
+
+  const setP1IdAndNotify = useCallback((id) => { setP1Id(id); onPlayersChange?.(id, p2Id); }, [p2Id, onPlayersChange]);
+  const setP2IdAndNotify = useCallback((id) => { setP2Id(id); onPlayersChange?.(p1Id, id); }, [p1Id, onPlayersChange]);
   const [selectorFor, setSelectorFor] = useState(null); // 'p1' | 'p2' | null
 
   const p1 = useMemo(() => players.find((p) => String(p._id) === String(p1Id)) || null, [players, p1Id]);
@@ -305,9 +310,10 @@ export function VersusPage({
     return next;
   });
 
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
     if (isBackground) return;
+    if (initialScrollY > 0) window.scrollTo(0, initialScrollY);
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -419,7 +425,7 @@ export function VersusPage({
         {p1 && p2 && h2hDates.length > 1 && (
           <div>
             <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>Date</label>
-            <label htmlFor="versus-date-select" className={`${isDark ? 'bg-white/10' : 'bg-white/40'} rounded-xl px-3 py-2 flex items-center gap-2 cursor-pointer`}>
+            <label htmlFor="versus-date-select" className={`${t.surface} rounded-xl px-3 py-2 flex items-center gap-2 cursor-pointer`}>
               <Calendar size={16} className={t.textTertiary} />
               <select
                 id="versus-date-select"
@@ -668,7 +674,7 @@ export function VersusPage({
                           </div>
                         )}
 
-                        {!isCollapsed && group.battles.map((b, idx) => renderBattleRow(b, idx, group.battles.length, false))}
+                        {!isCollapsed && group.battles.map((b, idx) => renderBattleRow(b, idx, group.battles.length, true))}
                       </div>
                     );
                   })}
@@ -687,14 +693,14 @@ export function VersusPage({
           isDark={isDark}
           t={t}
           onSelect={(player) => {
-            if (selectorFor === 'p1') setP1Id(player._id);
-            else setP2Id(player._id);
+            if (selectorFor === 'p1') setP1IdAndNotify(player._id);
+            else setP2IdAndNotify(player._id);
           }}
           onClose={() => setSelectorFor(null)}
           hasPlayer={selectorFor === 'p1' ? !!p1 : !!p2}
           onClear={() => {
-            if (selectorFor === 'p1') setP1Id(null);
-            else setP2Id(null);
+            if (selectorFor === 'p1') setP1IdAndNotify(null);
+            else setP2IdAndNotify(null);
           }}
         />,
         document.body
