@@ -368,7 +368,7 @@ export function VersusPage({
         </div>
       </div>
 
-      <div className={`relative z-10 flex-1 flex flex-col px-5 space-y-6 mt-6 ${p1 && p2 ? '' : ''}`} style={p1 && p2 ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' } : undefined}>
+      <div className={`flex-1 flex flex-col px-5 space-y-6 mt-6 ${p1 && p2 ? '' : ''}`} style={p1 && p2 ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' } : undefined}>
         {/* Sélecteur de joueurs — 3 blocs séparés */}
         <div className="flex items-center gap-3">
           {/* P1 */}
