@@ -66,6 +66,8 @@ export const Battles = ({
   clearEditingBattle,
   renderPage = true,
   isBackground = false,
+  initialPlayer1Id = null,
+  initialPlayer2Id = null,
   initialScrollY = 0,
   isActive = true,
   formatFilter = 'all',
@@ -128,11 +130,16 @@ export const Battles = ({
   }, [isEditing, editingBattle]);
 
   // Pour les non-admins en création : pré-remplit player1 avec le joueur lié
+  // Si des joueurs sont pré-sélectionnés (depuis Versus), on les applique aussi
   useEffect(() => {
-    if (showForm && !isEditing && !isSuperAdmin && dbUser?.playerId) {
-      setNewBattleData((prev) => ({ ...prev, player1: dbUser.playerId }));
+    if (showForm && !isEditing) {
+      setNewBattleData((prev) => ({
+        ...prev,
+        player1: (!isSuperAdmin && dbUser?.playerId) ? dbUser.playerId : (initialPlayer1Id ?? prev.player1),
+        player2: initialPlayer2Id ?? prev.player2,
+      }));
     }
-  }, [showForm, isEditing, isSuperAdmin, dbUser?.playerId]);
+  }, [showForm, isEditing, isSuperAdmin, dbUser?.playerId, initialPlayer1Id, initialPlayer2Id]);
 
   // Score calculé en direct (1 Pokémon éliminé = 1 point pour l'adversaire)
   const p1Score = (battleSelectedPokemon.player2 || []).filter((p) => p.eliminated).length;

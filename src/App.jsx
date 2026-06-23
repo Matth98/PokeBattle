@@ -6,6 +6,7 @@ import { useAPI } from './hooks/useAPI';
 import { Home } from './components/Home';
 import { Players } from './components/Players';
 import { PlayerDetail } from './components/PlayerDetail';
+import { VersusPage } from './components/VersusPage';
 import { Teams } from './components/Teams';
 import { TeamDetail } from './components/TeamDetail';
 import { Battles } from './components/Battles';
@@ -28,7 +29,7 @@ import { useOfflineSync, OFFLINE_TOTAL } from './hooks/useOfflineSync';
 import { prefetchSeedAltPokeIds } from './hooks/usePokemon';
 
 
-const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail'];
+const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail', 'versusDetail'];
 
 function AppContent({ isDark, themeMode, setThemeMode }) {
   const {
@@ -85,6 +86,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedPokemon, setSelectedPokemon] = useState(null); // { pokeId, name }
+  const [selectedVersusPlayers, setSelectedVersusPlayers] = useState({ p1Id: null, p2Id: null });
+  const [newBattleInitialPlayers, setNewBattleInitialPlayers] = useState({ p1Id: null, p2Id: null });
   const selectedTeamRef = useRef(selectedTeam);
   const selectedPlayerRef = useRef(selectedPlayer);
   const selectedBattleRef = useRef(selectedBattle);
@@ -153,7 +156,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     _setCurrentTabState(newTab);
   }, [currentTab, getTabLabel]);
 
-  const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players', pokemonDetail: 'pokemonSearch', pokemonSearch: 'home' };
+  const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players', pokemonDetail: 'pokemonSearch', pokemonSearch: 'home', versusDetail: 'playerDetail' };
 
   // Retour — dépile et restaure. Fallback si le stack est vide.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -266,7 +269,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   // Wrappers de fermeture : si on était venus depuis la fiche détail, on y retourne
   const setShowBattleForm = (val) => {
     setShowNewBattleForm(val);
-    if (!val) setBattleEditOrigin(null);
+    if (!val) { setBattleEditOrigin(null); setNewBattleInitialPlayers({ p1Id: null, p2Id: null }); }
   };
   const setShowTeamForm = (val) => {
     setShowNewTeamForm(val);
@@ -728,6 +731,20 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} initialScrollY={scrollMemoryRef.current.get('teamDetail') || 0} isBackground />}
             {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={sortedPlayers} teams={sortedTeams} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} onAddTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('battleDetail') || 0} isBackground />}
             {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} teams={sortedTeams} players={sortedPlayers} isBackground initialSearchTerm={searchMemoryRef.current.get('pokemonSearch') || ''} initialActiveTab={searchMemoryRef.current.get('pokemonSearch-activeTab') || 'pokemon'} initialTeamFormatFilter={searchMemoryRef.current.get('pokemonSearch-teamFormatFilter') || 'all'} initialScrollY={scrollMemoryRef.current.get('pokemonSearch') || 0} />}
+            {prevTab === 'versusDetail' && (
+              <VersusPage
+                players={sortedPlayers}
+                battles={battles}
+                teams={sortedTeams}
+                t={t}
+                isDark={isDark}
+                initialP1Id={selectedVersusPlayers.p1Id}
+                initialP2Id={selectedVersusPlayers.p2Id}
+                backLabel={backLabel}
+                onBack={() => {}}
+                isBackground
+              />
+            )}
           </div>
           {/* Overlay d'assombrissement — z-index élevé pour couvrir tout le contenu */}
           <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.18)', zIndex: 9999, pointerEvents: 'none' }} />
@@ -827,6 +844,11 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           onActiveTabChange={(tab) => setPlayerDetailTab(tab)}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
           onSelectionModeChange={(active) => setHideNav(active)}
+          allPlayers={sortedPlayers}
+          onCompare={(p1Id) => {
+            setSelectedVersusPlayers({ p1Id, p2Id: null });
+            navigateTo('versusDetail');
+          }}
         />
       )}
 
@@ -893,6 +915,26 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           onUpdate={handleUpdateTeam}
           onDelete={async (id) => { await handleDeleteTeam(id); navigateBack(); setSelectedTeam(null); }}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
+        />
+      )}
+
+      {currentTab === 'versusDetail' && (
+        <VersusPage
+          players={sortedPlayers}
+          battles={battles}
+          teams={sortedTeams}
+          t={t}
+          isDark={isDark}
+          initialP1Id={selectedVersusPlayers.p1Id}
+          initialP2Id={selectedVersusPlayers.p2Id}
+          backLabel={backLabel}
+          onBack={navigateBack}
+          onSelectBattle={(b) => { setSelectedBattle(b); navigateTo('battleDetail'); }}
+          onAddBattle={(p1Id, p2Id) => {
+            setNewBattleInitialPlayers({ p1Id, p2Id });
+            setBattleEditOrigin(null);
+            setShowNewBattleForm(true);
+          }}
         />
       )}
 
@@ -1021,7 +1063,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
       {/* Navigation hors du transform — position: fixed z-20 non affecté */}
         <Navigation
-          hidden={hideNav || currentTab === 'pokemonDetail' || currentTab === 'pokemonSearch' || currentTab === 'teamDetail' || currentTab === 'battleDetail'}
+          hidden={hideNav || currentTab === 'pokemonDetail' || currentTab === 'pokemonSearch' || currentTab === 'teamDetail' || currentTab === 'battleDetail' || currentTab === 'versusDetail'}
           animated={hideNav}
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
@@ -1131,6 +1173,8 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             showForm={showNewBattleForm}
             setShowForm={setShowBattleForm}
             editingBattle={battleEditOrigin === 'detail' ? selectedBattle : null}
+            initialPlayer1Id={newBattleInitialPlayers.p1Id}
+            initialPlayer2Id={newBattleInitialPlayers.p2Id}
             renderPage={false}
           />
         )}
