@@ -3,7 +3,7 @@ import { useLanguage } from './useLanguage';
 import { processPokemonMoves } from '../utils/fetchPokemonMoves';
 import { idbGet, idbSet } from '../utils/offlineDB';
 
-const MOVES_CACHE_VERSION = 1;
+const MOVES_CACHE_VERSION = 2;
 
 export function usePokemonMoves(pokeId) {
   const [moves,   setMoves]   = useState(null);

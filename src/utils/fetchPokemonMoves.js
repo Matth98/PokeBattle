@@ -97,6 +97,14 @@ export async function processPokemonMoves(pokeId, language) {
     pokemonCache.set(pokeId, pokemonData);
   }
 
+  // Formes sans attaques propres (ex: Gigamax, Dynamax) → fallback sur la forme de base de l'espèce
+  if (pokemonData.moves.length === 0 && pokemonData.species?.url) {
+    const speciesId = pokemonData.species.url.match(/\/(\d+)\/$/)?.[1];
+    if (speciesId && String(speciesId) !== String(pokeId)) {
+      return processPokemonMoves(Number(speciesId), language);
+    }
+  }
+
   const allVGs = new Set(
     pokemonData.moves.flatMap(m =>
       m.version_group_details.map(d => d.version_group.name)

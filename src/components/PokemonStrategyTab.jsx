@@ -565,7 +565,7 @@ export function StrategyTab({ pokeId, isDark, accentHex, onEmpty }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex items-center justify-center" style={{ height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 9rem)' }}>
         <Loader2 size={28} className="animate-spin" style={{ color: accentHex }} />
       </div>
     );
@@ -739,14 +739,14 @@ export function MovesTab({ pokeId, isDark, accentHex }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex items-center justify-center" style={{ height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 9rem)' }}>
         <Loader2 size={28} className="animate-spin" style={{ color: accentHex }} />
       </div>
     );
   }
   if (error) {
     return (
-      <div className="py-16 px-8 text-center">
+      <div className="flex flex-col items-center justify-center px-8 text-center" style={{ height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 9rem)' }}>
         <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           Impossible de charger les attaques : {error}
         </p>
@@ -758,6 +758,19 @@ export function MovesTab({ pokeId, isDark, accentHex }) {
   const hasLevelUp = moves.levelUp.length > 0;
   const hasMachine = moves.machine.length > 0;
   const hasEgg = moves.egg.length > 0;
+
+  if (!hasLevelUp && !hasMachine && !hasEgg) {
+    return (
+      <div className="flex flex-col items-center justify-center px-8 text-center" style={{ height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 9rem)' }}>
+        <p className={`text-base font-semibold mb-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+          Aucune attaque disponible
+        </p>
+        <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+          Cette forme ne possède pas d'attaques propres.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-5 pt-4 pb-4">
