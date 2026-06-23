@@ -891,6 +891,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setShowNewTeamForm(true);
           }}
           onUpdate={handleUpdateTeam}
+          onDelete={async (id) => { await handleDeleteTeam(id); navigateBack(); setSelectedTeam(null); }}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
         />
       )}

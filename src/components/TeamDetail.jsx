@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, Pencil, Shield, BookmarkPlus, Target, Search, Plus } from 'lucide-react';
+import { ChevronLeft, Pencil, Shield, BookmarkPlus, Target, Search, Plus, Trash2 } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { ClearButton } from './ClearButton';
 import { usePokemon, getPokemonSpriteId } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { useAuth } from '../hooks/useAuth';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const TeamDetail = ({
@@ -15,6 +16,7 @@ export const TeamDetail = ({
   isDark,
   onBack,
   onEdit,
+  onDelete,
   onViewPokemon,
   onAddTeam,
   onUpdatePlayer,
@@ -28,6 +30,7 @@ export const TeamDetail = ({
   const { dbUser, isSuperAdmin } = useAuth();
   const canEdit = isSuperAdmin ||
     (dbUser?._id && team?.userId && String(team.userId) === String(dbUser._id));
+  const canDelete = canEdit;
 
   // Bouton "Enregistrer" : visible si l'équipe n'appartient pas au joueur courant, ou toujours pour SA
   const canSave = onAddTeam && (
@@ -38,7 +41,12 @@ export const TeamDetail = ({
   const [playerSearch, setPlayerSearch] = useState('');
   const [pendingCopy, setPendingCopy] = useState(null); // { targetPlayer, missingPokemon, payload }
   const [isSavingCopy, setIsSavingCopy] = useState(false);
-  useBodyScrollLock(playerPickerOpen || !!pendingCopy);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const { isClosing: isConfirmClosing, handleClose: handleCancelDelete } = useAnimatedClose(
+    () => setConfirmingDelete(false),
+    180,
+  );
+  useBodyScrollLock(playerPickerOpen || !!pendingCopy || confirmingDelete);
 
   const startSave = () => {
     if (isSuperAdmin) {
@@ -308,8 +316,44 @@ export const TeamDetail = ({
             </div>
           )}
         </section>
+
+        {/* ── Supprimer ── */}
+        {canDelete && onDelete && (
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className={`w-full ${t.surface} ${t.danger} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 shadow-sm`}
+          >
+            <Trash2 size={18} />
+            {tr('common.delete')}
+          </button>
+        )}
       </div>
     </div>
+
+    {/* ── Modale confirmation suppression ── */}
+    {confirmingDelete && createPortal(
+      <div className={`fixed inset-0 ${t.overlay} ${isConfirmClosing ? 'anim-fade-out' : 'anim-fade-in'} z-[9999] flex items-center justify-center p-4`}>
+        <div className={`${t.surface} rounded-2xl p-6 max-w-sm w-full ${isConfirmClosing ? 'anim-scale-out' : 'anim-scale-in'}`}>
+          <p className={`font-black text-lg ${t.text} mb-1`}>{tr('teams.deleteTitle')}</p>
+          <p className={`${t.textSecondary} text-sm mb-5`}>{tr('common.irreversible')}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleCancelDelete}
+              className={`flex-1 py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+            >
+              {tr('common.cancel')}
+            </button>
+            <button
+              onClick={() => onDelete(team._id)}
+              className={`flex-1 py-3 rounded-xl font-semibold ${t.dangerBg} text-white`}
+            >
+              {tr('common.delete')}
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
 
     {/* ── Picker joueur (Super Admin) ── */}
     {playerPickerOpen && createPortal(
