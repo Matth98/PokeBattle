@@ -591,7 +591,7 @@ export function StrategyTab({ pokeId, isDark, accentHex, onEmpty }) {
   }
   if (result === null) {
     return (
-      <div className="flex flex-col items-center justify-center px-8 text-center" style={{ minHeight: 'calc(100dvh - env(safe-area-inset-top) - 8rem)' }}>
+      <div className="flex flex-col items-center justify-center px-8 text-center" style={{ height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 9rem)' }}>
         <p className={`text-base font-semibold mb-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
           Aucun set PokéScores disponible
         </p>
