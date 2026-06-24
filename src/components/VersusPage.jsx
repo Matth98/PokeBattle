@@ -2,7 +2,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { ChevronLeft, ChevronDown, ChevronUp, Plus, Calendar, Swords } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Plus, Calendar, Swords, RefreshCw } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { getPokemonImageUrl as getPokemonImageUrlStatic, getPokemonSpriteId } from '../hooks/usePokemon';
@@ -106,6 +106,100 @@ function PlayerSelectorSheet({ players, excludeId, isDark, t, onSelect, onClose,
   );
 }
 
+function DateSelectorSheet({ dates, selectedDate, isDark, t, onSelect, onClose }) {
+  const H = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const y = useMotionValue(H);
+  const overlayOpacity = useTransform(y, [0, H * 0.5], [1, 0]);
+  const sheetRef = useRef(null);
+  const dismiss = useCallback((vel = 600) => {
+    animate(y, H, { type: 'spring', damping: 18, stiffness: 200, velocity: vel, restDelta: 1 });
+    setTimeout(onClose, 300);
+  }, [y, H, onClose]);
+  const snapBack = useCallback(() => {
+    animate(y, 0, { type: 'spring', damping: 30, stiffness: 400 });
+  }, [y]);
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+    let startY = 0, lastY = 0, lastTime = 0, tracking = false;
+    const onTouchStart = (e) => { startY = e.touches[0].clientY; lastY = startY; lastTime = Date.now(); tracking = false; };
+    const onTouchMove = (e) => {
+      lastY = e.touches[0].clientY; lastTime = Date.now();
+      const delta = lastY - startY;
+      if (!tracking) { if (delta > 8) tracking = true; else return; }
+      e.preventDefault();
+      if (delta > 0) y.set(delta);
+    };
+    const onTouchEnd = () => {
+      if (!tracking) return;
+      tracking = false;
+      const delta = lastY - startY;
+      const vel = (lastY - startY) / Math.max(1, Date.now() - (lastTime - 50));
+      if (vel > 0.5 || delta > 100) dismiss(vel * 1000); else snapBack();
+    };
+    sheet.addEventListener('touchstart', onTouchStart, { passive: true });
+    sheet.addEventListener('touchmove', onTouchMove, { passive: false });
+    sheet.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      sheet.removeEventListener('touchstart', onTouchStart);
+      sheet.removeEventListener('touchmove', onTouchMove);
+      sheet.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [y, dismiss, snapBack]);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[99999] flex flex-col justify-end"
+      style={{ backgroundColor: 'rgba(0,0,0,0.45)', opacity: overlayOpacity }}
+      onClick={() => dismiss()}
+      onTouchStart={(e) => e.stopPropagation()}
+    >
+      <motion.div
+        ref={sheetRef}
+        onClick={(e) => e.stopPropagation()}
+        className={`relative rounded-t-3xl overflow-hidden ${isDark ? 'bg-zinc-900' : 'bg-white'}`}
+        style={{ y }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+      >
+        <div className="flex justify-center pt-3 pb-1">
+          <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-gray-200'}`} />
+        </div>
+        <div className="px-5 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
+          <h2 className={`font-black text-lg mb-4 ${t.text}`}>Choisir une date</h2>
+          <div className={`${t.surface} rounded-2xl overflow-hidden`}>
+            {dates.map((date, idx) => {
+              const label = new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+              const isSelected = date === selectedDate;
+              return (
+                <button
+                  key={date}
+                  onClick={() => { onSelect(date); dismiss(); }}
+                  className={`w-full flex items-center justify-between gap-3 py-3 text-left ${idx < dates.length - 1 ? `border-b ${t.divider}` : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Calendar size={15} className={isSelected ? 'text-indigo-500' : isDark ? 'text-zinc-500' : 'text-gray-400'} />
+                    <span className={`font-semibold capitalize ${isSelected ? t.accent : t.text}`}>{label}</span>
+                  </div>
+                  {isSelected && <div className={`w-2 h-2 rounded-full flex-shrink-0 bg-indigo-500`} />}
+                </button>
+              );
+            })}
+          </div>
+          {selectedDate && (
+            <button
+              onClick={() => { onSelect(''); dismiss(); }}
+              className={`mt-3 w-full py-3 rounded-xl font-semibold ${t.surfaceMuted} ${t.text}`}
+            >
+              Réinitialiser
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function VersusPage({
   players = [],
   battles = [],
@@ -130,11 +224,12 @@ export function VersusPage({
   const setP1IdAndNotify = useCallback((id) => { setP1Id(id); onPlayersChange?.(id, p2Id); }, [p2Id, onPlayersChange]);
   const setP2IdAndNotify = useCallback((id) => { setP2Id(id); onPlayersChange?.(p1Id, id); }, [p1Id, onPlayersChange]);
   const [selectorFor, setSelectorFor] = useState(null); // 'p1' | 'p2' | null
+  const [showDateSheet, setShowDateSheet] = useState(false);
 
   const p1 = useMemo(() => players.find((p) => String(p._id) === String(p1Id)) || null, [players, p1Id]);
   const p2 = useMemo(() => players.find((p) => String(p._id) === String(p2Id)) || null, [players, p2Id]);
 
-  const [dateFilter, setDateFilter] = useState(initialDateFilter);
+const [dateFilter, setDateFilter] = useState(initialDateFilter);
   const setDateFilterAndNotify = useCallback((v) => { setDateFilter(v); onDateFilterChange?.(v); }, [onDateFilterChange]);
 
   const h2hBattles = useMemo(() => {
@@ -322,7 +417,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
     return () => window.removeEventListener('scroll', onScroll);
   }, [isBackground]);
 
-  useBodyScrollLock(!!selectorFor);
+  useBodyScrollLock(!!selectorFor || showDateSheet);
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -377,25 +472,31 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
         </div>
       </div>
 
-      <div className={`flex-1 flex flex-col px-5 space-y-6 mt-6 ${p1 && p2 ? '' : ''}`} style={p1 && p2 ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' } : undefined}>
+      {/* Sélecteur de joueurs — toujours visible, hors du flex-1 */}
+      <div className="px-5 mt-6">
         {/* Sélecteur de joueurs — 3 blocs séparés */}
         <div className="flex items-center gap-3">
           {/* P1 */}
-          <button onClick={() => setSelectorFor('p1')} className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px]`}>
-            {p1 ? (
-              <PlayerAvatar player={p1} size={52} textSize="text-xl" />
-            ) : (
-              <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
-                <span className={`text-xl ${t.textTertiary}`}>?</span>
-              </div>
+          <button onClick={() => setSelectorFor('p1')} className={`flex-1 ${t.surface} rounded-2xl flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px] overflow-hidden relative`}>
+            {p1?.avatar && (
+              <img src={p1.avatar} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-10 blur-sm scale-110 pointer-events-none" />
             )}
-            <div className="flex flex-col items-center gap-1 w-full min-w-0">
-              <p className={`text-sm font-bold truncate w-full text-center ${p1 ? t.text : t.textTertiary}`}>
-                {p1 ? p1.name : 'Choisir'}
-              </p>
-              <span className={`text-xs font-semibold flex items-center gap-0.5 ${t.accent}`}>
-                {p1 ? 'Changer' : 'Joueur'} <ChevronDown size={12} />
-              </span>
+            <div className="relative flex flex-col items-center gap-1.5 p-3 w-full">
+              {p1 ? (
+                <PlayerAvatar player={p1} size={52} textSize="text-xl" />
+              ) : (
+                <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
+                  <span className={`text-xl ${t.textTertiary}`}>?</span>
+                </div>
+              )}
+              <div className="flex flex-col items-center gap-1 w-full min-w-0">
+                <p className={`text-sm font-bold truncate w-full text-center ${p1 ? t.text : t.textTertiary}`}>
+                  {p1 ? p1.name : 'Choisir'}
+                </p>
+                <span className={`text-xs font-semibold flex items-center gap-0.5 ${t.accent}`}>
+                  {p1 ? 'Changer' : 'Joueur'} <ChevronDown size={12} />
+                </span>
+              </div>
             </div>
           </button>
 
@@ -405,85 +506,120 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
           </div>
 
           {/* P2 */}
-          <button onClick={() => setSelectorFor('p2')} className={`flex-1 ${t.surface} rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px]`}>
-            {p2 ? (
-              <PlayerAvatar player={p2} size={52} textSize="text-xl" />
-            ) : (
-              <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
-                <span className={`text-xl ${t.textTertiary}`}>?</span>
-              </div>
+          <button onClick={() => setSelectorFor('p2')} className={`flex-1 ${t.surface} rounded-2xl flex flex-col items-center justify-center gap-1.5 min-w-0 h-[130px] overflow-hidden relative`}>
+            {p2?.avatar && (
+              <img src={p2.avatar} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-10 blur-sm scale-110 pointer-events-none" />
             )}
-            <div className="flex flex-col items-center gap-1 w-full min-w-0">
-              <p className={`text-sm font-bold truncate w-full text-center ${p2 ? t.text : t.textTertiary}`}>
-                {p2 ? p2.name : 'Choisir'}
-              </p>
-              <span className={`text-xs font-semibold flex items-center gap-0.5 ${t.accent}`}>
-                {p2 ? 'Changer' : 'Joueur'} <ChevronDown size={12} />
-              </span>
+            <div className="relative flex flex-col items-center gap-1.5 p-3 w-full">
+              {p2 ? (
+                <PlayerAvatar player={p2} size={52} textSize="text-xl" />
+              ) : (
+                <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/[0.06]'}`}>
+                  <span className={`text-xl ${t.textTertiary}`}>?</span>
+                </div>
+              )}
+              <div className="flex flex-col items-center gap-1 w-full min-w-0">
+                <p className={`text-sm font-bold truncate w-full text-center ${p2 ? t.text : t.textTertiary}`}>
+                  {p2 ? p2.name : 'Choisir'}
+                </p>
+                <span className={`text-xs font-semibold flex items-center gap-0.5 ${t.accent}`}>
+                  {p2 ? 'Changer' : 'Joueur'} <ChevronDown size={12} />
+                </span>
+              </div>
             </div>
           </button>
         </div>
 
-        {/* Filtre de date — juste après le sélecteur de joueurs */}
-        {p1 && p2 && h2hDates.length > 1 && (
-          <div>
-            <label className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} mb-2 ml-1 block`}>Date</label>
-            <label htmlFor="versus-date-select" className={`${t.surface} rounded-xl px-3 py-2 flex items-center gap-2 cursor-pointer`}>
-              <Calendar size={16} className={t.textTertiary} />
-              <select
-                id="versus-date-select"
-                value={dateFilter}
-                onChange={(e) => setDateFilterAndNotify(e.target.value)}
-                className={`flex-1 bg-transparent outline-none ${t.text} appearance-none cursor-pointer`}
+      </div>
+
+      {/* Empty state — flex-1 sur le root pour centrage full-page */}
+      {(!p1 || !p2) && (
+        <div className="fixed inset-0 flex flex-col items-center justify-center text-center px-5 pointer-events-none">
+          <p className={`font-black text-2xl ${t.text} mb-2`}>Sélectionne 2 joueurs</p>
+          <p className={`${t.textSecondary} text-sm`}>Compare les statistiques des dresseurs de ton choix pour découvrir qui est le Maître Pokémon !</p>
+        </div>
+      )}
+
+      {/* Contenu p1 && p2 */}
+      {p1 && p2 && (
+        <div className="flex-1 flex flex-col px-5 space-y-6 mt-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
+          {/* Filtre de date — 2 pills */}
+          {h2hDates.length > 1 && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDateFilterAndNotify('')}
+                className={`inline-flex items-center gap-1 px-4 h-9 rounded-full text-sm font-bold transition-all ${
+                  !dateFilter
+                    ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                    : isDark ? 'bg-zinc-800 text-gray-300' : 'bg-white text-gray-600 shadow-sm'
+                }`}
               >
-                <option value="">Tous les combats</option>
-                {h2hDates.map((date) => (
-                  <option key={date} value={date}>{formatDate(date)}</option>
-                ))}
-              </select>
-              {dateFilter
-                ? <button
-                    onClick={(e) => { e.preventDefault(); setDateFilterAndNotify(''); }}
-                    className={`text-xs font-semibold ${t.accent} flex-shrink-0 py-1 px-2 -mr-2`}
-                  >Effacer</button>
-                : <ChevronDown size={16} className={`${t.textTertiary} flex-shrink-0`} />
-              }
-            </label>
-          </div>
-        )}
-
-        {(!p1 || !p2) && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center !mt-0">
-            <p className={`font-black text-base ${t.text} mb-1`}>Sélectionne deux joueurs</p>
-            <p className={`${t.textSecondary} text-sm`}>Appuie sur les deux emplacements ci-dessus pour choisir les joueurs à comparer.</p>
-          </div>
-        )}
-
-        {p1 && p2 && (
+                <img src="/pokeball-owned.svg" width={12} height={12} alt="" aria-hidden="true" style={{ display: 'block' }} />
+                Tous
+              </button>
+              <button
+                onClick={() => setShowDateSheet(true)}
+                className={`inline-flex items-center gap-1.5 px-4 h-9 rounded-full text-sm font-bold transition-all ${
+                  dateFilter
+                    ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                    : isDark ? 'bg-zinc-800 text-gray-300' : 'bg-white text-gray-600 shadow-sm'
+                }`}
+              >
+                <Calendar size={13} />
+                {dateFilter
+                  ? new Date(dateFilter + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+                  : 'Choisir une date'}
+                {dateFilter && <ChevronDown size={13} />}
+              </button>
+            </div>
+          )}
           <>
-            {/* ── Face à face — score + forme uniquement ── */}
+            {/* ── Face à face ── */}
             <section>
               <div className={`${t.surface} rounded-2xl overflow-hidden`}>
                 <div className="px-4 pt-4 pb-0 text-center">
                   <h2 className={`font-black text-xl ${t.text}`}>Face à face</h2>
                 </div>
-                <div className="px-5 pb-5 pt-2 flex flex-col items-center gap-3">
-                <div className="flex items-center gap-4">
-                  <span className={`text-5xl font-black ${h2hScore.p1 > h2hScore.p2 ? 'text-emerald-500' : h2hScore.p1 < h2hScore.p2 ? 'text-red-500' : t.text}`}>{h2hScore.p1}</span>
-                  <span className={`text-2xl font-bold ${t.textTertiary}`}>–</span>
-                  <span className={`text-5xl font-black ${h2hScore.p2 > h2hScore.p1 ? 'text-emerald-500' : h2hScore.p2 < h2hScore.p1 ? 'text-red-500' : t.text}`}>{h2hScore.p2}</span>
-                </div>
-                <div className="flex items-center gap-2 w-full justify-center">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <PlayerAvatar player={p1} size={20} textSize="text-[9px]" />
-                    <span className={`text-xs font-semibold ${t.textSecondary} whitespace-nowrap`}>{p1.name}</span>
+                <div className="px-5 pb-5 pt-3 flex flex-col gap-4">
+                  {/* Scores avec avatars */}
+                  <div className="flex items-center gap-2">
+                    {/* P1 */}
+                    <div className="w-16 flex-shrink-0 flex flex-col items-center gap-1.5">
+                      <PlayerAvatar player={p1} size={44} textSize="text-base" />
+                      <span className={`text-xs font-semibold ${t.textSecondary} truncate w-full text-center`}>{p1.name}</span>
+                    </div>
+                    {/* Scores */}
+                    <div className="flex-1 flex items-center justify-center gap-3">
+                      <span className={`text-5xl font-black leading-none ${h2hScore.p1 > h2hScore.p2 ? 'text-emerald-500' : h2hScore.p1 < h2hScore.p2 ? 'text-red-500' : t.text}`}>{h2hScore.p1}</span>
+                      <span className={`text-2xl font-bold ${t.textTertiary}`}>–</span>
+                      <span className={`text-5xl font-black leading-none ${h2hScore.p2 > h2hScore.p1 ? 'text-emerald-500' : h2hScore.p2 < h2hScore.p1 ? 'text-red-500' : t.text}`}>{h2hScore.p2}</span>
+                    </div>
+                    {/* P2 */}
+                    <div className="w-16 flex-shrink-0 flex flex-col items-center gap-1.5">
+                      <PlayerAvatar player={p2} size={44} textSize="text-base" />
+                      <span className={`text-xs font-semibold ${t.textSecondary} truncate w-full text-center`}>{p2.name}</span>
+                    </div>
                   </div>
-                  <span className={`text-xs ${t.textTertiary} flex-shrink-0`}>vs</span>
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <PlayerAvatar player={p2} size={20} textSize="text-[9px]" />
-                    <span className={`text-xs font-semibold ${t.textSecondary} whitespace-nowrap`}>{p2.name}</span>
-                  </div>
-                </div>
+                  {/* Barre de progression H2H */}
+                  {(() => {
+                    const total = h2hScore.p1 + h2hScore.p2;
+                    if (total === 0) return null;
+                    const p1Pct = Math.round((h2hScore.p1 / total) * 100);
+                    const p2Pct = 100 - p1Pct;
+                    return (
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex rounded-full overflow-hidden h-2">
+                          {h2hScore.p1 > 0 && <div className={`${h2hScore.p1 >= h2hScore.p2 ? 'bg-emerald-500' : 'bg-red-500'} transition-all`} style={{ width: `${p1Pct}%` }} />}
+                          {h2hScore.p1 > 0 && h2hScore.p2 > 0 && <div className="w-px bg-transparent flex-shrink-0" />}
+                          {h2hScore.p2 > 0 && <div className={`${h2hScore.p2 >= h2hScore.p1 ? 'bg-emerald-500' : 'bg-red-500'} transition-all flex-1`} style={{ width: `${p2Pct}%` }} />}
+                        </div>
+                        <div className="flex justify-between">
+                          <span className={`text-[10px] font-bold ${h2hScore.p1 >= h2hScore.p2 ? 'text-emerald-500' : 'text-red-500'}`}>{p1Pct}%</span>
+                          <span className={`text-[10px] font-bold ${h2hScore.p2 >= h2hScore.p1 ? 'text-emerald-500' : 'text-red-500'}`}>{p2Pct}%</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </section>
@@ -553,19 +689,30 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                     const win1 = cmp === 'max' ? v1 > v2 : cmp === 'min' ? v1 < v2 : false;
                     const win2 = cmp === 'max' ? v2 > v1 : cmp === 'min' ? v2 < v1 : false;
                     const isLast = idx === arr.length - 1;
+                    const hasBar = cmp && !render && (v1 + v2) > 0;
+                    const barPct1 = hasBar ? Math.round((v1 / (v1 + v2)) * 100) : 0;
+                    const barPct2 = hasBar ? 100 - barPct1 : 0;
                     return (
-                      <div key={label} className={`flex items-center px-4 py-3 ${!isLast ? `border-b ${t.divider}` : ''}`}>
-                        <div className="flex-1 flex justify-start">
-                          {render ? render(v1) : (
-                            <span className={`font-black text-xl ${win1 ? 'text-emerald-500' : win2 ? 'text-red-500' : t.text}`}>{fmt(v1)}</span>
-                          )}
+                      <div key={label} className={`flex flex-col px-4 py-3 gap-2 ${!isLast ? `border-b ${t.divider}` : ''}`}>
+                        <div className="flex items-center">
+                          <div className="flex-1 flex justify-start">
+                            {render ? render(v1) : (
+                              <span className={`font-black text-xl ${t.text}`}>{fmt(v1)}</span>
+                            )}
+                          </div>
+                          <span className={`flex-1 text-center text-sm font-semibold ${t.textSecondary}`}>{label}</span>
+                          <div className="flex-1 flex justify-end">
+                            {render ? render(v2) : (
+                              <span className={`font-black text-xl ${t.text}`}>{fmt(v2)}</span>
+                            )}
+                          </div>
                         </div>
-                        <span className={`flex-1 text-center text-sm font-semibold ${t.textSecondary}`}>{label}</span>
-                        <div className="flex-1 flex justify-end">
-                          {render ? render(v2) : (
-                            <span className={`font-black text-xl ${win2 ? 'text-emerald-500' : win1 ? 'text-red-500' : t.text}`}>{fmt(v2)}</span>
-                          )}
-                        </div>
+                        {hasBar && (
+                          <div className="flex rounded-full overflow-hidden h-1.5">
+                            <div className={`${win1 ? 'bg-emerald-500' : win2 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all`} style={{ width: `${barPct1}%` }} />
+                            <div className={`${win2 ? 'bg-emerald-500' : win1 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all flex-1`} style={{ width: `${barPct2}%` }} />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -685,10 +832,21 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
               )}
             </section>
           </>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Player Selector Sheet — rendu via portal pour passer au-dessus de la navigation */}
+      {showDateSheet && createPortal(
+        <DateSelectorSheet
+          dates={h2hDates}
+          selectedDate={dateFilter}
+          isDark={isDark}
+          t={t}
+          onSelect={(date) => setDateFilterAndNotify(date)}
+          onClose={() => setShowDateSheet(false)}
+        />,
+        document.body
+      )}
       {selectorFor && createPortal(
         <PlayerSelectorSheet
           players={players}

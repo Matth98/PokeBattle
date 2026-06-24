@@ -745,6 +745,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
                 initialScrollY={scrollMemoryRef.current.get('versusDetail') || 0}
                 backLabel={backLabel}
                 onBack={() => {}}
+                onAddBattle={() => {}}
                 isBackground
               />
             )}
