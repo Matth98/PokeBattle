@@ -137,6 +137,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     // Réinitialiser les filtres des onglets à état persistant (préservés seulement via navigateBack)
     if (newTab === 'battles') { setBattlesFormatFilter('all'); setBattlesCollapsedGroups(new Set()); }
     if (newTab === 'teams') setTeamsFormatFilter('all');
+    if (newTab === 'versusDetail') { setVersusDateFilter(''); setSelectedVersusPlayers({ p1Id: null, p2Id: null }); }
     _setCurrentTabState(newTab);
   }, [currentTab]);
 

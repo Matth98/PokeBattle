@@ -586,12 +586,12 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
           )}
           {/* Segmented control — uniquement sur "Tous" */}
           {!dateFilter && stats1 && stats2 && (
-            <div className={`flex p-1 rounded-2xl ${isDark ? 'bg-zinc-800' : 'bg-black/5'}`}>
+            <div className={`flex gap-1 p-1 rounded-2xl ${isDark ? 'bg-zinc-800' : 'bg-black/5'}`}>
               {[{ key: 'h2h', label: 'Face à face' }, { key: 'global', label: 'Au global' }].map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => setViewMode(key)}
-                  className={`flex-1 h-9 rounded-xl text-sm font-bold transition-all ${viewMode === key ? (isDark ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30' : `${t.surface} ${t.text} shadow-sm`) : t.textSecondary}`}
+                  className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${viewMode === key ? (isDark ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30' : `${t.surface} ${t.text} shadow-sm`) : t.textSecondary}`}
                 >
                   {label}
                 </button>
