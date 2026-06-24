@@ -599,7 +599,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   <h2 className={`font-black text-xl ${t.text}`}>Face à face</h2>
                   <p className={`text-sm ${t.textSecondary} mt-0.5`}>{h2hFiltered.length} combat{h2hFiltered.length > 1 ? 's' : ''}</p>
                 </div>
-                <div className="px-5 pb-5 pt-3 flex flex-col gap-4">
+                <div className="px-4 pb-4 pt-3 flex flex-col gap-4">
                   {/* Scores avec avatars */}
                   <div className="flex items-center gap-2">
                     {/* P1 */}
