@@ -639,7 +639,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                       <div className="flex flex-col gap-1.5">
                         <div className="flex rounded-full overflow-hidden h-1.5">
                           {h2hScore.p1 > 0 && <div className={`${h2hScore.p1 >= h2hScore.p2 ? 'bg-emerald-500' : 'bg-red-500'} transition-all`} style={{ width: `${p1Pct}%` }} />}
-                          {h2hScore.p1 > 0 && h2hScore.p2 > 0 && <div className="w-px bg-transparent flex-shrink-0" />}
+                          {h2hScore.p1 > 0 && h2hScore.p2 > 0 && <div className="w-0.5 bg-transparent flex-shrink-0" />}
                           {h2hScore.p2 > 0 && <div className={`${h2hScore.p2 >= h2hScore.p1 ? 'bg-emerald-500' : 'bg-red-500'} transition-all flex-1`} style={{ width: `${p2Pct}%` }} />}
                         </div>
                       </div>
@@ -710,7 +710,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                             {hasBar && (
                               <div className="flex rounded-full overflow-hidden h-1.5">
                                 <div className={`${win1 ? 'bg-emerald-500' : win2 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all`} style={{ width: `${barPct1}%` }} />
-                                {v1 > 0 && v2 > 0 && <div className="w-px bg-transparent flex-shrink-0" />}
+                                {v1 > 0 && v2 > 0 && <div className="w-0.5 bg-transparent flex-shrink-0" />}
                                 <div className={`${win2 ? 'bg-emerald-500' : win1 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all flex-1`} style={{ width: `${barPct2}%` }} />
                               </div>
                             )}
@@ -845,7 +845,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                         {hasBar && (
                           <div className="flex rounded-full overflow-hidden h-1.5">
                             <div className={`${win1 ? 'bg-emerald-500' : win2 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all`} style={{ width: `${barPct1}%` }} />
-                            {v1 > 0 && v2 > 0 && <div className="w-px bg-transparent flex-shrink-0" />}
+                            {v1 > 0 && v2 > 0 && <div className="w-0.5 bg-transparent flex-shrink-0" />}
                             <div className={`${win2 ? 'bg-emerald-500' : win1 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all flex-1`} style={{ width: `${barPct2}%` }} />
                           </div>
                         )}
