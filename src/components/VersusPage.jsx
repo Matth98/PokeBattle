@@ -338,11 +338,14 @@ const [dateFilter, setDateFilter] = useState(initialDateFilter);
 
     const top3 = [...pokemonCounts.values()].sort((a, b) => b.count - a.count).slice(0, 3);
 
-    return { wins, losses, winRate, koInfliges, koRecus, perfectWins, favoriteFormat, mostUsedTypeEntry, mostUsedPokemon, mvp, top3 };
+    return { total: pb.length, wins, losses, winRate, koInfliges, koRecus, perfectWins, favoriteFormat, mostUsedTypeEntry, mostUsedPokemon, mvp, top3 };
   }
 
   const stats1 = useMemo(() => calcPlayerStats(p1, battles, pokemonTypes), [p1, battles, pokemonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
   const stats2 = useMemo(() => calcPlayerStats(p2, battles, pokemonTypes), [p2, battles, pokemonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const dateStats1 = useMemo(() => p1 ? calcPlayerStats(p1, h2hFiltered, pokemonTypes) : null, [p1, h2hFiltered, pokemonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
+  const dateStats2 = useMemo(() => p2 ? calcPlayerStats(p2, h2hFiltered, pokemonTypes) : null, [p2, h2hFiltered, pokemonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderBattleRow = (b, idx, total, showDate) => {
     const bp1 = String(p1._id) === String(b.player1) ? p1 : p2;
@@ -579,6 +582,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
               <div className={`${t.surface} rounded-2xl overflow-hidden`}>
                 <div className="px-4 pt-4 pb-0 text-center">
                   <h2 className={`font-black text-xl ${t.text}`}>Face à face</h2>
+                  <p className={`text-sm ${t.textSecondary} mt-0.5`}>{h2hFiltered.length} combat{h2hFiltered.length > 1 ? 's' : ''}</p>
                 </div>
                 <div className="px-5 pb-5 pt-3 flex flex-col gap-4">
                   {/* Scores avec avatars */}
@@ -590,9 +594,9 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                     </div>
                     {/* Scores */}
                     <div className="flex-1 flex items-center justify-center gap-3">
-                      <span className={`text-5xl font-black leading-none ${h2hScore.p1 > h2hScore.p2 ? 'text-emerald-500' : h2hScore.p1 < h2hScore.p2 ? 'text-red-500' : t.text}`}>{h2hScore.p1}</span>
+                      <span className={`text-3xl font-black leading-none ${h2hScore.p1 > h2hScore.p2 ? 'text-emerald-500' : h2hScore.p1 < h2hScore.p2 ? 'text-red-500' : t.text}`}>{h2hScore.p1}</span>
                       <span className={`text-2xl font-bold ${t.textTertiary}`}>–</span>
-                      <span className={`text-5xl font-black leading-none ${h2hScore.p2 > h2hScore.p1 ? 'text-emerald-500' : h2hScore.p2 < h2hScore.p1 ? 'text-red-500' : t.text}`}>{h2hScore.p2}</span>
+                      <span className={`text-3xl font-black leading-none ${h2hScore.p2 > h2hScore.p1 ? 'text-emerald-500' : h2hScore.p2 < h2hScore.p1 ? 'text-red-500' : t.text}`}>{h2hScore.p2}</span>
                     </div>
                     {/* P2 */}
                     <div className="w-16 flex-shrink-0 flex flex-col items-center gap-1.5">
@@ -613,14 +617,82 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                           {h2hScore.p1 > 0 && h2hScore.p2 > 0 && <div className="w-px bg-transparent flex-shrink-0" />}
                           {h2hScore.p2 > 0 && <div className={`${h2hScore.p2 >= h2hScore.p1 ? 'bg-emerald-500' : 'bg-red-500'} transition-all flex-1`} style={{ width: `${p2Pct}%` }} />}
                         </div>
-                        <div className="flex justify-between">
-                          <span className={`text-[10px] font-bold ${h2hScore.p1 >= h2hScore.p2 ? 'text-emerald-500' : 'text-red-500'}`}>{p1Pct}%</span>
-                          <span className={`text-[10px] font-bold ${h2hScore.p2 >= h2hScore.p1 ? 'text-emerald-500' : 'text-red-500'}`}>{p2Pct}%</span>
-                        </div>
                       </div>
                     );
                   })()}
                 </div>
+                {/* Stats de la journée */}
+                {dateStats1 && dateStats2 && (() => {
+                  const rows = [
+                    { label: 'Winrate',             v1: dateStats1.winRate,     v2: dateStats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
+                    { label: 'KO infligés',         v1: dateStats1.koInfliges,  v2: dateStats2.koInfliges,  cmp: 'max', fmt: (v) => v },
+                    { label: 'Victoires parfaites', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v },
+                    {
+                      label: 'Type favori',
+                      v1: dateStats1.mostUsedTypeEntry?.[0] || null,
+                      v2: dateStats2.mostUsedTypeEntry?.[0] || null,
+                      cmp: null,
+                      render: (typeKey) => typeKey ? (
+                        <span className="pl-1 inline-flex items-stretch rounded-full overflow-hidden" style={{ backgroundColor: TYPE_HEX[typeKey] || '#828282' }}>
+                          <img src={`https://cdn.jsdelivr.net/gh/partywhale/pokemon-type-icons@main/icons/${typeKey}.svg`} alt="" className="w-5 h-5 object-contain flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                          <span className="self-center pr-2 text-[10px] font-bold text-white uppercase leading-none">{TYPE_FR[typeKey] || typeKey}</span>
+                        </span>
+                      ) : <span className={t.textTertiary}>—</span>,
+                    },
+                    {
+                      label: 'Format favori',
+                      v1: dateStats1.favoriteFormat ? dateStats1.favoriteFormat[0] : null,
+                      v2: dateStats2.favoriteFormat ? dateStats2.favoriteFormat[0] : null,
+                      cmp: null,
+                      render: (fmt) => fmt ? (
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${fmt === '1v1' ? (isDark ? 'bg-purple-300/10 text-purple-300' : 'bg-purple-600/10 text-purple-600') : (isDark ? 'bg-teal-300/10 text-teal-300' : 'bg-teal-600/10 text-teal-600')}`}>{fmt}</span>
+                      ) : <span className={t.textTertiary}>—</span>,
+                    },
+                    {
+                      label: 'MVP',
+                      v1: dateStats1.mvp || null,
+                      v2: dateStats2.mvp || null,
+                      cmp: null,
+                      render: (mvp) => mvp ? (
+                        <div className="flex flex-col items-center gap-0.5">
+                          <img src={getPokemonImageUrlStatic(mvp.pokeId)} alt={mvp.name} className="w-10 h-10 object-contain" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
+                          <span className={`text-xs font-semibold ${t.text} text-center leading-tight`}>{mvp.name}</span>
+                        </div>
+                      ) : <span className={t.textTertiary}>—</span>,
+                    },
+                  ];
+                  return (
+                    <div className={`border-t ${t.divider}`}>
+                      {rows.map(({ label, v1, v2, cmp, fmt, render }, idx, arr) => {
+                        const win1 = cmp === 'max' ? v1 > v2 : cmp === 'min' ? v1 < v2 : false;
+                        const win2 = cmp === 'max' ? v2 > v1 : cmp === 'min' ? v2 < v1 : false;
+                        const isLast = idx === arr.length - 1;
+                        const hasBar = cmp && !render && (v1 + v2) > 0;
+                        const barPct1 = hasBar ? Math.round((v1 / (v1 + v2)) * 100) : 0;
+                        const barPct2 = hasBar ? 100 - barPct1 : 0;
+                        return (
+                          <div key={label} className={`flex flex-col px-4 py-3 gap-2 ${!isLast ? `border-b ${t.divider}` : ''}`}>
+                            <div className="flex items-center">
+                              <div className="flex-1 flex justify-start">
+                                {render ? render(v1) : <span className={`font-black text-xl ${t.text}`}>{fmt(v1)}</span>}
+                              </div>
+                              <span className={`flex-1 text-center text-sm font-semibold ${t.textSecondary}`}>{label}</span>
+                              <div className="flex-1 flex justify-end">
+                                {render ? render(v2) : <span className={`font-black text-xl ${t.text}`}>{fmt(v2)}</span>}
+                              </div>
+                            </div>
+                            {hasBar && (
+                              <div className="flex rounded-full overflow-hidden h-1.5">
+                                <div className={`${win1 ? 'bg-emerald-500' : win2 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all`} style={{ width: `${barPct1}%` }} />
+                                <div className={`${win2 ? 'bg-emerald-500' : win1 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all flex-1`} style={{ width: `${barPct2}%` }} />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
             </section>
 
@@ -646,6 +718,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   </div>
                   {/* Lignes */}
                   {[
+                    { label: 'Combats joués',       v1: stats1.total,       v2: stats2.total,       cmp: 'max', fmt: (v) => v },
                     { label: 'Victoires',           v1: stats1.wins,        v2: stats2.wins,        cmp: 'max', fmt: (v) => v },
                     { label: 'Défaites',            v1: stats1.losses,      v2: stats2.losses,      cmp: 'min', fmt: (v) => v },
                     { label: 'Winrate',             v1: stats1.winRate,     v2: stats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
@@ -720,14 +793,14 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
               </section>
             )}
 
-            {/* ── Pokémon favoris — masqués si une date est filtrée ── */}
-            {!dateFilter && stats1 && stats2 && (
+            {/* ── Pokémon favoris (h2h) ── */}
+            {dateStats1 && dateStats2 && (
               <section>
                 <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} px-1 mb-3`}>
                   Pokémon favoris
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
-                  {[{ player: p1, top3: stats1.top3 }, { player: p2, top3: stats2.top3 }].map(({ player, top3 }) => (
+                  {[{ player: p1, top3: dateStats1.top3 }, { player: p2, top3: dateStats2.top3 }].map(({ player, top3 }) => (
                     <div key={player._id} className={`${t.surface} rounded-2xl p-4`}>
                       <div className="flex items-center gap-2 mb-3 min-w-0">
                         <PlayerAvatar player={player} size={24} textSize="text-[10px]" />
@@ -739,12 +812,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                         <div className="space-y-2">
                           {top3.map((pk) => (
                             <div key={pk.pokeId} className="flex items-center gap-2">
-                              <img
-                                src={getPokemonImageUrlStatic(pk.pokeId)}
-                                alt={pk.name}
-                                className="w-9 h-9 object-contain flex-shrink-0"
-                                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                              />
+                              <img src={getPokemonImageUrlStatic(pk.pokeId)} alt={pk.name} className="w-9 h-9 object-contain flex-shrink-0" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
                               <div className="min-w-0">
                                 <p className={`text-xs font-semibold ${t.text} truncate`}>{pk.name}</p>
                                 <p className={`text-[10px] ${t.textTertiary}`}>{pk.count} combat{pk.count > 1 ? 's' : ''}</p>
