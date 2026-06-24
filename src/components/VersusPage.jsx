@@ -339,7 +339,14 @@ const [dateFilter, setDateFilter] = useState(initialDateFilter);
 
     const top3 = [...pokemonCounts.values()].sort((a, b) => b.count - a.count).slice(0, 3);
 
-    return { total: pb.length, wins, losses, winRate, koInfliges, koRecus, perfectWins, favoriteFormat, mostUsedTypeEntry, mostUsedPokemon, mvp, top3 };
+    const sorted = [...pb].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    let bestStreak = 0, curStreak = 0;
+    sorted.forEach((b) => {
+      const won = (String(b.player1) === String(player._id) && b.winner === 'player1') || (String(b.player2) === String(player._id) && b.winner === 'player2');
+      if (won) { curStreak++; bestStreak = Math.max(bestStreak, curStreak); } else { curStreak = 0; }
+    });
+
+    return { total: pb.length, wins, losses, winRate, koInfliges, koRecus, perfectWins, bestStreak, favoriteFormat, mostUsedTypeEntry, mostUsedPokemon, mvp, top3 };
   }
 
   const stats1 = useMemo(() => calcPlayerStats(p1, battles, pokemonTypes), [p1, battles, pokemonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -641,7 +648,8 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   const rows = [
                     { label: 'Winrate',             v1: dateStats1.winRate,     v2: dateStats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: dateStats1.koInfliges,  v2: dateStats2.koInfliges,  cmp: 'max', fmt: (v) => v },
-                    { label: 'Victoires parfaites', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v, alwaysBar: true },
+                    { label: 'Perfect', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v, alwaysBar: true },
+                    { label: 'Meilleure série', v1: dateStats1.bestStreak, v2: dateStats2.bestStreak, cmp: 'max', fmt: (v) => v, alwaysBar: true },
                     {
                       label: 'Type favori',
                       v1: dateStats1.mostUsedTypeEntry?.[0] || null,
@@ -774,7 +782,8 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                     { label: 'Winrate',             v1: stats1.winRate,     v2: stats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: stats1.koInfliges,  v2: stats2.koInfliges,  cmp: 'max', fmt: (v) => v },
                     { label: 'KO reçus',            v1: stats1.koRecus,     v2: stats2.koRecus,     cmp: 'min', fmt: (v) => v },
-                    { label: 'Victoires parfaites', v1: stats1.perfectWins, v2: stats2.perfectWins, cmp: 'max', fmt: (v) => v, alwaysBar: true },
+                    { label: 'Perfect', v1: stats1.perfectWins, v2: stats2.perfectWins, cmp: 'max', fmt: (v) => v, alwaysBar: true },
+                    { label: 'Meilleure série', v1: stats1.bestStreak, v2: stats2.bestStreak, cmp: 'max', fmt: (v) => v, alwaysBar: true },
                     {
                       label: 'Type favori',
                       v1: stats1.mostUsedTypeEntry?.[0] || null,
