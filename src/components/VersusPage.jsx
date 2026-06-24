@@ -225,6 +225,7 @@ export function VersusPage({
   const setP2IdAndNotify = useCallback((id) => { setP2Id(id); onPlayersChange?.(p1Id, id); }, [p1Id, onPlayersChange]);
   const [selectorFor, setSelectorFor] = useState(null); // 'p1' | 'p2' | null
   const [showDateSheet, setShowDateSheet] = useState(false);
+  const [viewMode, setViewMode] = useState('h2h');
 
   const p1 = useMemo(() => players.find((p) => String(p._id) === String(p1Id)) || null, [players, p1Id]);
   const p2 = useMemo(() => players.find((p) => String(p._id) === String(p2Id)) || null, [players, p2Id]);
@@ -576,9 +577,23 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
               </button>
             </div>
           )}
+          {/* Segmented control — uniquement sur "Tous" */}
+          {!dateFilter && stats1 && stats2 && (
+            <div className={`flex p-1 rounded-2xl ${isDark ? 'bg-zinc-800' : 'bg-black/5'}`}>
+              {[{ key: 'h2h', label: 'Face à face' }, { key: 'global', label: 'Au global' }].map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setViewMode(key)}
+                  className={`flex-1 h-9 rounded-xl text-sm font-bold transition-all ${viewMode === key ? (isDark ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30' : `${t.surface} ${t.text} shadow-sm`) : t.textSecondary}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
           <>
             {/* ── Face à face ── */}
-            <section>
+            {(dateFilter || viewMode === 'h2h') && <section>
               <div className={`${t.surface} rounded-2xl overflow-hidden`}>
                 <div className="px-4 pt-4 pb-0 text-center">
                   <h2 className={`font-black text-xl ${t.text}`}>Face à face</h2>
@@ -612,7 +627,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                     const p2Pct = 100 - p1Pct;
                     return (
                       <div className="flex flex-col gap-1.5">
-                        <div className="flex rounded-full overflow-hidden h-2">
+                        <div className="flex rounded-full overflow-hidden h-1.5">
                           {h2hScore.p1 > 0 && <div className={`${h2hScore.p1 >= h2hScore.p2 ? 'bg-emerald-500' : 'bg-red-500'} transition-all`} style={{ width: `${p1Pct}%` }} />}
                           {h2hScore.p1 > 0 && h2hScore.p2 > 0 && <div className="w-px bg-transparent flex-shrink-0" />}
                           {h2hScore.p2 > 0 && <div className={`${h2hScore.p2 >= h2hScore.p1 ? 'bg-emerald-500' : 'bg-red-500'} transition-all flex-1`} style={{ width: `${p2Pct}%` }} />}
@@ -626,7 +641,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   const rows = [
                     { label: 'Winrate',             v1: dateStats1.winRate,     v2: dateStats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: dateStats1.koInfliges,  v2: dateStats2.koInfliges,  cmp: 'max', fmt: (v) => v },
-                    { label: 'Victoires parfaites', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v },
+                    { label: 'Victoires parfaites', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v, alwaysBar: true },
                     {
                       label: 'Type favori',
                       v1: dateStats1.mostUsedTypeEntry?.[0] || null,
@@ -663,12 +678,12 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   ];
                   return (
                     <div className={`border-t ${t.divider}`}>
-                      {rows.map(({ label, v1, v2, cmp, fmt, render }, idx, arr) => {
+                      {rows.map(({ label, v1, v2, cmp, fmt, render, alwaysBar }, idx, arr) => {
                         const win1 = cmp === 'max' ? v1 > v2 : cmp === 'min' ? v1 < v2 : false;
                         const win2 = cmp === 'max' ? v2 > v1 : cmp === 'min' ? v2 < v1 : false;
                         const isLast = idx === arr.length - 1;
-                        const hasBar = cmp && !render && (v1 + v2) > 0;
-                        const barPct1 = hasBar ? Math.round((v1 / (v1 + v2)) * 100) : 0;
+                        const hasBar = cmp && !render && (alwaysBar || (v1 + v2) > 0);
+                        const barPct1 = hasBar ? (v1 + v2 > 0 ? Math.round((v1 / (v1 + v2)) * 100) : 50) : 0;
                         const barPct2 = hasBar ? 100 - barPct1 : 0;
                         return (
                           <div key={label} className={`flex flex-col px-4 py-3 gap-2 ${!isLast ? `border-b ${t.divider}` : ''}`}>
@@ -684,6 +699,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                             {hasBar && (
                               <div className="flex rounded-full overflow-hidden h-1.5">
                                 <div className={`${win1 ? 'bg-emerald-500' : win2 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all`} style={{ width: `${barPct1}%` }} />
+                                {v1 > 0 && v2 > 0 && <div className="w-px bg-transparent flex-shrink-0" />}
                                 <div className={`${win2 ? 'bg-emerald-500' : win1 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all flex-1`} style={{ width: `${barPct2}%` }} />
                               </div>
                             )}
@@ -694,10 +710,44 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   );
                 })()}
               </div>
-            </section>
+            </section>}
 
-            {/* ── Statistiques globales — masquées si une date est filtrée ── */}
-            {!dateFilter && stats1 && stats2 && (
+            {/* ── Pokémon favoris (h2h) ── */}
+            {(dateFilter || viewMode === 'h2h') && dateStats1 && dateStats2 && (
+              <section>
+                <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} px-1 mb-3`}>
+                  Pokémon favoris
+                </h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {[{ player: p1, top3: dateStats1.top3 }, { player: p2, top3: dateStats2.top3 }].map(({ player, top3 }) => (
+                    <div key={player._id} className={`${t.surface} rounded-2xl p-4`}>
+                      <div className="flex items-center gap-2 mb-3 min-w-0">
+                        <PlayerAvatar player={player} size={24} textSize="text-[10px]" />
+                        <p className={`text-xs font-bold ${t.textSecondary} truncate`}>{player.name}</p>
+                      </div>
+                      {top3.length === 0 ? (
+                        <p className={`text-xs ${t.textTertiary}`}>Aucun combat</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {top3.map((pk) => (
+                            <div key={pk.pokeId} className="flex items-center gap-2">
+                              <img src={getPokemonImageUrlStatic(pk.pokeId)} alt={pk.name} className="w-9 h-9 object-contain flex-shrink-0" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
+                              <div className="min-w-0">
+                                <p className={`text-xs font-semibold ${t.text} truncate`}>{pk.name}</p>
+                                <p className={`text-[10px] ${t.textTertiary}`}>{pk.count} combat{pk.count > 1 ? 's' : ''}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── Statistiques globales ── */}
+            {!dateFilter && viewMode === 'global' && stats1 && stats2 && (
               <section>
                 <div className={`${t.surface} rounded-2xl overflow-hidden`}>
                   {/* Titre */}
@@ -724,7 +774,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                     { label: 'Winrate',             v1: stats1.winRate,     v2: stats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: stats1.koInfliges,  v2: stats2.koInfliges,  cmp: 'max', fmt: (v) => v },
                     { label: 'KO reçus',            v1: stats1.koRecus,     v2: stats2.koRecus,     cmp: 'min', fmt: (v) => v },
-                    { label: 'Victoires parfaites', v1: stats1.perfectWins, v2: stats2.perfectWins, cmp: 'max', fmt: (v) => v },
+                    { label: 'Victoires parfaites', v1: stats1.perfectWins, v2: stats2.perfectWins, cmp: 'max', fmt: (v) => v, alwaysBar: true },
                     {
                       label: 'Type favori',
                       v1: stats1.mostUsedTypeEntry?.[0] || null,
@@ -783,6 +833,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                         {hasBar && (
                           <div className="flex rounded-full overflow-hidden h-1.5">
                             <div className={`${win1 ? 'bg-emerald-500' : win2 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all`} style={{ width: `${barPct1}%` }} />
+                            {v1 > 0 && v2 > 0 && <div className="w-px bg-transparent flex-shrink-0" />}
                             <div className={`${win2 ? 'bg-emerald-500' : win1 ? 'bg-red-500' : (isDark ? 'bg-white/20' : 'bg-black/15')} transition-all flex-1`} style={{ width: `${barPct2}%` }} />
                           </div>
                         )}
@@ -793,14 +844,14 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
               </section>
             )}
 
-            {/* ── Pokémon favoris (h2h) ── */}
-            {dateStats1 && dateStats2 && (
+            {/* ── Pokémon favoris global ── */}
+            {!dateFilter && viewMode === 'global' && stats1 && stats2 && (
               <section>
                 <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary} px-1 mb-3`}>
-                  Pokémon favoris
+                  Pokémon favoris au global
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
-                  {[{ player: p1, top3: dateStats1.top3 }, { player: p2, top3: dateStats2.top3 }].map(({ player, top3 }) => (
+                  {[{ player: p1, top3: stats1.top3 }, { player: p2, top3: stats2.top3 }].map(({ player, top3 }) => (
                     <div key={player._id} className={`${t.surface} rounded-2xl p-4`}>
                       <div className="flex items-center gap-2 mb-3 min-w-0">
                         <PlayerAvatar player={player} size={24} textSize="text-[10px]" />
