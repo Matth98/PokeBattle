@@ -192,6 +192,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     if (currentTab === 'playerDetail') setSelectedPlayer(null);
     if (currentTab === 'battleDetail') setSelectedBattle(null);
     if (currentTab === 'teamDetail') setSelectedTeam(null);
+    if (currentTab === 'versusDetail') { setVersusDateFilter(''); setSelectedVersusPlayers({ p1Id: null, p2Id: null }); }
     if (currentTab === 'pokemonDetail') {
       setSelectedPokemon(null);
       flushSync(() => navigateBack());
