@@ -538,7 +538,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
 
       {/* Empty state — dans le flux, centré dans l'espace restant */}
       {(!p1 || !p2) && (
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-5 -mt-16">
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-5 -mt-28">
           <p className={`font-black text-2xl ${t.text} mb-2`}>Sélectionne 2 joueurs</p>
           <p className={`${t.textSecondary} text-sm`}>Compare les statistiques des dresseurs de ton choix pour découvrir qui est le Maître Pokémon !</p>
         </div>
