@@ -209,10 +209,12 @@ export function VersusPage({
   initialP1Id = null,
   initialP2Id = null,
   initialDateFilter = '',
+  initialViewMode = 'h2h',
   initialScrollY = 0,
   onBack,
   onPlayersChange,
   onDateFilterChange,
+  onViewModeChange,
   backLabel = 'Joueur',
   isBackground = false,
   onSelectBattle,
@@ -225,7 +227,8 @@ export function VersusPage({
   const setP2IdAndNotify = useCallback((id) => { setP2Id(id); onPlayersChange?.(p1Id, id); }, [p1Id, onPlayersChange]);
   const [selectorFor, setSelectorFor] = useState(null); // 'p1' | 'p2' | null
   const [showDateSheet, setShowDateSheet] = useState(false);
-  const [viewMode, setViewMode] = useState('h2h');
+  const [viewMode, setViewMode] = useState(initialViewMode);
+  const setViewModeAndNotify = useCallback((v) => { setViewMode(v); onViewModeChange?.(v); }, [onViewModeChange]);
 
   const p1 = useMemo(() => players.find((p) => String(p._id) === String(p1Id)) || null, [players, p1Id]);
   const p2 = useMemo(() => players.find((p) => String(p._id) === String(p2Id)) || null, [players, p2Id]);
@@ -590,7 +593,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
               {[{ key: 'h2h', label: 'Face à face' }, { key: 'global', label: 'Au global' }].map(({ key, label }) => (
                 <button
                   key={key}
-                  onClick={() => setViewMode(key)}
+                  onClick={() => setViewModeAndNotify(key)}
                   className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${viewMode === key ? (isDark ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30' : `${t.surface} ${t.text} shadow-sm`) : t.textSecondary}`}
                 >
                   {label}

@@ -88,6 +88,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [selectedPokemon, setSelectedPokemon] = useState(null); // { pokeId, name }
   const [selectedVersusPlayers, setSelectedVersusPlayers] = useState({ p1Id: null, p2Id: null });
   const [versusDateFilter, setVersusDateFilter] = useState('');
+  const [versusViewMode, setVersusViewMode] = useState('h2h');
   const [newBattleInitialPlayers, setNewBattleInitialPlayers] = useState({ p1Id: null, p2Id: null });
   const selectedTeamRef = useRef(selectedTeam);
   const selectedPlayerRef = useRef(selectedPlayer);
@@ -137,7 +138,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     // Réinitialiser les filtres des onglets à état persistant (préservés seulement via navigateBack)
     if (newTab === 'battles') { setBattlesFormatFilter('all'); setBattlesCollapsedGroups(new Set()); }
     if (newTab === 'teams') setTeamsFormatFilter('all');
-    if (newTab === 'versusDetail') { setVersusDateFilter(''); setSelectedVersusPlayers({ p1Id: null, p2Id: null }); }
+    if (newTab === 'versusDetail') { setVersusDateFilter(''); setVersusViewMode('h2h'); setSelectedVersusPlayers({ p1Id: null, p2Id: null }); }
     _setCurrentTabState(newTab);
   }, [currentTab]);
 
@@ -744,6 +745,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
                 initialP1Id={selectedVersusPlayers.p1Id}
                 initialP2Id={selectedVersusPlayers.p2Id}
                 initialDateFilter={versusDateFilter}
+                initialViewMode={versusViewMode}
                 initialScrollY={scrollMemoryRef.current.get('versusDetail') || 0}
                 backLabel={backLabel}
                 onBack={() => {}}
@@ -934,11 +936,13 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           initialP1Id={selectedVersusPlayers.p1Id}
           initialP2Id={selectedVersusPlayers.p2Id}
           initialDateFilter={versusDateFilter}
+          initialViewMode={versusViewMode}
           initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('versusDetail') || 0 : 0}
           backLabel={backLabel}
           onBack={navigateBack}
           onPlayersChange={(p1Id, p2Id) => setSelectedVersusPlayers({ p1Id, p2Id })}
           onDateFilterChange={setVersusDateFilter}
+          onViewModeChange={setVersusViewMode}
           onSelectBattle={(b) => { setSelectedBattle(b); navigateTo('battleDetail'); }}
           onAddBattle={(p1Id, p2Id) => {
             setNewBattleInitialPlayers({ p1Id, p2Id });
