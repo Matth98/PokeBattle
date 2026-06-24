@@ -114,9 +114,11 @@ export function VersusPage({
   isDark,
   initialP1Id = null,
   initialP2Id = null,
+  initialDateFilter = '',
   initialScrollY = 0,
   onBack,
   onPlayersChange,
+  onDateFilterChange,
   backLabel = 'Joueur',
   isBackground = false,
   onSelectBattle,
@@ -132,7 +134,8 @@ export function VersusPage({
   const p1 = useMemo(() => players.find((p) => String(p._id) === String(p1Id)) || null, [players, p1Id]);
   const p2 = useMemo(() => players.find((p) => String(p._id) === String(p2Id)) || null, [players, p2Id]);
 
-  const [dateFilter, setDateFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState(initialDateFilter);
+  const setDateFilterAndNotify = useCallback((v) => { setDateFilter(v); onDateFilterChange?.(v); }, [onDateFilterChange]);
 
   const h2hBattles = useMemo(() => {
     if (!p1 || !p2) return [];
@@ -310,7 +313,7 @@ export function VersusPage({
     return next;
   });
 
-  const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
+const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
   useEffect(() => {
     if (isBackground) return;
     if (initialScrollY > 0) window.scrollTo(0, initialScrollY);
@@ -430,7 +433,7 @@ export function VersusPage({
               <select
                 id="versus-date-select"
                 value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
+                onChange={(e) => setDateFilterAndNotify(e.target.value)}
                 className={`flex-1 bg-transparent outline-none ${t.text} appearance-none cursor-pointer`}
               >
                 <option value="">Tous les combats</option>
@@ -440,7 +443,7 @@ export function VersusPage({
               </select>
               {dateFilter
                 ? <button
-                    onClick={(e) => { e.preventDefault(); setDateFilter(''); }}
+                    onClick={(e) => { e.preventDefault(); setDateFilterAndNotify(''); }}
                     className={`text-xs font-semibold ${t.accent} flex-shrink-0 py-1 px-2 -mr-2`}
                   >Effacer</button>
                 : <ChevronDown size={16} className={`${t.textTertiary} flex-shrink-0`} />

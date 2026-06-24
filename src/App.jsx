@@ -87,6 +87,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedPokemon, setSelectedPokemon] = useState(null); // { pokeId, name }
   const [selectedVersusPlayers, setSelectedVersusPlayers] = useState({ p1Id: null, p2Id: null });
+  const [versusDateFilter, setVersusDateFilter] = useState('');
   const [newBattleInitialPlayers, setNewBattleInitialPlayers] = useState({ p1Id: null, p2Id: null });
   const selectedTeamRef = useRef(selectedTeam);
   const selectedPlayerRef = useRef(selectedPlayer);
@@ -727,7 +728,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             {prevTab === 'players' && <Players players={sortedPlayers} t={t} isDark={isDark} onSelectPlayer={() => {}} onAddPlayer={() => {}} onDeletePlayer={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('players') || 0} />}
             {prevTab === 'battles' && <Battles battles={battles} players={sortedPlayers} teams={sortedTeams} t={t} isDark={isDark} onSelectBattle={() => {}} onAddBattle={() => {}} onUpdateBattle={() => {}} onUpdatePlayer={() => {}} onSyncPokemon={() => {}} onDeleteBattle={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingBattle={null} clearEditingBattle={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('battles') || 0} formatFilter={battlesFormatFilter} collapsedGroups={battlesCollapsedGroups} />}
             {prevTab === 'teams' && <Teams teams={sortedTeams} players={sortedPlayers} t={t} isDark={isDark} onSelectTeam={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onUpdatePlayer={() => {}} onDeleteTeam={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingTeam={null} clearEditingTeam={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('teams') || 0} formatFilter={teamsFormatFilter} />}
-            {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={sortedTeams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('playerDetail') || 0} initialPokemonSearch={searchMemoryRef.current.get('playerDetail-pokemon') || ''} initialTeamsSearch={searchMemoryRef.current.get('playerDetail-teams') || ''} isBackground />}
+            {prevTab === 'playerDetail' && selectedPlayer && <PlayerDetail player={selectedPlayer} teams={sortedTeams} battles={battles} t={t} isDark={isDark} initialActiveTab={playerDetailTab} backLabel={backLabel} onBack={() => {}} onUpdate={() => {}} onAddTeam={() => {}} onUpdateTeam={() => {}} onDeleteTeam={() => {}} onSelectTeam={() => {}} allPlayers={sortedPlayers} onCompare={() => {}} initialScrollY={scrollMemoryRef.current.get('playerDetail') || 0} initialPokemonSearch={searchMemoryRef.current.get('playerDetail-pokemon') || ''} initialTeamsSearch={searchMemoryRef.current.get('playerDetail-teams') || ''} isBackground />}
             {prevTab === 'teamDetail' && selectedTeam && <TeamDetail team={selectedTeam} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onUpdate={() => {}} initialScrollY={scrollMemoryRef.current.get('teamDetail') || 0} isBackground />}
             {prevTab === 'battleDetail' && selectedBattle && <BattleDetail battle={selectedBattle} players={sortedPlayers} teams={sortedTeams} t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onEdit={() => {}} onDelete={() => {}} onAddTeam={() => {}} initialScrollY={scrollMemoryRef.current.get('battleDetail') || 0} isBackground />}
             {prevTab === 'pokemonSearch' && <PokemonSearchPage t={t} isDark={isDark} backLabel={backLabel} onBack={() => {}} onSelectPokemon={() => {}} teams={sortedTeams} players={sortedPlayers} isBackground initialSearchTerm={searchMemoryRef.current.get('pokemonSearch') || ''} initialActiveTab={searchMemoryRef.current.get('pokemonSearch-activeTab') || 'pokemon'} initialTeamFormatFilter={searchMemoryRef.current.get('pokemonSearch-teamFormatFilter') || 'all'} initialScrollY={scrollMemoryRef.current.get('pokemonSearch') || 0} />}
@@ -740,6 +741,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
                 isDark={isDark}
                 initialP1Id={selectedVersusPlayers.p1Id}
                 initialP2Id={selectedVersusPlayers.p2Id}
+                initialDateFilter={versusDateFilter}
                 initialScrollY={scrollMemoryRef.current.get('versusDetail') || 0}
                 backLabel={backLabel}
                 onBack={() => {}}
@@ -928,10 +930,12 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           isDark={isDark}
           initialP1Id={selectedVersusPlayers.p1Id}
           initialP2Id={selectedVersusPlayers.p2Id}
+          initialDateFilter={versusDateFilter}
           initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('versusDetail') || 0 : 0}
           backLabel={backLabel}
           onBack={navigateBack}
           onPlayersChange={(p1Id, p2Id) => setSelectedVersusPlayers({ p1Id, p2Id })}
+          onDateFilterChange={setVersusDateFilter}
           onSelectBattle={(b) => { setSelectedBattle(b); navigateTo('battleDetail'); }}
           onAddBattle={(p1Id, p2Id) => {
             setNewBattleInitialPlayers({ p1Id, p2Id });
