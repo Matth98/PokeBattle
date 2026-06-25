@@ -223,8 +223,8 @@ export function VersusPage({
   const [p1Id, setP1Id] = useState(initialP1Id);
   const [p2Id, setP2Id] = useState(initialP2Id);
 
-  const setP1IdAndNotify = useCallback((id) => { setP1Id(id); onPlayersChange?.(id, p2Id); }, [p2Id, onPlayersChange]);
-  const setP2IdAndNotify = useCallback((id) => { setP2Id(id); onPlayersChange?.(p1Id, id); }, [p1Id, onPlayersChange]);
+  const setP1IdAndNotify = useCallback((id) => { setP1Id(id); setDateFilterAndNotify(''); onPlayersChange?.(id, p2Id); }, [p2Id, onPlayersChange]); // eslint-disable-line react-hooks/exhaustive-deps
+  const setP2IdAndNotify = useCallback((id) => { setP2Id(id); setDateFilterAndNotify(''); onPlayersChange?.(p1Id, id); }, [p1Id, onPlayersChange]); // eslint-disable-line react-hooks/exhaustive-deps
   const [selectorFor, setSelectorFor] = useState(null); // 'p1' | 'p2' | null
   const [showDateSheet, setShowDateSheet] = useState(false);
   const [viewMode, setViewMode] = useState(initialViewMode);

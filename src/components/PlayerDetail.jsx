@@ -119,21 +119,21 @@ function CaptureInfoSheet({ isDark, t, player, onClose }) {
             <h2 className={`font-black text-lg ${t.text}`}>À capturer</h2>
           </div>
           <p className={`text-base leading-relaxed mb-7 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-            Cette section regroupe les Pokémon que <span className="font-semibold">{player.name}</span> n'a pas encore dans sa collection, mais qui figurent dans au moins une de ses <span className="font-semibold">équipes concept</span>.
+            Cette section regroupe les Pokémon que <span className="font-semibold">{player.name}</span> n'a pas encore dans sa collection, mais qui figurent dans ses <span className="font-semibold">équipes concept</span>.
           </p>
           <div className={`rounded-2xl p-4 space-y-3 ${t.surfaceMuted}`}>
             <div className="flex items-start gap-3">
               <span className="text-xl">✅</span>
               <div>
                 <p className={`text-base font-semibold ${t.text}`}>Disparaît automatiquement</p>
-                <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Dès qu'un Pokémon est ajouté à la collection, il est retiré de cette liste et intégré aux équipes qui l'attendaient.</p>
+                <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Dès qu'un Pokémon est ajouté à la collection, il est retiré de cette liste.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-xl">📋</span>
               <div>
                 <p className={`text-base font-semibold ${t.text}`}>Équipes concept</p>
-                <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Ce sont des équipes planifiées, créées pour préparer de futurs combats, mais dont certains Pokémon ne sont pas encore capturés.</p>
+                <p className={`text-sm mt-0.5 ${t.textSecondary}`}>Ce sont des équipes créées pour de futurs combats, mais dont certains Pokémon ne sont pas encore capturés.</p>
               </div>
             </div>
           </div>
