@@ -588,7 +588,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
             </div>
           )}
           {/* Segmented control — uniquement sur "Tous" */}
-          {!dateFilter && stats1 && stats2 && (
+          {stats1 && stats2 && (
             <div className={`flex gap-1 p-1 rounded-2xl ${isDark ? 'bg-zinc-800' : 'bg-black/5'}`}>
               {[{ key: 'h2h', label: 'Face à face' }, { key: 'global', label: 'Au global' }].map(({ key, label }) => (
                 <button
@@ -651,8 +651,8 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   const rows = [
                     { label: 'Winrate',             v1: dateStats1.winRate,     v2: dateStats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: dateStats1.koInfliges,  v2: dateStats2.koInfliges,  cmp: 'max', fmt: (v) => v },
-                    { label: 'Perfect', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v, alwaysBar: true },
-                    { label: 'Meilleure série', v1: dateStats1.bestStreak, v2: dateStats2.bestStreak, cmp: 'max', fmt: (v) => v, alwaysBar: true },
+                    { label: 'Perfect', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v },
+                    { label: 'Meilleure série', v1: dateStats1.bestStreak, v2: dateStats2.bestStreak, cmp: 'max', fmt: (v) => v },
                     {
                       label: 'Type favori',
                       v1: dateStats1.mostUsedTypeEntry?.[0] || null,
@@ -689,11 +689,11 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   ];
                   return (
                     <div className={`border-t ${t.divider}`}>
-                      {rows.map(({ label, v1, v2, cmp, fmt, render, alwaysBar }, idx, arr) => {
+                      {rows.map(({ label, v1, v2, cmp, fmt, render }, idx, arr) => {
                         const win1 = cmp === 'max' ? v1 > v2 : cmp === 'min' ? v1 < v2 : false;
                         const win2 = cmp === 'max' ? v2 > v1 : cmp === 'min' ? v2 < v1 : false;
                         const isLast = idx === arr.length - 1;
-                        const hasBar = cmp && !render && (alwaysBar || (v1 + v2) > 0);
+                        const hasBar = cmp && !render;
                         const barPct1 = hasBar ? (v1 + v2 > 0 ? Math.round((v1 / (v1 + v2)) * 100) : 50) : 0;
                         const barPct2 = hasBar ? 100 - barPct1 : 0;
                         return (
@@ -785,8 +785,8 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                     { label: 'Winrate',             v1: stats1.winRate,     v2: stats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: stats1.koInfliges,  v2: stats2.koInfliges,  cmp: 'max', fmt: (v) => v },
                     { label: 'KO reçus',            v1: stats1.koRecus,     v2: stats2.koRecus,     cmp: 'min', fmt: (v) => v },
-                    { label: 'Perfect', v1: stats1.perfectWins, v2: stats2.perfectWins, cmp: 'max', fmt: (v) => v, alwaysBar: true },
-                    { label: 'Meilleure série', v1: stats1.bestStreak, v2: stats2.bestStreak, cmp: 'max', fmt: (v) => v, alwaysBar: true },
+                    { label: 'Perfect', v1: stats1.perfectWins, v2: stats2.perfectWins, cmp: 'max', fmt: (v) => v },
+                    { label: 'Meilleure série', v1: stats1.bestStreak, v2: stats2.bestStreak, cmp: 'max', fmt: (v) => v },
                     {
                       label: 'Type favori',
                       v1: stats1.mostUsedTypeEntry?.[0] || null,
@@ -824,8 +824,8 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                     const win1 = cmp === 'max' ? v1 > v2 : cmp === 'min' ? v1 < v2 : false;
                     const win2 = cmp === 'max' ? v2 > v1 : cmp === 'min' ? v2 < v1 : false;
                     const isLast = idx === arr.length - 1;
-                    const hasBar = cmp && !render && (v1 + v2) > 0;
-                    const barPct1 = hasBar ? Math.round((v1 / (v1 + v2)) * 100) : 0;
+                    const hasBar = cmp && !render;
+                    const barPct1 = hasBar ? (v1 + v2 > 0 ? Math.round((v1 / (v1 + v2)) * 100) : 50) : 0;
                     const barPct2 = hasBar ? 100 - barPct1 : 0;
                     return (
                       <div key={label} className={`flex flex-col px-4 py-3 gap-2 ${!isLast ? `border-b ${t.divider}` : ''}`}>
