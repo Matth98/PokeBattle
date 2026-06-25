@@ -588,7 +588,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
             </div>
           )}
           {/* Segmented control — uniquement sur "Tous" */}
-          {stats1 && stats2 && (
+          {!dateFilter && (
             <div className={`flex gap-1 p-1 rounded-2xl ${isDark ? 'bg-zinc-800' : 'bg-black/5'}`}>
               {[{ key: 'h2h', label: 'Face à face' }, { key: 'global', label: 'Au global' }].map(({ key, label }) => (
                 <button
