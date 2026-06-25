@@ -193,7 +193,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
     if (currentTab === 'playerDetail') setSelectedPlayer(null);
     if (currentTab === 'battleDetail') setSelectedBattle(null);
     if (currentTab === 'teamDetail') setSelectedTeam(null);
-    if (currentTab === 'versusDetail') { setVersusDateFilter(''); setSelectedVersusPlayers({ p1Id: null, p2Id: null }); }
     if (currentTab === 'pokemonDetail') {
       setSelectedPokemon(null);
       flushSync(() => navigateBack());
@@ -939,7 +938,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           initialViewMode={versusViewMode}
           initialScrollY={navDirection === 'pop' ? scrollMemoryRef.current.get('versusDetail') || 0 : 0}
           backLabel={backLabel}
-          onBack={navigateBack}
+          onBack={() => { setVersusDateFilter(''); setVersusViewMode('h2h'); setSelectedVersusPlayers({ p1Id: null, p2Id: null }); navigateBack(); }}
           onPlayersChange={(p1Id, p2Id) => setSelectedVersusPlayers({ p1Id, p2Id })}
           onDateFilterChange={setVersusDateFilter}
           onViewModeChange={setVersusViewMode}
