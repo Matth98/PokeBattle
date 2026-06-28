@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Search, X, Check, Plus } from 'lucide-react';
 import { ClearButton } from './ClearButton';
-import { usePokemon, POKEMON_BY_GENERATION } from '../hooks/usePokemon';
+import { usePokemon, POKEMON_BY_GENERATION, getPokemonSpriteId } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
@@ -92,12 +92,12 @@ export const PokemonPicker = ({
           </span>
         )}
         <img
-          src={getPokemonImageUrl(p.altPokeId ?? p.pokeId)}
+          src={getPokemonImageUrl(getPokemonSpriteId(p))}
           alt={p.name}
           className="w-10 h-10 object-contain flex-shrink-0"
           onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
         />
-        <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name}</span>
+        <span className={`flex-1 font-semibold ${t.text} truncate`}>{p.name.replace(/[♂♀]/g, '$&︎')}</span>
         <span className={`${t.textTertiary} text-xs font-mono`}>#{p.pokeId}</span>
         {!multiSelect && isPicked && <span className={t.accent}><Check size={16} /></span>}
       </button>
