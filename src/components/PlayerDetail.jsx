@@ -1300,7 +1300,7 @@ export const PlayerDetail = ({
                           <div key={slot} className="flex items-center justify-center overflow-hidden">
                             {pokemon && (
                               <img
-                                src={getPokemonImageUrl(pokemon.pokeId)}
+                                src={getPokemonImageUrl(getPokemonSpriteId(pokemon))}
                                 alt={pokemon.name}
                                 className="w-full h-full object-contain"
                                 onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
