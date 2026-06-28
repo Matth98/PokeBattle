@@ -464,7 +464,6 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, 
   const effects   = nature ? NATURE_EFFECTS[nature] : null;
   const boosted   = effects?.[0];
   const lowered   = effects?.[1];
-  const activeEVs = STATS.filter(s => (evs[s.key] ?? 0) > 0);
 
   const [showNatureSheet,  setShowNatureSheet]  = useState(false);
   const [showItemSheet,    setShowItemSheet]    = useState(false);
@@ -474,7 +473,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, 
     <div>
       {/* Set : Nature + Objet + Talent */}
       {(nature || item || ability) && (
-        <div className="mb-12">
+        <div>
           <SectionTitle title="Set complet" isDark={isDark} mb="mb-4" />
           <div className="space-y-4">
             {nature && (
@@ -521,35 +520,38 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, 
       {showAbilitySheet && (
         <AbilitySheet ability={ability} abilityDesc={abilityDesc} isDark={isDark} accentHex={accentHex} onClose={() => setShowAbilitySheet(false)} pokeId={pokeId} />
       )}
+    </div>
+  );
+}
 
-      {/* EVs */}
-      {activeEVs.length > 0 && (
-        <div>
-          <SectionTitle title="EVs" isDark={isDark} />
-          <div className="space-y-2">
-            {activeEVs.map(({ key, fr }) => {
-              const ev       = evs[key] ?? 0;
-              const barColor = evColor(ev);
-              return (
-                <div key={key} className="flex items-center gap-3">
-                  <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{fr}</span>
-                  <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {ev}
-                  </span>
-                  <div className={`flex-1 h-2 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-200'}`}>
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${(ev / 252) * 100}%`, backgroundColor: barColor }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-  </div>
+// ─── EVs (section séparée, affichée en dernier) ──────────────────────────────
+function EVsBlock({ evs, isDark, accentHex }) {
+  const activeEVs = STATS.filter(s => (evs[s.key] ?? 0) > 0);
+  if (activeEVs.length === 0) return null;
+  return (
+    <div>
+      <SectionTitle title="EVs" isDark={isDark} />
+      <div className="space-y-2">
+        {activeEVs.map(({ key, fr }) => {
+          const ev       = evs[key] ?? 0;
+          const barColor = evColor(ev);
+          return (
+            <div key={key} className="flex items-center gap-3">
+              <span className="w-12 text-base font-semibold" style={{ color: accentHex }}>{fr}</span>
+              <span className={`w-8 text-base font-semibold text-left tabular-nums ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                {ev}
+              </span>
+              <div className={`flex-1 h-2 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-200'}`}>
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${(ev / 252) * 100}%`, backgroundColor: barColor }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -603,11 +605,34 @@ export function StrategyTab({ pokeId, isDark, accentHex, onEmpty }) {
   }
   if (!result) return null;
 
+  const hasEVs = STATS.some(s => (result.evs?.[s.key] ?? 0) > 0);
+
   return (
     <div className="px-5 pt-4 pb-4">
 
+      {/* Set complet */}
+      {(result.nature || result.item || result.ability) && (
+        <div className="mb-10">
+          <EVsSection
+            evs={result.evs}
+            ivs={result.ivs}
+            nature={result.nature}
+            item={result.item}
+            itemSprite={result.itemSprite}
+            itemPsSlug={result.itemPsSlug}
+            itemDesc={result.itemDesc}
+            ability={result.ability}
+            abilityDesc={result.abilityDesc}
+            isDark={isDark}
+            accentHex={accentHex}
+            pokeId={pokeId}
+            natureDesc={result.natureDesc}
+          />
+        </div>
+      )}
+
       {/* Attaques */}
-      <div className="mb-10">
+      <div className={hasEVs ? 'mb-10' : undefined}>
         <div className="flex items-center mb-1">
           <h2 className={`flex-1 text-xl font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>Attaques</h2>
           <div className="flex items-center gap-3 pr-0.5">
@@ -621,24 +646,8 @@ export function StrategyTab({ pokeId, isDark, accentHex, onEmpty }) {
         ))}
       </div>
 
-      {/* Nature + EVs + IVs */}
-      {(Object.keys(result.evs).length > 0 || result.nature || result.item || result.ability) && (
-        <EVsSection
-          evs={result.evs}
-          ivs={result.ivs}
-          nature={result.nature}
-          item={result.item}
-          itemSprite={result.itemSprite}
-          itemPsSlug={result.itemPsSlug}
-          itemDesc={result.itemDesc}
-          ability={result.ability}
-          abilityDesc={result.abilityDesc}
-          isDark={isDark}
-          accentHex={accentHex}
-          pokeId={pokeId}
-          natureDesc={result.natureDesc}
-        />
-      )}
+      {/* EVs — en dernier */}
+      <EVsBlock evs={result.evs} isDark={isDark} accentHex={accentHex} />
 
       {/* Bottom sheet attaque */}
       {selectedMove && (
