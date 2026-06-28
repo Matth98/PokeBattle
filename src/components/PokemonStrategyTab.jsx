@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronRight } from 'lucide-react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { TYPE_FR, TYPE_HEX, TYPE_HEX_DARK, TYPE_COLORS } from '../hooks/usePokemonTypes';
 import { useSmogonSet } from '../hooks/useSmogonSet';
@@ -111,10 +111,11 @@ function ItemRow({ item, itemSprite, itemPsSlug, isDark, accentHex = '#888', onP
           : <span className="text-base">🎒</span>
         }
       </div>
-      <div className="min-w-0">
+      <div className="flex-1 min-w-0">
         <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentHex }}>Objet</p>
         <p className={`text-base font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{item}</p>
       </div>
+      <ChevronRight size={18} className={`flex-shrink-0 ${isDark ? 'text-zinc-600' : 'text-gray-300'}`} />
     </button>
   );
 }
@@ -132,10 +133,11 @@ function AbilityRow({ ability, isDark, accentHex, pokeId, onPress }) {
           onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
         />
       </div>
-      <div className="min-w-0">
+      <div className="flex-1 min-w-0">
         <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentHex }}>Talent</p>
         <p className={`text-base font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{ability}</p>
       </div>
+      <ChevronRight size={18} className={`flex-shrink-0 ${isDark ? 'text-zinc-600' : 'text-gray-300'}`} />
     </button>
   );
 }
@@ -499,6 +501,7 @@ function EVsSection({ evs, ivs, nature, item, itemSprite, itemPsSlug, itemDesc, 
                     </span>
                   )}
                 </div>
+                <ChevronRight size={18} className={`flex-shrink-0 ${isDark ? 'text-zinc-600' : 'text-gray-300'}`} />
               </button>
             )}
             {item && (
