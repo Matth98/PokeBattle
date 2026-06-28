@@ -271,7 +271,7 @@ function MoveSheet({ move, isDark, onClose }) {
 
   return (
     <BaseSheet isDark={isDark} onClose={onClose}>
-      <div className="px-6 pt-3 pb-10">
+      <div className="px-6 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
         {/* Nom */}
         <h2 className={`text-2xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
           {move.nameFr}
@@ -369,7 +369,7 @@ function NatureSheet({ nature, isDark, accentHex, onClose, pokeId }) {
 
   return (
     <BaseSheet isDark={isDark} onClose={onClose}>
-      <div className="px-6 pt-3 pb-10">
+      <div className="px-6 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
         <div className="flex items-center gap-4 mb-4">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-3xl ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
             🌿
@@ -417,7 +417,7 @@ function ItemSheet({ item, itemSprite, itemPsSlug, itemDesc, isDark, accentHex, 
 
   return (
     <BaseSheet isDark={isDark} onClose={onClose}>
-      <div className="px-6 pt-3 pb-10">
+      <div className="px-6 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
         <div className="flex items-center gap-4 mb-4">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
             {src && !failed
@@ -438,7 +438,7 @@ function ItemSheet({ item, itemSprite, itemPsSlug, itemDesc, isDark, accentHex, 
 function AbilitySheet({ ability, abilityDesc, isDark, accentHex, onClose, pokeId }) {
   return (
     <BaseSheet isDark={isDark} onClose={onClose}>
-      <div className="px-6 pt-3 pb-10">
+      <div className="px-6 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)' }}>
         <div className="flex items-center gap-4 mb-4">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
             <img
