@@ -1874,7 +1874,7 @@ export const PlayerDetail = ({
           <div className={`relative ${t.surfaceModal} rounded-t-3xl flex flex-col ${isAllPokemonSheetClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ paddingBottom: 'env(safe-area-inset-bottom)', maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 1.5rem)' }}>
             <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
               <p className={`font-black text-base ${t.text}`}>Pokémon sélectionnés ({selectedItems.length})</p>
-              <button onClick={closeAllPokemonSheet} className={`w-8 h-8 rounded-full ${t.surfaceMuted} flex items-center justify-center`}><X size={16} /></button>
+              <button onClick={closeAllPokemonSheet} className={`w-8 h-8 rounded-full ${t.surfaceMuted} ${t.text} flex items-center justify-center`}><X size={16} /></button>
             </div>
             <div className="overflow-y-auto px-5 pb-5 flex-1">
               <div className="grid grid-cols-6 gap-1">
@@ -1903,7 +1903,7 @@ export const PlayerDetail = ({
           <div className={`relative ${t.surfaceModal} rounded-t-3xl flex flex-col ${isAllTeamsSheetClosing ? 'anim-slide-down' : 'anim-slide-up'}`} style={{ paddingBottom: 'env(safe-area-inset-bottom)', maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 1.5rem)' }}>
             <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
               <p className={`font-black text-base ${t.text}`}>Équipes affectées</p>
-              <button onClick={closeAllTeamsSheet} className={`w-8 h-8 rounded-full ${t.surfaceMuted} flex items-center justify-center`}><X size={16} /></button>
+              <button onClick={closeAllTeamsSheet} className={`w-8 h-8 rounded-full ${t.surfaceMuted} ${t.text} flex items-center justify-center`}><X size={16} /></button>
             </div>
             <div className="overflow-y-auto px-5 pb-5 flex-1">
               <ul className={`space-y-2 text-sm ${t.text}`}>
