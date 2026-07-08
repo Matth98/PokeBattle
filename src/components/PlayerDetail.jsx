@@ -9,7 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
-  GitCompare,
+  Scale,
   HelpCircle,
   Loader2,
   Palette,
@@ -929,7 +929,7 @@ export const PlayerDetail = ({
                 style={isDark ? { boxShadow: 'rgba(255, 255, 255, .21) .5px .75px', borderTop: '1px solid #ffffff36' } : undefined}
                 aria-label="Comparer"
               >
-                <GitCompare size={20} />
+                <Scale size={20} />
               </button>
             )}
             {canEdit && (
