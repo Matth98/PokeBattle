@@ -935,11 +935,11 @@ export const Battles = ({
                 const slotCard = isDark ? 'bg-zinc-850' : 'bg-white';
                 const slotLabel = isJ1
                   ? isDark ? 'text-indigo-400' : 'text-indigo-700'
-                  : isDark ? 'text-orange-400' : 'text-orange-700';
+                  : isDark ? 'text-green-500' : 'text-green-700';
                 const slotBorder = '';
                 const slotAddBtn = isJ1
                   ? isDark ? 'bg-indigo-500' : 'bg-indigo-500'
-                  : isDark ? 'bg-orange-500' : 'bg-orange-500';
+                  : isDark ? 'bg-green-500' : 'bg-green-500';
                 const slotWhiteSurface = isDark ? 'bg-zinc-800' : 'bg-white';
                 return (
                   <div key={slot} className={`rounded-2xl p-3 space-y-2 overflow-hidden border ${isDark ? 'border-zinc-700/50' : 'border-gray-200/80'} ${slotCard} ${slotPokemon.length > 0 ? 'pb-0' : ''}`}>
@@ -981,7 +981,7 @@ export const Battles = ({
                         <div className="flex gap-2 pb-1">
                           <button
                             onClick={() => setPickerState({ slot, mode: 'team' })}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${isJ1 ? isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-500/15 text-indigo-700' : isDark ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-500/15 text-orange-700'}`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm ${isJ1 ? isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-500/15 text-indigo-700' : isDark ? 'bg-green-500/20 text-green-500' : 'bg-green-500/15 text-green-700'}`}
                           >
                             <Shield size={15} />
                             Équipe
