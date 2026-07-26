@@ -2,7 +2,7 @@ import React, { useState, useLayoutEffect, useEffect, useRef, useCallback } from
 import { createPortal } from 'react-dom';
 import { AlertTriangle, ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
-import { getPokemonSpriteId } from '../hooks/usePokemon';
+import { getPokemonSpriteId, isKnownRosterForm } from '../hooks/usePokemon';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -418,12 +418,17 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
   // forme stockée (altPokeId, ou pokeId à défaut pour la forme par défaut) correspond bien
   // à la forme actuellement affichée (activePokeId), sans quoi posséder une forme fait
   // apparaître toutes les autres formes comme possédées.
-  // Exception : les formes purement genrées (♂/♀) partagent le même emplacement de roster
-  // que la forme de base (seul le sprite change) — pour elles, le genre suffit.
+  // Exceptions, où la pokéball reflète simplement la possession du Pokémon de base :
+  //  - les formes purement genrées (♂/♀), qui partagent le même emplacement de roster
+  //    (seul le sprite change) ;
+  //  - les formes hors roster (Méga-évolution, Dynamax/Gigamax, casquette de Pikachu,
+  //    forme météo de Morphéo…), qui ne sont pas des Pokémon séparément capturables.
+  const isDistinctRosterSlot =
+    activeGender === null && (activePokeId === speciesId || isKnownRosterForm(activePokeId));
   const matchesForm = (p) => {
     if (!genderMatches(resolveGender(p))) return false;
+    if (!isDistinctRosterSlot) return p.pokeId === speciesId && !p.altPokeId;
     if (p.pokeId === speciesId) {
-      if (activeGender !== null) return true;
       return (p.altPokeId ?? p.pokeId) === activePokeId;
     }
     // Entrées enregistrées avant la canonisation sur l'espèce : pokeId peut être l'ID brut

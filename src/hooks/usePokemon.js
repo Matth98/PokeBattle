@@ -40,6 +40,15 @@ const NORMALIZED_INDEX = POKEMON_LIST.map((p) => ({
 
 const POKEMON_NAME_MAP = new Map(POKEMON_LIST.map((p) => [p.pokeId, p.name]));
 
+// Une forme est « du roster » si elle fait partie des 1025 espèces ou du set curé de
+// formes séparément capturables (pokemon-forms-fr.json : Motisma, Lougaroc, formes
+// régionales…). Les Méga-évolutions, Dynamax/Gigamax, casquettes de Pikachu, formes météo
+// de Morphéo, etc. n'y figurent pas : ce sont des transformations cosmétiques/de combat,
+// pas des Pokémon possédables séparément.
+export function isKnownRosterForm(pokeId) {
+  return POKEMON_NAME_MAP.has(pokeId);
+}
+
 // Formes genrées — découvertes dynamiquement lors de la visite d'une fiche espèce.
 // Format : { pokeId: speciesId, name, gender: 'female'|'male', altPokeId }
 //   pokeId   = ID de l'espèce de base (678, 876…) — ID affiché à l'utilisateur
