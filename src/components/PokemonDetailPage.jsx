@@ -384,6 +384,17 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
   // change pendant l'exécution async (teamsContaining se vide quand les équipes passent Concept)
   const [snapshotTeams, setSnapshotTeams] = useState([]);
   const [optimisticOwned, setOptimisticOwned] = useState(null);
+  // ID canonique de l'espèce (ex: 479 pour Motisma), stable quelle que soit la forme
+  // affichée. Le prop `pokeId` n'est PAS fiable pour cet usage : selon le point d'entrée
+  // (recherche d'une forme précise, entrée roster...) il peut valoir l'ID brut d'une forme
+  // (ex: 10008 pour Motisma Chaleur) plutôt que l'ID de l'espèce. On se cale donc sur
+  // data.displayId dès qu'il est disponible, et on le garde en mémoire (il ne redevient pas
+  // null lors des changements de forme, contrairement à data qui se réinitialise pendant le
+  // chargement).
+  const [speciesId, setSpeciesId] = useState(pokeId);
+  useEffect(() => {
+    if (data?.displayId) setSpeciesId(data.displayId);
+  }, [data]);
 
   // Préchargement des SVGs pour éviter le délai d'apparition
   useEffect(() => {
@@ -402,7 +413,25 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
     if (storedGender === null && (activeGender === 'male' || activeGender === null)) return true;
     return false;
   };
-  const matchesForm = (p) => p.pokeId === pokeId && genderMatches(resolveGender(p));
+  // Un pokémon à formes multiples (Motisma, Lougaroc, Seracrawl, Typhlosion régional…) peut
+  // avoir chaque forme ajoutée séparément au roster : on doit donc aussi vérifier que la
+  // forme stockée (altPokeId, ou pokeId à défaut pour la forme par défaut) correspond bien
+  // à la forme actuellement affichée (activePokeId), sans quoi posséder une forme fait
+  // apparaître toutes les autres formes comme possédées.
+  // Exception : les formes purement genrées (♂/♀) partagent le même emplacement de roster
+  // que la forme de base (seul le sprite change) — pour elles, le genre suffit.
+  const matchesForm = (p) => {
+    if (!genderMatches(resolveGender(p))) return false;
+    if (p.pokeId === speciesId) {
+      if (activeGender !== null) return true;
+      return (p.altPokeId ?? p.pokeId) === activePokeId;
+    }
+    // Entrées enregistrées avant la canonisation sur l'espèce : pokeId peut être l'ID brut
+    // d'une forme (ex: 10008 pour Motisma Chaleur) plutôt que l'ID d'espèce. Ces IDs PokeAPI
+    // étant uniques par forme, on les reconnaît si l'un des champs pointe directement sur la
+    // forme actuellement affichée.
+    return p.pokeId === activePokeId || p.altPokeId === activePokeId;
+  };
 
   const owned = myPlayer ? (myPlayer.pokemon || []).some(matchesForm) : false;
   const displayOwned = optimisticOwned !== null ? optimisticOwned : owned;
@@ -426,12 +455,12 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
     } else {
       setOptimisticOwned(true);
       const newEntry = {
-        id: `${Date.now()}-${pokeId}`,
-        pokeId,
+        id: `${Date.now()}-${speciesId}`,
+        pokeId: speciesId,
         name: activePokeName,
         level: 50,
         ...(activeGender ? { gender: activeGender } : {}),
-        ...(activePokeId !== pokeId ? { altPokeId: activePokeId } : {}),
+        ...(activePokeId !== speciesId ? { altPokeId: activePokeId } : {}),
       };
       try {
         await onUpdatePlayer(myPlayer._id, { ...myPlayer, pokemon: [...(myPlayer.pokemon || []), newEntry] });

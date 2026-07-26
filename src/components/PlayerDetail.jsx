@@ -731,7 +731,7 @@ export const PlayerDetail = ({
           }
         });
       });
-    return result;
+    return result.sort((a, b) => a.pokeId - b.pokeId);
   })();
 
   const filteredPokemon = pokemonSearch

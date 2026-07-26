@@ -667,7 +667,11 @@ export const Home = ({ players, battles, teams, isDark, setIsDark, t, setCurrent
                   total: (p.stats?.wins || 0) + (p.stats?.losses || 0),
                 }))
                 .filter((p) => p.total > 0)
-                .sort((a, b) => (b.stats?.wins || 0) - (a.stats?.wins || 0));
+                .sort((a, b) => {
+                  const winRateDiff = (b.stats?.wins || 0) / b.total - (a.stats?.wins || 0) / a.total;
+                  if (winRateDiff !== 0) return winRateDiff;
+                  return (b.stats?.wins || 0) - (a.stats?.wins || 0);
+                });
               const top = ranked[0];
               if (!top) {
                 return (

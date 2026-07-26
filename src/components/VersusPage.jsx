@@ -8,7 +8,7 @@ import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { getPokemonImageUrl as getPokemonImageUrlStatic, getPokemonSpriteId } from '../hooks/usePokemon';
 import { usePokemonTypes, TYPE_FR, TYPE_COLORS, TYPE_HEX } from '../hooks/usePokemonTypes';
 import { TYPE_SUPER_EFFECTIVE } from '../utils/mvp';
-import { sortBattlesDesc, groupBattlesByDate } from '../utils/battles';
+import { sortBattlesDesc, sortBattlesAsc, groupBattlesByDate } from '../utils/battles';
 import { formatDate } from '../utils/dates';
 
 function PlayerSelectorSheet({ players, excludeId, isDark, t, onSelect, onClose, onClear, hasPlayer }) {
@@ -342,7 +342,7 @@ const [dateFilter, setDateFilter] = useState(initialDateFilter);
 
     const top3 = [...pokemonCounts.values()].sort((a, b) => b.count - a.count).slice(0, 3);
 
-    const sorted = [...pb].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    const sorted = sortBattlesAsc(pb);
     let bestStreak = 0, curStreak = 0;
     sorted.forEach((b) => {
       const won = (String(b.player1) === String(player._id) && b.winner === 'player1') || (String(b.player2) === String(player._id) && b.winner === 'player2');
