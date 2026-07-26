@@ -261,8 +261,18 @@ export async function processPokemonDetail(pokeId, language, pokemonNameOverride
   // On ne lit les forms que pour la variété par défaut : les variantes alternatives (ex :
   // Mimiqui Débusqué) ont des form-IDs différents de leurs pokemon-IDs — les inclure
   // ferait apparaître de faux pokémon.
+  // Certaines espèces exposent deux variétés distinctes (mâle/femelle) pour une même
+  // variante cosmétique non jouable (ex : meowstic-male-mega / meowstic-female-mega, un
+  // Méga inutilisé en jeu) — elles produisent le même libellé et ne doivent apparaître
+  // qu'une seule fois.
+  const seenNames = new Set();
   const varieties = varietyItems
-    .filter(v => !isBattleOnlyForm(v.apiName || ''));
+    .filter(v => !isBattleOnlyForm(v.apiName || ''))
+    .filter(v => {
+      if (seenNames.has(v.name)) return false;
+      seenNames.add(v.name);
+      return true;
+    });
 
   // Enregistre uniquement les formes femelles (la forme mâle = sprite de base, pas de doublon).
   varieties.forEach(v => {

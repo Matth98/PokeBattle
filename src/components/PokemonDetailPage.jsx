@@ -731,7 +731,11 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
                             );
                             window.scrollTo({ top: 0, behavior: 'instant' });
                           }}
-                          className="flex-shrink-0 w-16 h-16 flex items-center justify-center"
+                          className={`flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center transition-colors ${
+                            form.pokeId === activePokeId
+                              ? (isDark ? 'bg-white/15' : 'bg-black/10')
+                              : ''
+                          }`}
                           aria-label={form.name}
                         >
                           <img
