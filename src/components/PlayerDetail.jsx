@@ -1077,7 +1077,7 @@ export const PlayerDetail = ({
           <section>
             <div className="flex justify-between items-center mb-3 px-1">
               <h2 className={`text-sm font-bold uppercase tracking-wide ${t.textSecondary}`}>
-                Pokémon ({rosterSize})
+                Pokémon ({rosterSize} / 241)
               </h2>
               <button
                 data-tour="add-pokemon"
