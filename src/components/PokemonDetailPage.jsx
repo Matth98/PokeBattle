@@ -2,7 +2,7 @@ import React, { useState, useLayoutEffect, useEffect, useRef, useCallback } from
 import { createPortal } from 'react-dom';
 import { AlertTriangle, ChevronLeft, Loader2 } from 'lucide-react';
 import { usePokemonDetail } from '../hooks/usePokemonDetail';
-import { getPokemonSpriteId, isKnownRosterForm } from '../hooks/usePokemon';
+import { getPokemonSpriteId, isKnownRosterForm, resolvePokemonName } from '../hooks/usePokemon';
 import { TYPE_FR, TYPE_COLORS, TYPE_HEX, TYPE_HEX_DARK } from '../hooks/usePokemonTypes';
 import { useTranslation } from '../hooks/useTranslation';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -414,28 +414,25 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
     return false;
   };
   // Un pokémon à formes multiples (Motisma, Lougaroc, Seracrawl, Typhlosion régional…) peut
-  // avoir chaque forme ajoutée séparément au roster : on doit donc aussi vérifier que la
-  // forme stockée (altPokeId, ou pokeId à défaut pour la forme par défaut) correspond bien
-  // à la forme actuellement affichée (activePokeId), sans quoi posséder une forme fait
-  // apparaître toutes les autres formes comme possédées.
+  // avoir chaque forme ajoutée séparément au roster. Le reste de l'app (recherche, ajout
+  // multiple depuis PlayerDetail…) stocke ces formes avec pokeId = l'ID brut de la forme
+  // elle-même (ex: 10233 pour Typhlosion de Hisui), sans passer par altPokeId — on aligne
+  // donc la comparaison là-dessus, sans quoi le nom affiché ailleurs dans l'app (dérivé du
+  // seul pokeId) ne correspond plus à la forme réellement possédée.
   // Exceptions, où la pokéball reflète simplement la possession du Pokémon de base :
   //  - les formes purement genrées (♂/♀), qui partagent le même emplacement de roster
-  //    (seul le sprite change) ;
+  //    (seul le sprite change, via altPokeId) ;
   //  - les formes hors roster (Méga-évolution, Dynamax/Gigamax, casquette de Pikachu,
   //    forme météo de Morphéo…), qui ne sont pas des Pokémon séparément capturables.
-  const isDistinctRosterSlot =
-    activeGender === null && (activePokeId === speciesId || isKnownRosterForm(activePokeId));
+  const isDistinctRosterSlot = activeGender === null && isKnownRosterForm(activePokeId);
   const matchesForm = (p) => {
     if (!genderMatches(resolveGender(p))) return false;
-    if (!isDistinctRosterSlot) return p.pokeId === speciesId && !p.altPokeId;
-    if (p.pokeId === speciesId) {
-      return (p.altPokeId ?? p.pokeId) === activePokeId;
+    if (isDistinctRosterSlot) {
+      // `altPokeId` couvre les entrées enregistrées via une version antérieure de cette
+      // page, où pokeId restait celui de l'espèce.
+      return p.pokeId === activePokeId || p.altPokeId === activePokeId;
     }
-    // Entrées enregistrées avant la canonisation sur l'espèce : pokeId peut être l'ID brut
-    // d'une forme (ex: 10008 pour Motisma Chaleur) plutôt que l'ID d'espèce. Ces IDs PokeAPI
-    // étant uniques par forme, on les reconnaît si l'un des champs pointe directement sur la
-    // forme actuellement affichée.
-    return p.pokeId === activePokeId || p.altPokeId === activePokeId;
+    return p.pokeId === speciesId;
   };
 
   const owned = myPlayer ? (myPlayer.pokemon || []).some(matchesForm) : false;
@@ -459,13 +456,25 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
       }
     } else {
       setOptimisticOwned(true);
+      // Forme séparément capturable (ou forme par défaut) : on enregistre directement son
+      // ID PokeAPI réel dans pokeId, comme le fait le reste de l'app (recherche, ajout
+      // multiple…). Forme genrée ou hors roster (Méga, Gigamax…) : on enregistre le Pokémon
+      // de base, avec le genre/altPokeId pour le sprite le cas échéant.
+      const entryPokeId = isDistinctRosterSlot ? activePokeId : speciesId;
+      // Forme genrée (♂/♀) : on garde le nom affiché tel quel (ex: "Mistigrix ♀"), le genre
+      // reste ce qui distingue l'entrée. Seule la forme cosmétique/hors roster (Méga,
+      // Gigamax…) retombe sur le nom de l'espèce de base, puisqu'elle n'a pas de nom propre
+      // pertinent pour le roster.
+      const entryName = (isDistinctRosterSlot || activeGender)
+        ? activePokeName
+        : (resolvePokemonName(speciesId, null) || activePokeName);
       const newEntry = {
-        id: `${Date.now()}-${speciesId}`,
-        pokeId: speciesId,
-        name: activePokeName,
+        id: `${Date.now()}-${entryPokeId}`,
+        pokeId: entryPokeId,
+        name: entryName,
         level: 50,
         ...(activeGender ? { gender: activeGender } : {}),
-        ...(activePokeId !== speciesId ? { altPokeId: activePokeId } : {}),
+        ...(activeGender && activePokeId !== entryPokeId ? { altPokeId: activePokeId } : {}),
       };
       try {
         await onUpdatePlayer(myPlayer._id, { ...myPlayer, pokemon: [...(myPlayer.pokemon || []), newEntry] });
@@ -477,7 +486,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
           );
           for (const team of conceptTeams) {
             const updatedPokemon = (team.pokemon || []).map(p =>
-              p.pokeId === activePokeId ? { ...p, isConcept: false } : p
+              p.pokeId === entryPokeId ? { ...p, isConcept: false } : p
             );
             const stillConcept = updatedPokemon.some(p => p.isConcept);
             if (stillConcept && onUpdateTeamSilent) {
@@ -487,7 +496,7 @@ export const PokemonDetailPage = ({ pokeId, pokeName, initialGender, initialAltP
             }
           }
         }
-        toast.success(`${activePokeName} ajouté à ta collection`);
+        toast.success(`${entryName} ajouté à ta collection`);
       } catch (e) {
         setOptimisticOwned(null);
         throw e;
