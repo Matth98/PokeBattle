@@ -23,7 +23,7 @@ const FORMATS = [
 ];
 
 // Incrémenter à chaque modification de FORMATS pour invalider le resultCache
-const CACHE_VERSION = 12;
+const CACHE_VERSION = 14;
 
 const NATURE_FR_NAMES = {
   Hardy:'Hardi', Lonely:'Solo', Brave:'Brave', Adamant:'Rigide', Naughty:'Malin',
@@ -43,11 +43,64 @@ const abilityCache = new Map();
 const resultCache = new Map();
 
 // "charizard-mega-x" → "Charizard-Mega-X"
-function toSmogonName(apiName) {
-  return String(apiName)
+function capitalizeSlug(slug) {
+  return String(slug)
     .split('-')
     .map(p => p.charAt(0).toUpperCase() + p.slice(1))
     .join('-');
+}
+
+// Certaines espèces ont un nom Smogon qui ne se déduit pas mécaniquement du slug
+// PokéAPI : espace au lieu de tiret ("Tapu Koko", tous les Pokémon Paradoxe comme
+// "Iron Hands"/"Great Tusk"), apostrophe ("Sirfetch'd", "Oricorio-Pa'u") ou signe
+// spécial ("Zygarde-10%"). Table explicite plutôt qu'une heuristique fragile.
+const SMOGON_NAME_OVERRIDES = {
+  'tapu-koko':     'Tapu Koko',
+  'tapu-lele':     'Tapu Lele',
+  'tapu-bulu':     'Tapu Bulu',
+  'tapu-fini':     'Tapu Fini',
+  'great-tusk':    'Great Tusk',
+  'scream-tail':   'Scream Tail',
+  'brute-bonnet':  'Brute Bonnet',
+  'flutter-mane':  'Flutter Mane',
+  'slither-wing':  'Slither Wing',
+  'sandy-shocks':  'Sandy Shocks',
+  'iron-treads':   'Iron Treads',
+  'iron-bundle':   'Iron Bundle',
+  'iron-hands':    'Iron Hands',
+  'iron-jugulis':  'Iron Jugulis',
+  'iron-moth':     'Iron Moth',
+  'roaring-moon':  'Roaring Moon',
+  'iron-valiant':  'Iron Valiant',
+  'walking-wake':  'Walking Wake',
+  'iron-leaves':   'Iron Leaves',
+  'gouging-fire':  'Gouging Fire',
+  'raging-bolt':   'Raging Bolt',
+  'iron-boulder':  'Iron Boulder',
+  'iron-crown':    'Iron Crown',
+  'sirfetchd':     'Sirfetch’d',
+  'oricorio-pau':  "Oricorio-Pa'u",
+  'zygarde-10':    'Zygarde-10%',
+};
+
+// PokéAPI donne des variétés distinctes "-male"/"-female" pour certaines espèces
+// (ex : basculegion-male, basculegion-female), mais Smogon ne suit pas cette
+// distinction de la même façon : la forme mâle est listée sous le nom d'espèce nu
+// ("Basculegion"), et la forme femelle — quand elle diffère compétitivement —
+// sous le suffixe "-F" ("Basculegion-F"). Sans ce mapping, ces Pokémon ne
+// trouvaient jamais leur set alors qu'il existe bien côté Smogon.
+function toSmogonName(apiName) {
+  const key = String(apiName).toLowerCase();
+  if (SMOGON_NAME_OVERRIDES[key]) return SMOGON_NAME_OVERRIDES[key];
+  const name = String(apiName).replace(/-(male|female)$/, '');
+  return capitalizeSlug(name);
+}
+
+// Nom Smogon "genré" (suffixe -F) à tenter en priorité pour une variété femelle ;
+// null si le Pokémon n'a pas de variété de genre distincte côté PokéAPI.
+function toSmogonFemaleName(apiName) {
+  if (!/-female$/.test(apiName)) return null;
+  return `${capitalizeSlug(String(apiName).replace(/-female$/, ''))}-F`;
 }
 
 // Smogon item name → PokéAPI slug: "Choice Scarf" → "choice-scarf"
@@ -316,6 +369,9 @@ export function useSmogonSet(pokeId) {
         if (!res.ok) throw new Error('Pokémon introuvable');
         const pokemonData = await res.json();
         const smogonName = toSmogonName(pokemonData.name);
+        const smogonFemaleName = toSmogonFemaleName(pokemonData.name);
+        // Nom "-F" en priorité s'il existe (set propre à la femelle), sinon nom de base.
+        const smogonLookupNames = smogonFemaleName ? [smogonFemaleName, smogonName] : [smogonName];
 
         // Talent par défaut depuis PokéAPI (non-caché, premier talent non-caché)
         const defaultAbilitySlug =
@@ -332,8 +388,12 @@ export function useSmogonSet(pokeId) {
         for (const { key, label } of FORMATS) {
           const formatData = await fetchFormat(key);
           if (!formatData) continue;
-          const speciesEntry = formatData[smogonName]
-            ?? Object.entries(formatData).find(([k]) => k.toLowerCase() === smogonName.toLowerCase())?.[1];
+          let speciesEntry = null;
+          for (const candidate of smogonLookupNames) {
+            speciesEntry = formatData[candidate]
+              ?? Object.entries(formatData).find(([k]) => k.toLowerCase() === candidate.toLowerCase())?.[1];
+            if (speciesEntry) break;
+          }
           if (speciesEntry) {
             const sets = Object.entries(speciesEntry);
             if (sets.length) {
