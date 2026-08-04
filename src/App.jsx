@@ -1,25 +1,14 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { flushSync } from 'react-dom';
 import { theme } from './utils/theme';
 import { sortBattlesDesc } from './utils/battles';
 import { useAPI } from './hooks/useAPI';
 import { Home } from './components/Home';
-import { Players } from './components/Players';
-import { PlayerDetail } from './components/PlayerDetail';
-import { VersusPage } from './components/VersusPage';
-import { Teams } from './components/Teams';
-import { TeamDetail } from './components/TeamDetail';
-import { Battles } from './components/Battles';
-import { BattleDetail } from './components/BattleDetail';
 import { Navigation } from './components/Navigation';
 import { ToastProvider, useToast } from './components/Toast';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { LoginScreen } from './components/LoginScreen';
 import { ClaimPlayerScreen } from './components/ClaimPlayerScreen';
-import { PokemonSearchPage } from './components/PokemonSearchPage';
-import { PokemonDetailPage } from './components/PokemonDetailPage';
-import { SettingsPage } from './components/SettingsPage';
-import ProductTour from './components/ProductTour';
 import { useTour } from './hooks/useTour';
 import { LanguageProvider } from './hooks/useLanguage';
 import { useThemeMode } from './hooks/useThemeMode';
@@ -28,6 +17,18 @@ import { useEdgeSwipeBack } from './hooks/useEdgeSwipeBack';
 import { useOfflineSync, OFFLINE_TOTAL } from './hooks/useOfflineSync';
 import { prefetchSeedAltPokeIds } from './hooks/usePokemon';
 
+// Pages chargées à la demande (hors Home) pour ne pas alourdir le bundle initial
+const Players = lazy(() => import('./components/Players').then((m) => ({ default: m.Players })));
+const PlayerDetail = lazy(() => import('./components/PlayerDetail').then((m) => ({ default: m.PlayerDetail })));
+const VersusPage = lazy(() => import('./components/VersusPage').then((m) => ({ default: m.VersusPage })));
+const Teams = lazy(() => import('./components/Teams').then((m) => ({ default: m.Teams })));
+const TeamDetail = lazy(() => import('./components/TeamDetail').then((m) => ({ default: m.TeamDetail })));
+const Battles = lazy(() => import('./components/Battles').then((m) => ({ default: m.Battles })));
+const BattleDetail = lazy(() => import('./components/BattleDetail').then((m) => ({ default: m.BattleDetail })));
+const PokemonSearchPage = lazy(() => import('./components/PokemonSearchPage').then((m) => ({ default: m.PokemonSearchPage })));
+const PokemonDetailPage = lazy(() => import('./components/PokemonDetailPage').then((m) => ({ default: m.PokemonDetailPage })));
+const SettingsPage = lazy(() => import('./components/SettingsPage').then((m) => ({ default: m.SettingsPage })));
+const ProductTour = lazy(() => import('./components/ProductTour'));
 
 const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail', 'versusDetail'];
 
@@ -726,6 +727,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             ref={bgScrollRef}
             style={{ position: 'absolute', inset: 0, overflowY: 'auto', pointerEvents: 'none' }}
           >
+          <Suspense fallback={null}>
             {prevTab === 'home' && <Home players={sortedPlayers} battles={battles} teams={sortedTeams} isDark={isDark} t={t} setCurrentTab={() => {}} setSelectedBattle={() => {}} onSelectPlayer={() => {}} onSearchPokemon={() => {}} linkedPlayer={players.find(p => p._id === dbUser?.playerId)} onOpenSettings={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('home') || 0} />}
             {prevTab === 'players' && <Players players={sortedPlayers} t={t} isDark={isDark} onSelectPlayer={() => {}} onAddPlayer={() => {}} onDeletePlayer={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('players') || 0} />}
             {prevTab === 'battles' && <Battles battles={battles} players={sortedPlayers} teams={sortedTeams} t={t} isDark={isDark} onSelectBattle={() => {}} onAddBattle={() => {}} onUpdateBattle={() => {}} onUpdatePlayer={() => {}} onSyncPokemon={() => {}} onDeleteBattle={() => {}} onDeleteMultiple={() => {}} selectionMode={null} setSelectionMode={() => {}} selectedItems={[]} setSelectedItems={() => {}} showForm={false} setShowForm={() => {}} editingBattle={null} clearEditingBattle={() => {}} isBackground initialScrollY={scrollMemoryRef.current.get('battles') || 0} formatFilter={battlesFormatFilter} collapsedGroups={battlesCollapsedGroups} />}
@@ -752,6 +754,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
                 isBackground
               />
             )}
+          </Suspense>
           </div>
           {/* Overlay d'assombrissement — z-index élevé pour couvrir tout le contenu */}
           <div ref={bgOverlayRef} style={{ position: 'absolute', inset: 0, background: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.18)', zIndex: 9999, pointerEvents: 'none' }} />
@@ -761,6 +764,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       {/* Couche avant : page courante */}
       {/* zIndex: 10 — contenu regular sous Navigation (z-20) ; overlays dans la couche modale z-30 */}
       <div ref={pageRef} style={{ position: 'relative', zIndex: 10 }}>
+      <Suspense fallback={null}>
       {currentTab === 'home' && (
         <Home
           players={sortedPlayers}
@@ -1072,6 +1076,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       )}
 
 
+      </Suspense>
       </div>{/* fin couche avant */}
 
       {/* Navigation hors du transform — position: fixed z-20 non affecté */}
@@ -1101,6 +1106,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
       {/* Couche modale — z-30 > Navigation z-20, hors du stacking context de pageRef (z-10) */}
       <div style={{ position: 'relative', zIndex: 30 }}>
+        <Suspense fallback={null}>
         {settingsOpen && (
           <SettingsPage
             user={user}
@@ -1191,15 +1197,18 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             renderPage={false}
           />
         )}
+        </Suspense>
       </div>
 
       {tourActive && (
-        <ProductTour
-          steps={tourSteps}
-          onDone={endTour}
-          onSkip={endTour}
-          isDark={isDark}
-        />
+        <Suspense fallback={null}>
+          <ProductTour
+            steps={tourSteps}
+            onDone={endTour}
+            onSkip={endTour}
+            isDark={isDark}
+          />
+        </Suspense>
       )}
     </div>
   );
