@@ -302,7 +302,7 @@ const [dateFilter, setDateFilter] = useState(initialDateFilter);
     const favoriteFormat = [...formatCounts.entries()].sort((a, b) => b[1] - a[1])[0];
 
     const myBattlePokemon = pb.flatMap((b) => String(b.player1) === String(player._id) ? (b.team1 || []) : (b.team2 || []));
-    const distinctPokemonCount = new Set(myBattlePokemon.map((p) => p.pokeId).filter(Boolean)).size;
+    const distinctPokemonCount = new Set(myBattlePokemon.map((p) => p?.pokeId).filter(Boolean)).size;
 
     const typeCounts = new Map();
     myBattlePokemon.forEach((p) => {
@@ -670,8 +670,8 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   const rows = [
                     { label: 'Winrate',             v1: dateStats1.winRate,     v2: dateStats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: dateStats1.koInfliges,  v2: dateStats2.koInfliges,  cmp: 'max', fmt: (v) => v },
-                    { label: 'KO infligés / combat', v1: dateStats1.koInflByBattle, v2: dateStats2.koInflByBattle, cmp: 'max', fmt: (v) => v != null ? v : '—' },
-                    { label: 'KO reçus / combat',    v1: dateStats1.koRecuByBattle,  v2: dateStats2.koRecuByBattle,  cmp: 'min', fmt: (v) => v != null ? v : '—' },
+                    { label: 'KO infligés / combat', v1: dateStats1.koInflByBattle, v2: dateStats2.koInflByBattle, cmp: 'max', fmt: (v) => v == null ? '—' : v.toFixed(1) },
+                    { label: 'KO reçus / combat',    v1: dateStats1.koRecuByBattle,  v2: dateStats2.koRecuByBattle,  cmp: 'min', fmt: (v) => v == null ? '—' : v.toFixed(1) },
                     { label: 'Perfect', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v },
                     { label: 'Pokémon joués', v1: dateStats1.distinctPokemonCount, v2: dateStats2.distinctPokemonCount, cmp: 'max', fmt: (v) => v },
                     { label: 'Meilleure série', v1: dateStats1.bestStreak, v2: dateStats2.bestStreak, cmp: 'max', fmt: (v) => v },
@@ -709,7 +709,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                       ) : <span className={t.textTertiary}>—</span>,
                     },
                     {
-                      label: 'Pokémon favori',
+                      label: 'Pokémon favori (victoires)',
                       v1: dateStats1.favoritePokemonInWins || null,
                       v2: dateStats2.favoritePokemonInWins || null,
                       cmp: null,
@@ -818,9 +818,9 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                     { label: 'Défaites',            v1: stats1.losses,      v2: stats2.losses,      cmp: 'min', fmt: (v) => v },
                     { label: 'Winrate',             v1: stats1.winRate,     v2: stats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: stats1.koInfliges,  v2: stats2.koInfliges,  cmp: 'max', fmt: (v) => v },
-                    { label: 'KO infligés / combat', v1: stats1.koInflByBattle, v2: stats2.koInflByBattle, cmp: 'max', fmt: (v) => v != null ? v : '—' },
+                    { label: 'KO infligés / combat', v1: stats1.koInflByBattle, v2: stats2.koInflByBattle, cmp: 'max', fmt: (v) => v == null ? '—' : v.toFixed(1) },
                     { label: 'KO reçus',            v1: stats1.koRecus,     v2: stats2.koRecus,     cmp: 'min', fmt: (v) => v },
-                    { label: 'KO reçus / combat',   v1: stats1.koRecuByBattle,  v2: stats2.koRecuByBattle,  cmp: 'min', fmt: (v) => v != null ? v : '—' },
+                    { label: 'KO reçus / combat',   v1: stats1.koRecuByBattle,  v2: stats2.koRecuByBattle,  cmp: 'min', fmt: (v) => v == null ? '—' : v.toFixed(1) },
                     { label: 'Perfect', v1: stats1.perfectWins, v2: stats2.perfectWins, cmp: 'max', fmt: (v) => v },
                     { label: 'Pokémon joués', v1: stats1.distinctPokemonCount, v2: stats2.distinctPokemonCount, cmp: 'max', fmt: (v) => v },
                     { label: 'Meilleure série', v1: stats1.bestStreak, v2: stats2.bestStreak, cmp: 'max', fmt: (v) => v },
@@ -858,7 +858,7 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                       ) : <span className={t.textTertiary}>—</span>,
                     },
                     {
-                      label: 'Pokémon favori',
+                      label: 'Pokémon favori (victoires)',
                       v1: stats1.favoritePokemonInWins || null,
                       v2: stats2.favoritePokemonInWins || null,
                       cmp: null,
