@@ -670,7 +670,10 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                   const rows = [
                     { label: 'Winrate',             v1: dateStats1.winRate,     v2: dateStats2.winRate,     cmp: 'max', fmt: (v) => v != null ? `${v}%` : '—' },
                     { label: 'KO infligés',         v1: dateStats1.koInfliges,  v2: dateStats2.koInfliges,  cmp: 'max', fmt: (v) => v },
+                    { label: 'KO infligés / combat', v1: dateStats1.koInflByBattle, v2: dateStats2.koInflByBattle, cmp: 'max', fmt: (v) => v != null ? v : '—' },
+                    { label: 'KO reçus / combat',    v1: dateStats1.koRecuByBattle,  v2: dateStats2.koRecuByBattle,  cmp: 'min', fmt: (v) => v != null ? v : '—' },
                     { label: 'Perfect', v1: dateStats1.perfectWins, v2: dateStats2.perfectWins, cmp: 'max', fmt: (v) => v },
+                    { label: 'Pokémon joués', v1: dateStats1.distinctPokemonCount, v2: dateStats2.distinctPokemonCount, cmp: 'max', fmt: (v) => v },
                     { label: 'Meilleure série', v1: dateStats1.bestStreak, v2: dateStats2.bestStreak, cmp: 'max', fmt: (v) => v },
                     {
                       label: 'Type favori',
@@ -702,6 +705,18 @@ const [scrolled, setScrolled] = useState(() => initialScrollY > 20);
                         <div className="flex flex-col items-center gap-0.5">
                           <img src={getPokemonImageUrlStatic(mvp.pokeId)} alt={mvp.name} className="w-10 h-10 object-contain" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
                           <span className={`text-xs font-semibold ${t.text} text-center leading-tight`}>{mvp.name}</span>
+                        </div>
+                      ) : <span className={t.textTertiary}>—</span>,
+                    },
+                    {
+                      label: 'Pokémon favori',
+                      v1: dateStats1.favoritePokemonInWins || null,
+                      v2: dateStats2.favoritePokemonInWins || null,
+                      cmp: null,
+                      render: (fav) => fav ? (
+                        <div className="flex flex-col items-center gap-0.5">
+                          <img src={getPokemonImageUrlStatic(fav.pokeId)} alt={fav.name} className="w-10 h-10 object-contain" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
+                          <span className={`text-xs font-semibold ${t.text} text-center leading-tight`}>{fav.name}</span>
                         </div>
                       ) : <span className={t.textTertiary}>—</span>,
                     },
