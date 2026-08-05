@@ -50,6 +50,8 @@ const fr = {
     player1Wins: 'Victoire Joueur 1', player2Wins: 'Victoire Joueur 2',
     totalElim: 'Pokémon éliminés',
     mvp: 'MVP',
+    deleteButton: 'Supprimer le combat',
+    compareButton: 'Comparer les joueurs',
   },
   teams: {
     title: 'Équipes', new: 'Nouvelle équipe', none: 'Aucune équipe',
@@ -188,6 +190,8 @@ const en = {
     player1Wins: 'Player 1 wins', player2Wins: 'Player 2 wins',
     totalElim: 'Eliminated Pokémon',
     mvp: 'MVP',
+    deleteButton: 'Delete battle',
+    compareButton: 'Compare players',
   },
   teams: {
     title: 'Teams', new: 'New team', none: 'No teams',
@@ -321,6 +325,8 @@ const es = {
     editTitle: 'Editar combate', newTitle: 'Nuevo combate',
     eliminated: 'eliminado', player1Wins: 'Gana Jugador 1',
     player2Wins: 'Gana Jugador 2', totalElim: 'Pokémon eliminados', mvp: 'MVP',
+    deleteButton: 'Eliminar combate',
+    compareButton: 'Comparar jugadores',
   },
   teams: {
     title: 'Equipos', new: 'Nuevo equipo', none: 'Sin equipos',
@@ -450,6 +456,8 @@ const de = {
     editTitle: 'Kampf bearbeiten', newTitle: 'Neuer Kampf',
     eliminated: 'besiegt', player1Wins: 'Spieler 1 gewinnt',
     player2Wins: 'Spieler 2 gewinnt', totalElim: 'Besiegte Pokémon', mvp: 'MVP',
+    deleteButton: 'Kampf löschen',
+    compareButton: 'Spieler vergleichen',
   },
   teams: {
     title: 'Teams', new: 'Neues Team', none: 'Keine Teams',
@@ -579,6 +587,8 @@ const ja = {
     editTitle: 'バトルを編集', newTitle: '新規バトル',
     eliminated: 'ひんし', player1Wins: 'プレイヤー1の勝利',
     player2Wins: 'プレイヤー2の勝利', totalElim: 'ひんしポケモン', mvp: 'MVP',
+    deleteButton: 'バトルを削除',
+    compareButton: 'プレイヤーを比較',
   },
   teams: {
     title: 'チーム', new: '新規チーム', none: 'チームなし',
