@@ -1059,6 +1059,10 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           onUpdatePlayer={handleUpdatePlayer}
           onViewPokemon={(p) => { setSelectedPokemon(p); navigateTo('pokemonDetail'); }}
           onPlayerClick={(p) => { setSelectedPlayer(p); navigateTo('playerDetail'); }}
+          onCompare={(p1Id, p2Id) => {
+            setSelectedVersusPlayers({ p1Id, p2Id });
+            navigateTo('versusDetail');
+          }}
         />
       )}
 
