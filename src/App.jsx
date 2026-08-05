@@ -4,6 +4,7 @@ import { theme } from './utils/theme';
 import { sortBattlesDesc } from './utils/battles';
 import { useAPI } from './hooks/useAPI';
 import { Home } from './components/Home';
+import { PokemonSearchPage } from './components/PokemonSearchPage';
 import { Navigation } from './components/Navigation';
 import { ToastProvider, useToast } from './components/Toast';
 import { AuthProvider, useAuth } from './hooks/useAuth';
@@ -25,7 +26,6 @@ const Teams = lazy(() => import('./components/Teams').then((m) => ({ default: m.
 const TeamDetail = lazy(() => import('./components/TeamDetail').then((m) => ({ default: m.TeamDetail })));
 const Battles = lazy(() => import('./components/Battles').then((m) => ({ default: m.Battles })));
 const BattleDetail = lazy(() => import('./components/BattleDetail').then((m) => ({ default: m.BattleDetail })));
-const PokemonSearchPage = lazy(() => import('./components/PokemonSearchPage').then((m) => ({ default: m.PokemonSearchPage })));
 const PokemonDetailPage = lazy(() => import('./components/PokemonDetailPage').then((m) => ({ default: m.PokemonDetailPage })));
 const SettingsPage = lazy(() => import('./components/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const ProductTour = lazy(() => import('./components/ProductTour'));
@@ -40,7 +40,6 @@ const PAGE_PRELOADERS = [
   () => import('./components/TeamDetail'),
   () => import('./components/Battles'),
   () => import('./components/BattleDetail'),
-  () => import('./components/PokemonSearchPage'),
   () => import('./components/PokemonDetailPage'),
   () => import('./components/SettingsPage'),
   () => import('./components/ProductTour'),
