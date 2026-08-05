@@ -1,4 +1,4 @@
-import React, { useState, useRef, useImperativeHandle, useLayoutEffect, useMemo } from 'react';
+import React, { useState, useRef, useImperativeHandle, useLayoutEffect, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { ClearButton } from './ClearButton';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -18,6 +18,23 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
   const isProgrammaticScroll = useRef(false);
   // Détecte le scroll initié par l'utilisateur (touch)
   const isTouchScrolling = useRef(false);
+
+  // window.innerHeight plutôt que la seule unité CSS 100dvh : sur iOS Safari,
+  // 100dvh peut être mal calculée au tout premier rendu (avant que le chrome
+  // du navigateur ne se stabilise), ce qui coupe le bas de cette page — les
+  // autres pages plein écran de l'app utilisent déjà ce même pattern JS.
+  const [viewportHeight, setViewportHeight] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight : 800
+  );
+  useEffect(() => {
+    const updateHeight = () => setViewportHeight(window.innerHeight);
+    window.addEventListener('resize', updateHeight);
+    window.addEventListener('orientationchange', updateHeight);
+    return () => {
+      window.removeEventListener('resize', updateHeight);
+      window.removeEventListener('orientationchange', updateHeight);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     if (initialScrollY && scrollRef.current) {
@@ -87,7 +104,7 @@ export const PokemonSearchPage = React.forwardRef(({ t, isDark, onBack, backLabe
   }, [searchTerm, hasQuery, teams]);
 
   return (
-    <div className={`flex flex-col ${t.pageBg}`} style={{ height: '100dvh' }}>
+    <div className={`flex flex-col ${t.pageBg}`} style={{ height: viewportHeight }}>
       {/* Fond fixe anti-overscroll iOS */}
       <div className={`fixed inset-0 -z-10 ${t.pageBg}`} />
       {/* ── Header ── */}
