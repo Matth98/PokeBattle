@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo, lazy, Suspense, startTransition } from 'react';
 import { flushSync } from 'react-dom';
 import { theme } from './utils/theme';
 import { sortBattlesDesc } from './utils/battles';
@@ -30,6 +30,22 @@ const PokemonDetailPage = lazy(() => import('./components/PokemonDetailPage').th
 const SettingsPage = lazy(() => import('./components/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const ProductTour = lazy(() => import('./components/ProductTour'));
 
+// Mêmes imports que ci-dessus : appelés à l'idle pour préchauffer le cache webpack
+// avant que l'utilisateur ne navigue, afin d'éviter le flash Suspense au tap.
+const PAGE_PRELOADERS = [
+  () => import('./components/Players'),
+  () => import('./components/PlayerDetail'),
+  () => import('./components/VersusPage'),
+  () => import('./components/Teams'),
+  () => import('./components/TeamDetail'),
+  () => import('./components/Battles'),
+  () => import('./components/BattleDetail'),
+  () => import('./components/PokemonSearchPage'),
+  () => import('./components/PokemonDetailPage'),
+  () => import('./components/SettingsPage'),
+  () => import('./components/ProductTour'),
+];
+
 const SUB_PAGES = ['playerDetail', 'teamDetail', 'battleDetail', 'pokemonSearch', 'pokemonDetail', 'versusDetail'];
 
 function AppContent({ isDark, themeMode, setThemeMode }) {
@@ -59,6 +75,17 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
 
   // ── Prefetch des altPokeId pour les formes femelles seeds (sprites) ──
   useEffect(() => { prefetchSeedAltPokeIds(); }, []);
+
+  // ── Préchargement des chunks de pages à l'idle (après le premier paint) ──
+  // Évite le flash Suspense/écran blanc au premier tap sur un onglet.
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 200));
+    const cancelIdle = window.cancelIdleCallback || clearTimeout;
+    const id = idle(() => {
+      PAGE_PRELOADERS.forEach((preload) => { preload().catch(() => {}); });
+    });
+    return () => cancelIdle(id);
+  }, []);
 
   // ── Préchargement des avatars par défaut (après le premier paint) ──
   useEffect(() => {
@@ -127,28 +154,30 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    setNavDirection(null);
     navStack.current = [];
-    setBackLabel('');
     scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
     scrollMemoryRef.current.set(newTab, 0); // reset : pas une navigation retour, l'onglet repart de 0
     if (newTab === 'pokemonSearch') searchMemoryRef.current.set('pokemonSearch', '');
     window.scrollTo({ top: 0, behavior: 'auto' });
     shouldRestoreRef.current = false;
-    setPrevTab(null);
-    // Réinitialiser les filtres des onglets à état persistant (préservés seulement via navigateBack)
-    if (newTab === 'battles') { setBattlesFormatFilter('all'); setBattlesCollapsedGroups(new Set()); }
-    if (newTab === 'teams') setTeamsFormatFilter('all');
-    if (newTab === 'versusDetail') { setVersusDateFilter(''); setVersusViewMode('h2h'); setSelectedVersusPlayers({ p1Id: null, p2Id: null }); }
-    _setCurrentTabState(newTab);
+    // startTransition : garde l'onglet courant affiché pendant le chargement du chunk
+    // de la nouvelle page au lieu de le remplacer par le fallback Suspense (écran blanc).
+    startTransition(() => {
+      setNavDirection(null);
+      setBackLabel('');
+      setPrevTab(null);
+      // Réinitialiser les filtres des onglets à état persistant (préservés seulement via navigateBack)
+      if (newTab === 'battles') { setBattlesFormatFilter('all'); setBattlesCollapsedGroups(new Set()); }
+      if (newTab === 'teams') setTeamsFormatFilter('all');
+      if (newTab === 'versusDetail') { setVersusDateFilter(''); setVersusViewMode('h2h'); setSelectedVersusPlayers({ p1Id: null, p2Id: null }); }
+      _setCurrentTabState(newTab);
+    });
   }, [currentTab]);
 
   // Navigation en profondeur — empile l'état courant
   const navigateTo = useCallback((newTab, extra = {}) => {
-    setNavDirection('push');
     const label = getTabLabel(currentTab);
     navStack.current.push({ tab: currentTab, extra, label });
-    setBackLabel(label);
     scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
     if (currentTab === 'pokemonSearch') {
       searchMemoryRef.current.set('pokemonSearch', searchPageRef.current?.getSearchTerm() ?? searchMemoryRef.current.get('pokemonSearch') ?? '');
@@ -156,8 +185,14 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       searchMemoryRef.current.set('pokemonSearch-teamFormatFilter', searchPageRef.current?.getTeamFormatFilter() ?? searchMemoryRef.current.get('pokemonSearch-teamFormatFilter') ?? 'all');
     }
     shouldRestoreRef.current = false;
-    setPrevTab(currentTab);
-    _setCurrentTabState(newTab);
+    // startTransition : garde l'onglet courant affiché pendant le chargement du chunk
+    // de la nouvelle page au lieu de le remplacer par le fallback Suspense (écran blanc).
+    startTransition(() => {
+      setNavDirection('push');
+      setBackLabel(label);
+      setPrevTab(currentTab);
+      _setCurrentTabState(newTab);
+    });
   }, [currentTab, getTabLabel]);
 
   const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players', pokemonDetail: 'pokemonSearch', pokemonSearch: 'home', versusDetail: 'playerDetail' };
@@ -165,7 +200,6 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   // Retour — dépile et restaure. Fallback si le stack est vide.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const navigateBack = useCallback(() => {
-    setNavDirection('pop');
     let prev = navStack.current.pop();
     // Skip stale detail entries (their selected item was cleared by a prior back action)
     while (prev) {
@@ -177,16 +211,21 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       else { break; }
     }
     const target = prev ?? { tab: DETAIL_FALLBACKS[currentTab] ?? 'home', extra: {}, label: '' };
-    if (target.extra?.playerDetailTab !== undefined) {
-      setPlayerDetailTab(target.extra.playerDetailTab);
-    }
     // Le nouveau label "retour" est l'entrée en dessous dans le stack (si elle existe)
     const newTop = navStack.current[navStack.current.length - 1];
-    setBackLabel(newTop?.label || '');
     scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
     shouldRestoreRef.current = !!prev;
-    setPrevTab(navStack.current[navStack.current.length - 1]?.tab ?? null);
-    _setCurrentTabState(target.tab);
+    // startTransition : garde l'onglet courant affiché pendant le chargement du chunk
+    // de la nouvelle page au lieu de le remplacer par le fallback Suspense (écran blanc).
+    startTransition(() => {
+      setNavDirection('pop');
+      if (target.extra?.playerDetailTab !== undefined) {
+        setPlayerDetailTab(target.extra.playerDetailTab);
+      }
+      setBackLabel(newTop?.label || '');
+      setPrevTab(navStack.current[navStack.current.length - 1]?.tab ?? null);
+      _setCurrentTabState(target.tab);
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab]);
 
@@ -317,7 +356,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
           if (myPlayer) {
             setSelectedPlayer(myPlayer);
             setPlayerDetailTab('pokemon');
-            _setCurrentTabState('playerDetail');
+            startTransition(() => { _setCurrentTabState('playerDetail'); });
           }
         } else {
           document.querySelector('[data-tour="tab-pokemon"]')?.click();
