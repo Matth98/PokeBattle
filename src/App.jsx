@@ -175,7 +175,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
   }, [currentTab]);
 
   // Navigation en profondeur — empile l'état courant
-  const navigateTo = useCallback((newTab, extra = {}) => {
+  const navigateTo = useCallback((newTab, extra = {}, opts = {}) => {
     const label = getTabLabel(currentTab);
     navStack.current.push({ tab: currentTab, extra, label });
     scrollMemoryRef.current.set(currentTab, currentTab === 'pokemonSearch' ? (searchPageRef.current?.getScrollTop() ?? 0) : window.scrollY);
@@ -185,14 +185,21 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
       searchMemoryRef.current.set('pokemonSearch-teamFormatFilter', searchPageRef.current?.getTeamFormatFilter() ?? searchMemoryRef.current.get('pokemonSearch-teamFormatFilter') ?? 'all');
     }
     shouldRestoreRef.current = false;
-    // startTransition : garde l'onglet courant affiché pendant le chargement du chunk
-    // de la nouvelle page au lieu de le remplacer par le fallback Suspense (écran blanc).
-    startTransition(() => {
+    const commit = () => {
       setNavDirection('push');
       setBackLabel(label);
       setPrevTab(currentTab);
       _setCurrentTabState(newTab);
-    });
+    };
+    if (opts.immediate) {
+      // Pas de startTransition : cette page a besoin que son montage reste
+      // synchrone avec le tap pour que l'autofocus iOS ouvre le clavier.
+      commit();
+    } else {
+      // startTransition : garde l'onglet courant affiché pendant le chargement du chunk
+      // de la nouvelle page au lieu de le remplacer par le fallback Suspense (écran blanc).
+      startTransition(commit);
+    }
   }, [currentTab, getTabLabel]);
 
   const DETAIL_FALLBACKS = { battleDetail: 'battles', teamDetail: 'teams', playerDetail: 'players', pokemonDetail: 'pokemonSearch', pokemonSearch: 'home', versusDetail: 'playerDetail' };
@@ -819,7 +826,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
             setPlayerDetailTab('pokemon');
             navigateTo('playerDetail');
           }}
-          onSearchPokemon={() => navigateTo('pokemonSearch')}
+          onSearchPokemon={() => navigateTo('pokemonSearch', {}, { immediate: true })}
           linkedPlayer={players.find(p => p._id === dbUser?.playerId)}
           onOpenSettings={() => setSettingsOpen(true)}
           onRefresh={refreshAll}
@@ -1141,7 +1148,7 @@ function AppContent({ isDark, themeMode, setThemeMode }) {
               setSelectedTeam(null);
               navigateBack();
             } else {
-              navigateTo('pokemonSearch');
+              navigateTo('pokemonSearch', {}, { immediate: true });
             }
           }}
           teamDetailOrigin={teamDetailOrigin}
