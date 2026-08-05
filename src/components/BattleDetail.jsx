@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle, BookmarkPlus, Loader2, Target, Search, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, Pencil, Calendar, Trash2, FileText, Trophy, Swords, HelpCircle, BookmarkPlus, Loader2, Target, Search, Plus, Scale } from 'lucide-react';
 import { formatDate } from '../utils/dates';
 import { usePokemon, getPokemonSpriteId } from '../hooks/usePokemon';
 import { useAnimatedClose } from '../hooks/useAnimatedClose';
@@ -119,6 +119,7 @@ export const BattleDetail = ({
   onUpdatePlayer,
   onViewPokemon,
   onPlayerClick,
+  onCompare,
   backLabel = 'Combats',
   initialScrollY = 0,
   isBackground = false,
@@ -784,6 +785,17 @@ export const BattleDetail = ({
           </section>
         )}
 
+        {/* ── Comparer les joueurs ── */}
+        {onCompare && p1 && p2 && (
+          <button
+            onClick={() => onCompare(battle.player1, battle.player2)}
+            className={`w-full ${t.surface} ${t.accent} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 shadow-sm`}
+          >
+            <Scale size={18} />
+            {tr('battles.compareButton')}
+          </button>
+        )}
+
         {/* ── Supprimer ── */}
         {canDelete && (
           <button
@@ -791,7 +803,7 @@ export const BattleDetail = ({
             className={`w-full ${t.surface} ${t.danger} rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 shadow-sm`}
           >
             <Trash2 size={18} />
-            {tr('common.delete')}
+            {tr('battles.deleteButton')}
           </button>
         )}
       </div>
