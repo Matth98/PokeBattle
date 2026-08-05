@@ -289,6 +289,8 @@ const [dateFilter, setDateFilter] = useState(initialDateFilter);
       const mine = String(b.player1) === String(player._id) ? (b.team1 || []) : (b.team2 || []);
       return sum + mine.filter((p) => p.eliminated).length;
     }, 0);
+    const koInflByBattle = pb.length > 0 ? Math.round((koInfliges / pb.length) * 10) / 10 : null;
+    const koRecuByBattle = pb.length > 0 ? Math.round((koRecus / pb.length) * 10) / 10 : null;
     const perfectWins = pb.filter((b) => {
       const isWinner = (String(b.player1) === String(player._id) && b.winner === 'player1') || (String(b.player2) === String(player._id) && b.winner === 'player2');
       if (!isWinner) return false;
@@ -300,6 +302,7 @@ const [dateFilter, setDateFilter] = useState(initialDateFilter);
     const favoriteFormat = [...formatCounts.entries()].sort((a, b) => b[1] - a[1])[0];
 
     const myBattlePokemon = pb.flatMap((b) => String(b.player1) === String(player._id) ? (b.team1 || []) : (b.team2 || []));
+    const distinctPokemonCount = new Set(myBattlePokemon.map((p) => p.pokeId).filter(Boolean)).size;
 
     const typeCounts = new Map();
     myBattlePokemon.forEach((p) => {
@@ -342,6 +345,22 @@ const [dateFilter, setDateFilter] = useState(initialDateFilter);
 
     const top3 = [...pokemonCounts.values()].sort((a, b) => b.count - a.count).slice(0, 3);
 
+    const winPokemonCounts = new Map();
+    pb.forEach((b) => {
+      const isP1 = String(b.player1) === String(player._id);
+      const isWinner = (isP1 && b.winner === 'player1') || (!isP1 && b.winner === 'player2');
+      if (!isWinner) return;
+      const mine = (isP1 ? b.team1 : b.team2) || [];
+      mine.forEach((p) => {
+        if (!p?.pokeId) return;
+        const cur = winPokemonCounts.get(p.pokeId) || { pokeId: p.pokeId, name: p.name, count: 0 };
+        winPokemonCounts.set(p.pokeId, { ...cur, name: p.name || cur.name, count: cur.count + 1 });
+      });
+    });
+    const favoritePokemonInWins = winPokemonCounts.size > 0
+      ? [...winPokemonCounts.values()].sort((a, b) => b.count - a.count)[0]
+      : null;
+
     const sorted = sortBattlesAsc(pb);
     let bestStreak = 0, curStreak = 0;
     sorted.forEach((b) => {
@@ -349,7 +368,7 @@ const [dateFilter, setDateFilter] = useState(initialDateFilter);
       if (won) { curStreak++; bestStreak = Math.max(bestStreak, curStreak); } else { curStreak = 0; }
     });
 
-    return { total: pb.length, wins, losses, winRate, koInfliges, koRecus, perfectWins, bestStreak, favoriteFormat, mostUsedTypeEntry, mostUsedPokemon, mvp, top3 };
+    return { total: pb.length, wins, losses, winRate, koInfliges, koRecus, koInflByBattle, koRecuByBattle, distinctPokemonCount, perfectWins, bestStreak, favoriteFormat, mostUsedTypeEntry, mostUsedPokemon, favoritePokemonInWins, mvp, top3 };
   }
 
   const stats1 = useMemo(() => calcPlayerStats(p1, battles, pokemonTypes), [p1, battles, pokemonTypes]); // eslint-disable-line react-hooks/exhaustive-deps
